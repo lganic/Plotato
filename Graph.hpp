@@ -28,7 +28,8 @@ private:
 
     static gboolean on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data);
     static void on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user_data);
-
+    
+    void draw_no_data(cairo_t* cr, int width, int height);
     void draw(cairo_t* cr, int width, int height);
 
     double map_x(double x, int plot_x, int plot_w) const;

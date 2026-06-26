@@ -23,7 +23,7 @@ int main(int argc, char** argv)
         -1.2, 1.2
     };
 
-    auto graph = std::make_unique<Graph>(drawing_area, bounds);
+    Graph graph(drawing_area, bounds);
 
     std::vector<double> x;
     std::vector<double> y;
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
         y.push_back(std::sin(t));
     }
 
-    graph->plot(x, y);
+    // graph.plot(x, y);
 
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 

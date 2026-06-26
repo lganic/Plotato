@@ -2,15 +2,19 @@
 #include <algorithm>
 #include <cmath>
 
-Graph::Graph(GtkWidget* drawing_area, GraphBounds initial_bounds)
-    : area(drawing_area), bounds(initial_bounds)
+// Create a new graph object when given the a drawing area, and the bounds of the graph.
+Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
+    : area(drawing_area), bounds(initial_bounds) // Set drawing area, and initial bounds using initializer step, to skip useless default constructor.
 {
-    g_signal_connect(area, "draw", G_CALLBACK(Graph::on_draw), this);
-    g_signal_connect(area, "size-allocate", G_CALLBACK(Graph::on_size_allocate), this);
+
+    // Connect signals for events which we would need to respond to.
+    g_signal_connect(area, "draw", G_CALLBACK(Graph::on_draw), this); // Is called when this is first revealed, or something else indicates that a draw is required.
+    g_signal_connect(area, "size-allocate", G_CALLBACK(Graph::on_size_allocate), this); // Called when the graph element is resized.
 }
 
-void Graph::plot(const std::vector<double>& x,
-                 const std::vector<double>& y)
+// Plot the given data on the graph. 
+void Graph::plot(const std::vector<double> &x,
+                 const std::vector<double> &y)
 {
     {
         std::lock_guard<std::mutex> lock(data_mutex);
@@ -18,29 +22,36 @@ void Graph::plot(const std::vector<double>& x,
         y_data = y;
     }
 
+    // Queue up a draw event, which will call the on_draw method. TODO : Don't do this here. Subsequent calls to draw (i.e. on multiplots) will result in wasted renders.
     gtk_widget_queue_draw(area);
 }
 
-gboolean Graph::on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data)
+// Called when the graph is requested to draw.
+gboolean Graph::on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
-    Graph* graph = static_cast<Graph*>(user_data);
+    Graph *graph = static_cast<Graph *>(user_data);
 
+    // Get the current size of the allocated area for the drawing widget.
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
 
+    // Pass the drawing information to the drawer.
     graph->draw(cr, allocation.width, allocation.height);
     return FALSE;
 }
 
-void Graph::on_size_allocate(GtkWidget* widget,
-                             GdkRectangle* allocation,
+// Called when the graph is resized.
+void Graph::on_size_allocate(GtkWidget *widget,
+                             GdkRectangle *allocation,
                              gpointer user_data)
 {
-    Graph* graph = static_cast<Graph*>(user_data);
+    Graph *graph = static_cast<Graph *>(user_data);
 
     // Sizing is mostly automatic because draw() receives the current size.
     // This hook exists so we can later rebuild cached surfaces, text layouts,
     // heatmap buffers, etc.
+
+    // So we really just need to grab the graph element from the ref, and signal a draw event. 
     gtk_widget_queue_draw(graph->area);
 }
 
@@ -56,7 +67,46 @@ double Graph::map_y(double y, int plot_y, int plot_h) const
     return plot_y + plot_h - t * plot_h;
 }
 
-void Graph::draw(cairo_t* cr, int width, int height)
+void Graph::draw_no_data(cairo_t *cr, int width, int height) {
+    // PLACEHOLDER LOGIC FOR THE PLACEHOLDER. CACHE THIS SO WE DON'T ANNIHILATE THE DISK
+    cairo_surface_t *image = cairo_image_surface_create_from_png("static/Icon-small.png");
+
+    // we can calculate the centering position, since we know the plot width, and the image width is 100px
+    int center_x = (width - 100) / 2;
+    int center_y = (height - 100) / 2;
+
+    // Check if the image loaded successfully
+    if (cairo_surface_status(image) == CAIRO_STATUS_SUCCESS) {
+        // Set the image surface as the source pattern
+        cairo_set_source_surface(cr, image, center_x, center_y);
+
+        // Paint the source surface onto the destination context
+        cairo_paint(cr);
+    } // Not really a problem if this doesn't work, since its mostly just for debugging
+
+    // Clean up the image surface memory
+    cairo_surface_destroy(image);
+
+    // Draw some text.
+    const char* msg = "Graph initialized - no data";
+
+    cairo_select_font_face(cr, "Sans",
+                           CAIRO_FONT_SLANT_NORMAL,
+                           CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 16);
+
+    cairo_text_extents_t extents;
+    cairo_text_extents(cr, msg, &extents);
+
+    double x = 50 + center_x - extents.width / 2;
+    double y = 100 + center_y;
+
+    cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
+    cairo_move_to(cr, x, y);
+    cairo_show_text(cr, msg);
+}
+
+void Graph::draw(cairo_t *cr, int width, int height)
 {
     std::vector<double> x;
     std::vector<double> y;
@@ -65,6 +115,13 @@ void Graph::draw(cairo_t* cr, int width, int height)
         std::lock_guard<std::mutex> lock(data_mutex);
         x = x_data;
         y = y_data;
+    }
+
+    if (x.size() < 2) { // PLACEHOLDER
+        // Set the placeholder image, so we know that the graph has been initialized properly, just not set to any data, or plotted. 
+        draw_no_data(cr, width, height);
+
+        return;
     }
 
     cairo_set_source_rgb(cr, 1, 1, 1);
@@ -103,7 +160,8 @@ void Graph::draw(cairo_t* cr, int width, int height)
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
 
-    for (int i = 0; i <= ticks; i++) {
+    for (int i = 0; i <= ticks; i++)
+    {
         double tx = bounds.xmin + (bounds.xmax - bounds.xmin) * i / ticks;
         double sx = map_x(tx, plot_x, plot_w);
 
@@ -119,7 +177,8 @@ void Graph::draw(cairo_t* cr, int width, int height)
         cairo_show_text(cr, label);
     }
 
-    for (int i = 0; i <= ticks; i++) {
+    for (int i = 0; i <= ticks; i++)
+    {
         double ty = bounds.ymin + (bounds.ymax - bounds.ymin) * i / ticks;
         double sy = map_y(ty, plot_y, plot_h);
 
@@ -148,7 +207,8 @@ void Graph::draw(cairo_t* cr, int width, int height)
                   map_x(x[0], plot_x, plot_w),
                   map_y(y[0], plot_y, plot_h));
 
-    for (size_t i = 1; i < n; i++) {
+    for (size_t i = 1; i < n; i++)
+    {
         cairo_line_to(cr,
                       map_x(x[i], plot_x, plot_w),
                       map_y(y[i], plot_y, plot_h));

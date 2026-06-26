@@ -1,6 +1,8 @@
-#include "Graph.hpp"
+#include <Plotato/Graph.hpp>
 #include <algorithm>
 #include <cmath>
+
+namespace plotato {
 
 // Create a new graph object when given the a drawing area, and the bounds of the graph.
 Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
@@ -215,4 +217,7 @@ void Graph::draw(cairo_t *cr, int width, int height)
     }
 
     cairo_stroke(cr);
+}
+
+
 }

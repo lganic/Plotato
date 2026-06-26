@@ -4,6 +4,8 @@
 #include <vector>
 #include <mutex>
 
+namespace plotato {
+
 struct GraphBounds {
     double xmin;
     double xmax;
@@ -35,3 +37,5 @@ private:
     double map_x(double x, int plot_x, int plot_w) const;
     double map_y(double y, int plot_y, int plot_h) const;
 };
+
+}

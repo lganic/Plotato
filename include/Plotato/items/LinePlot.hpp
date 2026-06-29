@@ -2,6 +2,7 @@
 #define PLOTATO_LINEPLOT_HPP
 
 #include <Plotato/items/PlotItem.hpp>
+#include <Plotato/util/GraphBounds.hpp>
 #include <vector>
 
 namespace plotato {
@@ -14,7 +15,7 @@ class LinePlot : public PlotItem
     public:
         LinePlot(std::vector<double>, std::vector<double>);
         void draw(RenderContext& ctx);
-        Bounds bounds();
+        GraphBounds bounds();
 };
 
 }

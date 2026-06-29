@@ -9,6 +9,7 @@
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/items/PlotItem.hpp>
+#include <Plotato/axis/BaseAxis.hpp>
 
 // This is used to store debug image data.
 struct MemoryPng
@@ -22,9 +23,13 @@ namespace plotato {
 
 struct GraphStyle {
     Color background_color = Color(255, 255, 255);
+
     Color plot_background_color = Color(245, 245, 245);
+
     bool draw_border = true;
     Color border_color = Color(0, 0, 0);
+
+    int default_margin = 10;
 
     bool dont_draw_version_text = false;
 };
@@ -36,6 +41,8 @@ public:
 
     void clear();
     void draw();
+
+    void add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
 
     void plot(const std::vector<double>& x,
               const std::vector<double>& y);
@@ -56,6 +63,7 @@ private:
     bool y_axis_auto_framing = true;
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
+    std::vector<std::unique_ptr<Axis>> current_axis;
 
     std::mutex data_mutex;
 

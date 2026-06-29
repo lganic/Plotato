@@ -17,9 +17,9 @@ class PlotItem
 public:
     virtual ~PlotItem() {}
 
-    virtual void draw(RenderContext& ctx);
+    virtual void draw(RenderContext& ctx) = 0;
 
-    virtual Bounds bounds();
+    virtual Bounds bounds() = 0;
 };
 
 }

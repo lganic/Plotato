@@ -25,6 +25,9 @@ struct GraphViewport {
 
     int graph_width;
     int graph_height;
+
+    int map_x_to_screen(double x);
+    int map_y_to_screen(double y);
 };
 
 }

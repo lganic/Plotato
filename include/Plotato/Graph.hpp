@@ -25,6 +25,8 @@ struct GraphStyle {
     Color plot_background_color = Color(245, 245, 245);
     bool draw_border = true;
     Color border_color = Color(0, 0, 0);
+
+    bool dont_draw_version_text = false;
 };
 
 

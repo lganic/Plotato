@@ -59,7 +59,7 @@ void Graph::clear() {
 // Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
 void Graph::draw() {
 
-    // Queue up a draw event, which will call the on_draw method. TODO : Don't do this here. Subsequent calls to draw (i.e. on multiplots) will result in wasted renders.
+    // Queue up a draw event, which will call the on_draw method.
     gtk_widget_queue_draw(area);
 
 }

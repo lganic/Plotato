@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLOTATO_LINEPLOT_HPP
+#define PLOTATO_LINEPLOT_HPP
 
 #include <Plotato/items/PlotItem.hpp>
 #include <vector>
@@ -16,3 +17,5 @@ class LinePlot : public PlotItem
 };
 
 }
+
+#endif // PLOTATO_LINEPLOT_HPP

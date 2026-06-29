@@ -3,6 +3,24 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <cstring>
+#include <EmbeddedAssets.hpp>
+
+cairo_status_t read_png_from_memory(
+    void* closure,
+    unsigned char* data,
+    unsigned int length)
+{
+    MemoryPng* mem = static_cast<MemoryPng*>(closure);
+
+    if (mem->offset + length > mem->size)
+        return CAIRO_STATUS_READ_ERROR;
+
+    std::memcpy(data, mem->data + mem->offset, length);
+    mem->offset += length;
+
+    return CAIRO_STATUS_SUCCESS;
+}
 
 namespace plotato {
 
@@ -14,6 +32,21 @@ Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
     // Connect signals for events which we would need to respond to.
     g_signal_connect(area, "draw", G_CALLBACK(Graph::on_draw), this); // Is called when this is first revealed, or something else indicates that a draw is required.
     g_signal_connect(area, "size-allocate", G_CALLBACK(Graph::on_size_allocate), this); // Called when the graph element is resized.
+
+    // Set the debug png image data from the data loaded in the object file by the linker.
+    MemoryPng png {
+        _binary_Icon_small_png_start,
+        static_cast<std::size_t>(
+            _binary_Icon_small_png_end - _binary_Icon_small_png_start
+        ),
+        0
+    };
+
+    // Then load the debug surface from the png data.
+    debug_image = cairo_image_surface_create_from_png_stream(
+        read_png_from_memory,
+        &png
+    );
 }
 
 // Clear the elements from the graph.
@@ -86,24 +119,19 @@ double Graph::map_y(double y, int plot_y, int plot_h) const
 }
 
 void Graph::draw_no_data(cairo_t *cr, int width, int height) {
-    // PLACEHOLDER LOGIC FOR THE PLACEHOLDER. CACHE THIS SO WE DON'T ANNIHILATE THE DISK
-    cairo_surface_t *image = cairo_image_surface_create_from_png("static/Icon-small.png");
 
     // we can calculate the centering position, since we know the plot width, and the image width is 100px
     int center_x = (width - 100) / 2;
     int center_y = (height - 100) / 2;
 
     // Check if the image loaded successfully
-    if (cairo_surface_status(image) == CAIRO_STATUS_SUCCESS) {
+    if (cairo_surface_status(debug_image) == CAIRO_STATUS_SUCCESS) {
         // Set the image surface as the source pattern
-        cairo_set_source_surface(cr, image, center_x, center_y);
+        cairo_set_source_surface(cr, debug_image, center_x, center_y);
 
         // Paint the source surface onto the destination context
         cairo_paint(cr);
     } // Not really a problem if this doesn't work, since its mostly just for debugging
-
-    // Clean up the image surface memory
-    cairo_surface_destroy(image);
 
     // Draw some text.
     const char* msg = "Graph initialized - no data";

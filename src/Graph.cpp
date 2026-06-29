@@ -174,7 +174,7 @@ void Graph::draw_no_data(cairo_t *cr, int width, int height) {
     } // Not really a problem if this doesn't work, since its mostly just for debugging
 
     // Draw some text.
-    const char* msg = "Graph initialized - no data";
+    const char* msg = "Graph Initialized - No Data";
 
     cairo_select_font_face(cr, "Sans",
                            CAIRO_FONT_SLANT_NORMAL,

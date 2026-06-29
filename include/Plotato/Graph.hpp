@@ -21,7 +21,7 @@ namespace plotato {
 
 class Graph {
 public:
-    Graph(GtkWidget* drawing_area, GraphBounds bounds);
+    Graph(GtkWidget* drawing_area, GraphBounds bounds = GraphBounds());
 
     void clear();
     void draw();
@@ -35,7 +35,12 @@ private:
     char version_label[64];
 
     GtkWidget* area;
-    GraphBounds bounds;
+    GraphBounds bounds; // This is the bounds object which will be used / updated at runtime. The manual bounds below, and the framing flags control this value.
+
+    bool x_axis_auto_framing = false;
+    bool y_axis_auto_framing = false;
+
+    GraphBounds manual_bounds;
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
 

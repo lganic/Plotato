@@ -5,10 +5,10 @@ namespace plotato {
 
 // Tracks the strict bounds of the graph. To be configured by user, and passed to Graph object on init.
 struct GraphBounds {
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
+    double xmin = 0;
+    double xmax = 0;
+    double ymin = 0;
+    double ymax = 0;
 };
 
 // Constructed by graph, and passed to graph renderers to allign everything properly, after accounting for margins.

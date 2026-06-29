@@ -19,7 +19,7 @@ public:
 
     virtual void draw(RenderContext& ctx) = 0;
 
-    // virtual Bounds bounds() const = 0;
+    virtual Bounds bounds() = 0;
 };
 
 }

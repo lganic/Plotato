@@ -14,6 +14,7 @@ class LinePlot : public PlotItem
     public:
         LinePlot(std::vector<double>, std::vector<double>);
         void draw(RenderContext& ctx);
+        Bounds bounds();
 };
 
 }

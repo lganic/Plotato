@@ -36,7 +36,7 @@ set(ICON_OBJECT "${GENERATED_DIR}/icon_small_png.o")
 # Generate a header containing the version string
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.hpp.in"
-  "${GENERATED_DIR}/version.hpp"
+  "${CMAKE_CURRENT_BINARY_DIR}/generated/version.hpp"
   @ONLY
 )
 
@@ -70,6 +70,7 @@ add_library(plotato
 
 target_include_directories(plotato
     PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${GTK3_INCLUDE_DIRS}
 )

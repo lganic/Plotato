@@ -1,4 +1,5 @@
 #include <vector>
+#include <algorithm>
 #include <Plotato/items/LinePlot.hpp>
 #include <Plotato/util/GraphRenderer.hpp>
 
@@ -17,6 +18,18 @@ void LinePlot::draw(RenderContext& ctx) {
 
     // Pass our line data to the graph renderer. 
     renderer.draw_polyline(x, y, ls);
+}
+
+Bounds LinePlot::bounds(){
+
+    // I am going to assume that x, and y are of the same size. TODO: Check.
+
+    // Find both min and max elements of the x and y array.
+    auto x_result = std::minmax_element(x.begin(), x.end());
+    auto y_result = std::minmax_element(y.begin(), y.end());
+
+    // Return the bounds object
+    return Bounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
 }
 
 }

@@ -67,6 +67,11 @@ void Graph::set_bounds(GraphBounds set_bounds) {
 }
 
 void Graph::draw_version_text(cairo_t* cr, int width, int height) {
+
+    if (style.dont_draw_version_text) {
+        return; // Don't proceed. Style indicates to not draw this.
+    }
+
     // Draw the version info as a small translucent bit of text in the bottom right. (For easier debugging) TODO: Add a bit to the styling which allows you to disable this.
 
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);

@@ -9,6 +9,8 @@ pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
 add_library(plotato
     src/Graph.cpp
+    src/items/LinePlot.cpp
+    src/util/GraphRenderer.cpp
 )
 
 target_include_directories(plotato

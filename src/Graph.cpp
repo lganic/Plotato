@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <cstring>
+#include "version.hpp"
 #include <EmbeddedAssets.hpp>
 
 cairo_status_t read_png_from_memory(
@@ -47,6 +48,26 @@ Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
         read_png_from_memory,
         &png
     );
+
+    snprintf(version_label, sizeof(version_label), "Plotato - v%s", PLOTATO_VERSION); // Create the version string.
+}
+
+void Graph::draw_version_text(cairo_t* cr, int width, int height) {
+    // Draw the version info as a small translucent bit of text in the bottom right. (For easier debugging) TODO: Add a bit to the styling which allows you to disable this.
+
+    cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 10);
+    cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
+
+    cairo_text_extents_t extents;
+    cairo_text_extents(cr, version_label, &extents);
+
+    double x = width - extents.width - 4;
+    double y = height - extents.height;
+
+    cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
+    cairo_move_to(cr, x, y);
+    cairo_show_text(cr, version_label);
 }
 
 // Clear the elements from the graph.
@@ -59,7 +80,7 @@ void Graph::clear() {
 // Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
 void Graph::draw() {
 
-    // Queue up a draw event, which will call the on_draw method. TODO : Don't do this here. Subsequent calls to draw (i.e. on multiplots) will result in wasted renders.
+    // Queue up a draw event, which will call the on_draw method.
     gtk_widget_queue_draw(area);
 
 }
@@ -150,6 +171,8 @@ void Graph::draw_no_data(cairo_t *cr, int width, int height) {
     cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
     cairo_move_to(cr, x, y);
     cairo_show_text(cr, msg);
+
+    draw_version_text(cr, width, height);
 }
 
 void Graph::draw(cairo_t *cr, int width, int height)
@@ -268,6 +291,8 @@ void Graph::draw(cairo_t *cr, int width, int height)
     for(int i = 0; i < current_plot_items.size(); i ++){
         current_plot_items[i]->draw(rc);
     }
+
+    draw_version_text(cr, width, height);
 }
 
 }

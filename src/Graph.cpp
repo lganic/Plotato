@@ -4,8 +4,11 @@
 #include <cmath>
 #include <iostream>
 #include <cstring>
+#include <limits>
+#include <cmath>
+#include <algorithm>
 #include "version.hpp"
-#include <EmbeddedAssets.hpp>
+#include "EmbeddedAssets.hpp"
 
 cairo_status_t read_png_from_memory(
     void* closure,
@@ -27,7 +30,7 @@ namespace plotato {
 
 // Create a new graph object when given the a drawing area, and the bounds of the graph.
 Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
-    : area(drawing_area), bounds(initial_bounds) // Set drawing area, and initial bounds using initializer step, to skip useless default constructor.
+    : area(drawing_area) // Set drawing area, and initial bounds using initializer step, to skip useless default constructor.
 {
 
     // Connect signals for events which we would need to respond to.
@@ -50,6 +53,13 @@ Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
     );
 
     snprintf(version_label, sizeof(version_label), "Plotato - v%s", PLOTATO_VERSION); // Create the version string.
+
+    // Check the bounds object, so we can determine wether or not to use automatic bounding.
+    x_axis_auto_framing = (initial_bounds.xmin == 0 && initial_bounds.xmax == 0);
+    y_axis_auto_framing = (initial_bounds.ymin == 0 && initial_bounds.ymax == 0);
+
+    // Set the runtime bounds. If the flags above are not true, then this will not change.
+    bounds = initial_bounds;
 }
 
 void Graph::draw_version_text(cairo_t* cr, int width, int height) {
@@ -182,6 +192,47 @@ void Graph::draw(cairo_t *cr, int width, int height)
         draw_no_data(cr, width, height);
 
         return;
+    }
+
+    // Check if we need to do some auto framing.
+    if (x_axis_auto_framing || y_axis_auto_framing){
+        // Update the bounds first, so we know that everything is up to date before we get started on the draw process.
+
+        double auto_min_x =  std::numeric_limits<double>::infinity();
+        double auto_max_x = -std::numeric_limits<double>::infinity();
+
+        double auto_min_y =  std::numeric_limits<double>::infinity();
+        double auto_max_y = -std::numeric_limits<double>::infinity();
+
+        for (size_t i = 0; i < current_plot_items.size(); i ++) {
+            
+            Bounds this_object_bounds = current_plot_items[i]->bounds();
+
+            auto_min_x = std::min(auto_min_x, this_object_bounds.min_x);
+            auto_max_x = std::max(auto_max_x, this_object_bounds.max_x);
+
+            auto_min_y = std::min(auto_min_y, this_object_bounds.min_y);
+            auto_max_y = std::max(auto_max_y, this_object_bounds.max_y);
+        }
+
+        // Save values to the bounds object.
+        if (x_axis_auto_framing) {
+            if (!std::isinf(auto_min_x)){
+                bounds.xmin = auto_min_x;
+            }
+            if(!std::isinf(auto_max_x)) {
+                bounds.xmax = auto_max_x;
+            }
+        }
+        if (y_axis_auto_framing) {
+            if (!std::isinf(auto_min_y)){
+                bounds.ymin = auto_min_y;
+            }
+            if (!std::isinf(auto_max_y)) {
+                bounds.ymax = auto_max_y;
+            }
+        }
+        
     }
 
     // Set background color on the plot.

@@ -1,5 +1,6 @@
 #include <Plotato/Graph.hpp>
 #include <Plotato/items/LinePlot.hpp>
+#include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -29,8 +30,8 @@ cairo_status_t read_png_from_memory(
 namespace plotato {
 
 // Create a new graph object when given the a drawing area, and the bounds of the graph.
-Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
-    : area(drawing_area) // Set drawing area, and initial bounds using initializer step, to skip useless default constructor.
+Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
+    : area(drawing_area), style(style) // Set drawing area, and style, to skip useless default constructor.
 {
 
     // Connect signals for events which we would need to respond to.
@@ -53,16 +54,24 @@ Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
     );
 
     snprintf(version_label, sizeof(version_label), "Plotato - v%s", PLOTATO_VERSION); // Create the version string.
+}
 
-    // Check the bounds object, so we can determine wether or not to use automatic bounding.
-    x_axis_auto_framing = (initial_bounds.xmin == 0 && initial_bounds.xmax == 0);
-    y_axis_auto_framing = (initial_bounds.ymin == 0 && initial_bounds.ymax == 0);
+void Graph::set_bounds(GraphBounds set_bounds) {
 
-    // Set the runtime bounds. If the flags above are not true, then this will not change.
-    bounds = initial_bounds;
+    // First set the auto framing flags
+    x_axis_auto_framing = (set_bounds.xmin == 0 && set_bounds.xmax == 0);
+    y_axis_auto_framing = (set_bounds.ymin == 0 && set_bounds.ymax == 0);
+
+    // Then lets set these bounds. If the flags above are false, then these bounds won't be touch, so the user doesn't have to call this again.
+    bounds = set_bounds;
 }
 
 void Graph::draw_version_text(cairo_t* cr, int width, int height) {
+
+    if (style.dont_draw_version_text) {
+        return; // Don't proceed. Style indicates to not draw this.
+    }
+
     // Draw the version info as a small translucent bit of text in the bottom right. (For easier debugging) TODO: Add a bit to the styling which allows you to disable this.
 
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
@@ -206,13 +215,13 @@ void Graph::draw(cairo_t *cr, int width, int height)
 
         for (size_t i = 0; i < current_plot_items.size(); i ++) {
             
-            Bounds this_object_bounds = current_plot_items[i]->bounds();
+            GraphBounds this_object_bounds = current_plot_items[i]->bounds();
 
-            auto_min_x = std::min(auto_min_x, this_object_bounds.min_x);
-            auto_max_x = std::max(auto_max_x, this_object_bounds.max_x);
+            auto_min_x = std::min(auto_min_x, this_object_bounds.xmin);
+            auto_max_x = std::max(auto_max_x, this_object_bounds.xmax);
 
-            auto_min_y = std::min(auto_min_y, this_object_bounds.min_y);
-            auto_max_y = std::max(auto_max_y, this_object_bounds.max_y);
+            auto_min_y = std::min(auto_min_y, this_object_bounds.ymin);
+            auto_max_y = std::max(auto_max_y, this_object_bounds.ymax);
         }
 
         // Save values to the bounds object.
@@ -236,8 +245,8 @@ void Graph::draw(cairo_t *cr, int width, int height)
     }
 
     // Set background color on the plot.
-    cairo_set_source_rgb(cr, 1, 1, 1);
-    cairo_paint(cr); // Setup the cairo paint.
+    style.background_color.to_cairo_source(cr);
+    cairo_paint(cr); // Paint the background.
 
     // Margin info. TODO: Have this able to be set by the user. / base it on the axis information.
     int left_margin = 60;
@@ -255,20 +264,22 @@ void Graph::draw(cairo_t *cr, int width, int height)
         return; // Plot to small! Abort!
 
     // Plot background
-    cairo_set_source_rgb(cr, 0.96, 0.96, 0.96);
+    style.plot_background_color.to_cairo_source(cr);
     cairo_rectangle(cr, plot_x, plot_y, plot_w, plot_h);
     cairo_fill(cr);
 
     // Draw the border around the graph area. First start by setting the color.
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_set_line_width(cr, 1.0);
-
-    cairo_move_to(cr, plot_x, plot_y); // Move to the top left of the graph area.
-    cairo_line_to(cr, plot_x, plot_y + plot_h); // Line on the left hand side.
-    cairo_line_to(cr, plot_x + plot_w, plot_y + plot_h); // Line on the bottom.
-    cairo_line_to(cr, plot_x + plot_w, plot_y); // Line on the right hand side.
-    cairo_line_to(cr, plot_x, plot_y); // Line on the top.
-    cairo_stroke(cr); // Stroke the border.
+    if (style.draw_border) {
+        style.border_color.to_cairo_source(cr);
+        cairo_set_line_width(cr, 1.0);
+    
+        cairo_move_to(cr, plot_x, plot_y); // Move to the top left of the graph area.
+        cairo_line_to(cr, plot_x, plot_y + plot_h); // Line on the left hand side.
+        cairo_line_to(cr, plot_x + plot_w, plot_y + plot_h); // Line on the bottom.
+        cairo_line_to(cr, plot_x + plot_w, plot_y); // Line on the right hand side.
+        cairo_line_to(cr, plot_x, plot_y); // Line on the top.
+        cairo_stroke(cr); // Stroke the border.
+    }
 
     // Simple grid + tick labels
     int ticks = 5; // TODO: Change this!

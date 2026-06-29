@@ -7,6 +7,7 @@
 #include <memory>
 #include <Plotato/util/GraphBounds.hpp>
 #include <Plotato/util/RenderContext.hpp>
+#include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/items/PlotItem.hpp>
 
 // This is used to store debug image data.
@@ -19,15 +20,29 @@ struct MemoryPng
 
 namespace plotato {
 
+struct GraphStyle {
+    Color background_color = Color(255, 255, 255);
+    Color plot_background_color = Color(245, 245, 245);
+    bool draw_border = true;
+    Color border_color = Color(0, 0, 0);
+
+    bool dont_draw_version_text = false;
+};
+
+
 class Graph {
 public:
-    Graph(GtkWidget* drawing_area, GraphBounds bounds = GraphBounds());
+    Graph(GtkWidget* drawing_area, GraphStyle style = GraphStyle());
 
     void clear();
     void draw();
 
     void plot(const std::vector<double>& x,
               const std::vector<double>& y);
+
+    void set_bounds(GraphBounds set_bounds);
+
+    GraphStyle style;
 
 private:
 
@@ -37,10 +52,8 @@ private:
     GtkWidget* area;
     GraphBounds bounds; // This is the bounds object which will be used / updated at runtime. The manual bounds below, and the framing flags control this value.
 
-    bool x_axis_auto_framing = false;
-    bool y_axis_auto_framing = false;
-
-    GraphBounds manual_bounds;
+    bool x_axis_auto_framing = true;
+    bool y_axis_auto_framing = true;
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
 

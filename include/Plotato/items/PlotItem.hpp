@@ -2,15 +2,9 @@
 #define PLOTATO_PLOTITEM_HPP
 
 #include <Plotato/util/RenderContext.hpp>
+#include <Plotato/util/GraphBounds.hpp>
 
 namespace plotato {
-
-struct Bounds {
-    double min_x;
-    double max_x;
-    double min_y;
-    double max_y;
-};
 
 class PlotItem
 {
@@ -19,7 +13,7 @@ public:
 
     virtual void draw(RenderContext& ctx) = 0;
 
-    virtual Bounds bounds() = 0;
+    virtual GraphBounds bounds() = 0;
 };
 
 }

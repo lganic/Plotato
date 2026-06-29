@@ -4,19 +4,10 @@
 #include <gtk/gtk.h>
 #include <vector>
 #include <string>
-#include <cstdint>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/StyleStructs.hpp>
 
 namespace plotato {
-
-struct Color {
-    uint8_t r = 0;
-    uint8_t g = 0;
-    uint8_t b = 0;
-    uint8_t a = 255;
-
-    constexpr Color (uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255) : r(r), g(g), b(b), a(a) {}
-};
 
 struct LineStyle {
     Color color {25, 64, 230};

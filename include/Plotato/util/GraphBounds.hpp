@@ -18,10 +18,10 @@ struct GraphViewport {
     double ymin;
     double ymax;
 
-    int margin_left = 60;
-    int margin_right = 20;
-    int margin_top = 20;
-    int margin_bottom = 50;
+    int margin_left = 10;
+    int margin_right = 10;
+    int margin_top = 10;
+    int margin_bottom = 10;
 
     int graph_width;
     int graph_height;

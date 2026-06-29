@@ -23,9 +23,13 @@ namespace plotato {
 
 struct GraphStyle {
     Color background_color = Color(255, 255, 255);
+
     Color plot_background_color = Color(245, 245, 245);
+
     bool draw_border = true;
     Color border_color = Color(0, 0, 0);
+
+    int default_margin = 10;
 
     bool dont_draw_version_text = false;
 };

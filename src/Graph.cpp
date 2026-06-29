@@ -1,6 +1,8 @@
 #include <Plotato/Graph.hpp>
+#include <Plotato/items/LinePlot.hpp>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 namespace plotato {
 
@@ -14,18 +16,32 @@ Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
     g_signal_connect(area, "size-allocate", G_CALLBACK(Graph::on_size_allocate), this); // Called when the graph element is resized.
 }
 
+// Clear the elements from the graph.
+void Graph::clear() {
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    current_plot_items.clear();
+}
+
+// Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
+void Graph::draw() {
+
+    // Queue up a draw event, which will call the on_draw method. TODO : Don't do this here. Subsequent calls to draw (i.e. on multiplots) will result in wasted renders.
+    gtk_widget_queue_draw(area);
+
+}
+
 // Plot the given data on the graph. 
 void Graph::plot(const std::vector<double> &x,
                  const std::vector<double> &y)
 {
     {
         std::lock_guard<std::mutex> lock(data_mutex);
-        x_data = x;
-        y_data = y;
-    }
 
-    // Queue up a draw event, which will call the on_draw method. TODO : Don't do this here. Subsequent calls to draw (i.e. on multiplots) will result in wasted renders.
-    gtk_widget_queue_draw(area);
+        current_plot_items.emplace_back(
+            std::make_unique<LinePlot>(x, y)
+        );
+    }
 }
 
 // Called when the graph is requested to draw.
@@ -110,114 +126,120 @@ void Graph::draw_no_data(cairo_t *cr, int width, int height) {
 
 void Graph::draw(cairo_t *cr, int width, int height)
 {
-    std::vector<double> x;
-    std::vector<double> y;
-
-    {
-        std::lock_guard<std::mutex> lock(data_mutex);
-        x = x_data;
-        y = y_data;
-    }
-
-    if (x.size() < 2) { // PLACEHOLDER
+    if (current_plot_items.size() == 0) {
         // Set the placeholder image, so we know that the graph has been initialized properly, just not set to any data, or plotted. 
         draw_no_data(cr, width, height);
 
         return;
     }
 
+    // Set background color on the plot.
     cairo_set_source_rgb(cr, 1, 1, 1);
-    cairo_paint(cr);
+    cairo_paint(cr); // Setup the cairo paint.
 
+    // Margin info. TODO: Have this able to be set by the user. / base it on the axis information.
     int left_margin = 60;
     int right_margin = 20;
     int top_margin = 20;
     int bottom_margin = 50;
 
+    // Get some plot information based on the margin.
     int plot_x = left_margin;
     int plot_y = top_margin;
     int plot_w = width - left_margin - right_margin;
     int plot_h = height - top_margin - bottom_margin;
 
     if (plot_w <= 0 || plot_h <= 0)
-        return;
+        return; // Plot to small! Abort!
 
     // Plot background
     cairo_set_source_rgb(cr, 0.96, 0.96, 0.96);
     cairo_rectangle(cr, plot_x, plot_y, plot_w, plot_h);
     cairo_fill(cr);
 
-    // Axes
+    // Draw the border around the graph area. First start by setting the color.
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_set_line_width(cr, 1.0);
 
-    cairo_move_to(cr, plot_x, plot_y);
-    cairo_line_to(cr, plot_x, plot_y + plot_h);
-    cairo_line_to(cr, plot_x + plot_w, plot_y + plot_h);
-    cairo_stroke(cr);
+    cairo_move_to(cr, plot_x, plot_y); // Move to the top left of the graph area.
+    cairo_line_to(cr, plot_x, plot_y + plot_h); // Line on the left hand side.
+    cairo_line_to(cr, plot_x + plot_w, plot_y + plot_h); // Line on the bottom.
+    cairo_line_to(cr, plot_x + plot_w, plot_y); // Line on the right hand side.
+    cairo_line_to(cr, plot_x, plot_y); // Line on the top.
+    cairo_stroke(cr); // Stroke the border.
 
     // Simple grid + tick labels
-    int ticks = 5;
+    int ticks = 5; // TODO: Change this!
 
+    // TODO: Make axis be able to be added by the user.
+
+    // Make a font to use for the grid axis.
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
 
     for (int i = 0; i <= ticks; i++)
     {
+
+        // Map the index to the point in the range.
         double tx = bounds.xmin + (bounds.xmax - bounds.xmin) * i / ticks;
-        double sx = map_x(tx, plot_x, plot_w);
+        double sx = map_x(tx, plot_x, plot_w); // Lazy, but works. We can use the map function to get the pixel on the surface to draw our tick on.
 
-        cairo_set_source_rgb(cr, 0.82, 0.82, 0.82);
-        cairo_move_to(cr, sx, plot_y);
-        cairo_line_to(cr, sx, plot_y + plot_h);
-        cairo_stroke(cr);
+        cairo_set_source_rgb(cr, 0.82, 0.82, 0.82); // Set the tick color.
 
-        cairo_set_source_rgb(cr, 0, 0, 0);
-        char label[64];
-        snprintf(label, sizeof(label), "%.2f", tx);
-        cairo_move_to(cr, sx - 12, plot_y + plot_h + 20);
-        cairo_show_text(cr, label);
+        cairo_move_to(cr, sx, plot_y); // Move to the calculated point from earlier.
+        cairo_line_to(cr, sx, plot_y + plot_h); // Draw the line across the graph surface at the indicated position.
+        cairo_stroke(cr); // Stroke that.
+
+        cairo_set_source_rgb(cr, 0, 0, 0); // Set the text color. 
+        char label[64]; // Create a char buffer to print our text into.
+        snprintf(label, sizeof(label), "%.2f", tx); // Push the text into that buffer. TODO: Update this for scientific notation
+        cairo_move_to(cr, sx - 12, plot_y + plot_h + 20); // Move to the tick point. 
+        cairo_show_text(cr, label); // Draw the text there.
     }
 
     for (int i = 0; i <= ticks; i++)
     {
+
+        // Map the index to the point in the range.
         double ty = bounds.ymin + (bounds.ymax - bounds.ymin) * i / ticks;
-        double sy = map_y(ty, plot_y, plot_h);
+        double sy = map_y(ty, plot_y, plot_h); // Lazy, but works. We can use the map function to get the pixel on the surface to draw our tick on.
 
-        cairo_set_source_rgb(cr, 0.82, 0.82, 0.82);
-        cairo_move_to(cr, plot_x, sy);
-        cairo_line_to(cr, plot_x + plot_w, sy);
-        cairo_stroke(cr);
+        cairo_set_source_rgb(cr, 0.82, 0.82, 0.82); // Set the tick color.
 
-        cairo_set_source_rgb(cr, 0, 0, 0);
-        char label[64];
-        snprintf(label, sizeof(label), "%.2f", ty);
-        cairo_move_to(cr, 8, sy + 4);
-        cairo_show_text(cr, label);
+        cairo_move_to(cr, plot_x, sy); // Move to the calculated point from earlier.
+        cairo_line_to(cr, plot_x + plot_w, sy); // Draw the line across the graph surface at the indicated position.
+        cairo_stroke(cr); // Stroke that.
+
+        cairo_set_source_rgb(cr, 0, 0, 0); // Set the text color. 
+        char label[64]; // Create a char buffer to print our text into.
+        snprintf(label, sizeof(label), "%.2f", ty); // Push the text into that buffer. TODO: Update this for scientific notation
+        cairo_move_to(cr, 8, sy + 4); // Move to the tick point. 
+        cairo_show_text(cr, label); // Draw the text there.
     }
 
-    // Plot line
-    if (x.size() < 2 || y.size() < 2)
-        return;
+    // Do the actual plotting.
 
-    size_t n = std::min(x.size(), y.size());
+    // Create a new viewport / render context which we will pass to the renderers.
+    GraphViewport gv;
+    RenderContext rc;
 
-    cairo_set_source_rgb(cr, 0.1, 0.25, 0.9);
-    cairo_set_line_width(cr, 2.0);
+    gv.xmin = bounds.xmin;
+    gv.xmax = bounds.xmax;
+    gv.ymin = bounds.ymin;
+    gv.ymax = bounds.ymax;
 
-    cairo_move_to(cr,
-                  map_x(x[0], plot_x, plot_w),
-                  map_y(y[0], plot_y, plot_h));
+    gv.graph_height = plot_h;
+    gv.graph_width = plot_w;
 
-    for (size_t i = 1; i < n; i++)
-    {
-        cairo_line_to(cr,
-                      map_x(x[i], plot_x, plot_w),
-                      map_y(y[i], plot_y, plot_h));
+    rc.cr = cr;
+    rc.current_viewport = gv;
+
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    // Loop over all graph elements, and call each of their corresponding draw functions.
+    for(int i = 0; i < current_plot_items.size(); i ++){
+        current_plot_items[i]->draw(rc);
     }
-
-    cairo_stroke(cr);
 }
-
 
 }

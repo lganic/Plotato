@@ -50,7 +50,7 @@ private:
     double map_x(double x, int plot_x, int plot_w) const;
     double map_y(double y, int plot_y, int plot_h) const;
 
-    void draw_version_text(cairo_t* cr);
+    void draw_version_text(cairo_t* cr, int width, int height);
 };
 
 }

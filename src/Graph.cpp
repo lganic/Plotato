@@ -29,8 +29,8 @@ cairo_status_t read_png_from_memory(
 namespace plotato {
 
 // Create a new graph object when given the a drawing area, and the bounds of the graph.
-Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
-    : area(drawing_area) // Set drawing area, and initial bounds using initializer step, to skip useless default constructor.
+Graph::Graph(GtkWidget *drawing_area)
+    : area(drawing_area) // Set drawing area, to skip useless default constructor.
 {
 
     // Connect signals for events which we would need to respond to.
@@ -53,13 +53,16 @@ Graph::Graph(GtkWidget *drawing_area, GraphBounds initial_bounds)
     );
 
     snprintf(version_label, sizeof(version_label), "Plotato - v%s", PLOTATO_VERSION); // Create the version string.
+}
 
-    // Check the bounds object, so we can determine wether or not to use automatic bounding.
-    x_axis_auto_framing = (initial_bounds.xmin == 0 && initial_bounds.xmax == 0);
-    y_axis_auto_framing = (initial_bounds.ymin == 0 && initial_bounds.ymax == 0);
+void Graph::set_bounds(GraphBounds set_bounds) {
 
-    // Set the runtime bounds. If the flags above are not true, then this will not change.
-    bounds = initial_bounds;
+    // First set the auto framing flags
+    x_axis_auto_framing = (set_bounds.xmin == 0 && set_bounds.xmax == 0);
+    y_axis_auto_framing = (set_bounds.ymin == 0 && set_bounds.ymax == 0);
+
+    // Then lets set these bounds. If the flags above are false, then these bounds won't be touch, so the user doesn't have to call this again.
+    bounds = set_bounds;
 }
 
 void Graph::draw_version_text(cairo_t* cr, int width, int height) {
@@ -206,13 +209,13 @@ void Graph::draw(cairo_t *cr, int width, int height)
 
         for (size_t i = 0; i < current_plot_items.size(); i ++) {
             
-            Bounds this_object_bounds = current_plot_items[i]->bounds();
+            GraphBounds this_object_bounds = current_plot_items[i]->bounds();
 
-            auto_min_x = std::min(auto_min_x, this_object_bounds.min_x);
-            auto_max_x = std::max(auto_max_x, this_object_bounds.max_x);
+            auto_min_x = std::min(auto_min_x, this_object_bounds.xmin);
+            auto_max_x = std::max(auto_max_x, this_object_bounds.xmax);
 
-            auto_min_y = std::min(auto_min_y, this_object_bounds.min_y);
-            auto_max_y = std::max(auto_max_y, this_object_bounds.max_y);
+            auto_min_y = std::min(auto_min_y, this_object_bounds.ymin);
+            auto_max_y = std::max(auto_max_y, this_object_bounds.ymax);
         }
 
         // Save values to the bounds object.

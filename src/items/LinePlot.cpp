@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <Plotato/items/LinePlot.hpp>
 #include <Plotato/util/GraphRenderer.hpp>
+#include <Plotato/util/GraphBounds.hpp>
 
 namespace plotato {
 
@@ -20,7 +21,7 @@ void LinePlot::draw(RenderContext& ctx) {
     renderer.draw_polyline(x, y, ls);
 }
 
-Bounds LinePlot::bounds(){
+GraphBounds LinePlot::bounds(){
 
     // I am going to assume that x, and y are of the same size. TODO: Check.
 
@@ -29,7 +30,7 @@ Bounds LinePlot::bounds(){
     auto y_result = std::minmax_element(y.begin(), y.end());
 
     // Return the bounds object
-    return Bounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
+    return GraphBounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
 }
 
 }

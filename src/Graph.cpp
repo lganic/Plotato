@@ -256,11 +256,23 @@ void Graph::draw(cairo_t *cr, int width, int height)
     style.background_color.to_cairo_source(cr);
     cairo_paint(cr); // Paint the background.
 
-    // Margin info. TODO: Have this able to be set by the user. / base it on the axis information.
-    int left_margin = 60;
-    int right_margin = 20;
-    int top_margin = 20;
-    int bottom_margin = 50;
+    // Set default margins from style.
+    int left_margin = style.default_margin;
+    int right_margin = style.default_margin;
+    int top_margin = style.default_margin;
+    int bottom_margin = style.default_margin + 10;
+
+    // Adjust the margins based on the axis which are present
+    for (size_t i = 0; i < current_axis.size(); i ++) {
+        AxisPixelSize axis_size = current_axis[i]->size();
+
+        left_margin += axis_size.left;
+        right_margin += axis_size.right;
+        top_margin += axis_size.top;
+        bottom_margin += axis_size.bottom;
+    }
+
+    // std::cout << left_margin << "," << right_margin << "," << top_margin << "," << bottom_margin << std::endl;
 
     // Get some plot information based on the margin.
     int plot_x = left_margin;
@@ -301,6 +313,11 @@ void Graph::draw(cairo_t *cr, int width, int height)
 
     gv.graph_height = plot_h;
     gv.graph_width = plot_w;
+
+    gv.margin_left = left_margin;
+    gv.margin_right = right_margin;
+    gv.margin_top = top_margin;
+    gv.margin_bottom = bottom_margin;
 
     rc.cr = cr;
     rc.current_viewport = gv;

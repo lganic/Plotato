@@ -32,17 +32,23 @@ AxisPixelSize Axis::size() {
             use_val_if_enabled(style.tick_length, style.draw_tick) + 
             use_val_if_enabled(style.text_gap + approx_text_vertical_size, style.draw_text);
 
+        break;
+
     case LEFT:
 
         output.left = 
             use_val_if_enabled(style.tick_length, style.draw_tick) +
             use_val_if_enabled(style.text_gap + approx_text_horizontal_size, style.draw_text);
 
+        break;
+
     case RIGHT:
 
         output.right = 
             use_val_if_enabled(style.tick_length, style.draw_tick) +
             use_val_if_enabled(style.text_gap + approx_text_horizontal_size, style.draw_text);
+
+        break;
     
     default:
         break;

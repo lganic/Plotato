@@ -3,19 +3,19 @@
 #include <gtk/gtk.h>
 #include <vector>
 #include <mutex>
+#include <memory>
+#include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/RenderContext.hpp>
+#include <Plotato/items/PlotItem.hpp>
 
 namespace plotato {
-
-struct GraphBounds {
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
-};
 
 class Graph {
 public:
     Graph(GtkWidget* drawing_area, GraphBounds bounds);
+
+    void clear();
+    void draw();
 
     void plot(const std::vector<double>& x,
               const std::vector<double>& y);
@@ -24,8 +24,8 @@ private:
     GtkWidget* area;
     GraphBounds bounds;
 
-    std::vector<double> x_data;
-    std::vector<double> y_data;
+    std::vector<std::unique_ptr<PlotItem>> current_plot_items;
+
     std::mutex data_mutex;
 
     static gboolean on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data);

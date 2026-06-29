@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLOTATO_GRAPH_HPP
+#define PLOTATO_GRAPH_HPP
 
 #include <gtk/gtk.h>
 #include <vector>
@@ -50,3 +51,5 @@ private:
 };
 
 }
+
+#endif // PLOTATO_GRAPH_HPP

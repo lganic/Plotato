@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLOTATO_PLOTITEM_HPP
+#define PLOTATO_PLOTITEM_HPP
 
 #include <Plotato/util/RenderContext.hpp>
 
@@ -22,3 +23,5 @@ public:
 };
 
 }
+
+#endif // PLOTATO_PLOTITEM_HPP

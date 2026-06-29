@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLOTATO_RENDERCONTEXT_HPP
+#define PLOTATO_RENDERCONTEXT_HPP
 
 #include <gtk/gtk.h>
 #include <Plotato/util/GraphBounds.hpp>
@@ -11,3 +12,5 @@ struct RenderContext {
 };
 
 }
+
+#endif // PLOTATO_RENDERCONTEXT_HPP

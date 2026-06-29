@@ -1,5 +1,6 @@
 #include <Plotato/Graph.hpp>
 #include <Plotato/items/LinePlot.hpp>
+#include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
@@ -115,6 +116,13 @@ void Graph::plot(const std::vector<double> &x,
             std::make_unique<LinePlot>(x, y)
         );
     }
+}
+
+void Graph::add_linear_axis(AxisSide side, AxisStyle style) {
+
+    current_axis.emplace_back(
+        std::make_unique<LinearAxis>(side, style)
+    );
 }
 
 // Called when the graph is requested to draw.
@@ -268,8 +276,8 @@ void Graph::draw(cairo_t *cr, int width, int height)
     cairo_rectangle(cr, plot_x, plot_y, plot_w, plot_h);
     cairo_fill(cr);
 
-    // Draw the border around the graph area. First start by setting the color.
     if (style.draw_border) {
+        // Draw the border around the graph area. First start by setting the color.
         style.border_color.to_cairo_source(cr);
         cairo_set_line_width(cr, 1.0);
     
@@ -281,57 +289,7 @@ void Graph::draw(cairo_t *cr, int width, int height)
         cairo_stroke(cr); // Stroke the border.
     }
 
-    // Simple grid + tick labels
-    int ticks = 5; // TODO: Change this!
-
-    // TODO: Make axis be able to be added by the user.
-
-    // Make a font to use for the grid axis.
-    cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 12);
-
-    for (int i = 0; i <= ticks; i++)
-    {
-
-        // Map the index to the point in the range.
-        double tx = bounds.xmin + (bounds.xmax - bounds.xmin) * i / ticks;
-        double sx = map_x(tx, plot_x, plot_w); // Lazy, but works. We can use the map function to get the pixel on the surface to draw our tick on.
-
-        cairo_set_source_rgb(cr, 0.82, 0.82, 0.82); // Set the tick color.
-
-        cairo_move_to(cr, sx, plot_y); // Move to the calculated point from earlier.
-        cairo_line_to(cr, sx, plot_y + plot_h); // Draw the line across the graph surface at the indicated position.
-        cairo_stroke(cr); // Stroke that.
-
-        cairo_set_source_rgb(cr, 0, 0, 0); // Set the text color. 
-        char label[64]; // Create a char buffer to print our text into.
-        snprintf(label, sizeof(label), "%.2f", tx); // Push the text into that buffer. TODO: Update this for scientific notation
-        cairo_move_to(cr, sx - 12, plot_y + plot_h + 20); // Move to the tick point. 
-        cairo_show_text(cr, label); // Draw the text there.
-    }
-
-    for (int i = 0; i <= ticks; i++)
-    {
-
-        // Map the index to the point in the range.
-        double ty = bounds.ymin + (bounds.ymax - bounds.ymin) * i / ticks;
-        double sy = map_y(ty, plot_y, plot_h); // Lazy, but works. We can use the map function to get the pixel on the surface to draw our tick on.
-
-        cairo_set_source_rgb(cr, 0.82, 0.82, 0.82); // Set the tick color.
-
-        cairo_move_to(cr, plot_x, sy); // Move to the calculated point from earlier.
-        cairo_line_to(cr, plot_x + plot_w, sy); // Draw the line across the graph surface at the indicated position.
-        cairo_stroke(cr); // Stroke that.
-
-        cairo_set_source_rgb(cr, 0, 0, 0); // Set the text color. 
-        char label[64]; // Create a char buffer to print our text into.
-        snprintf(label, sizeof(label), "%.2f", ty); // Push the text into that buffer. TODO: Update this for scientific notation
-        cairo_move_to(cr, 8, sy + 4); // Move to the tick point. 
-        cairo_show_text(cr, label); // Draw the text there.
-    }
-
     // Do the actual plotting.
-
     // Create a new viewport / render context which we will pass to the renderers.
     GraphViewport gv;
     RenderContext rc;
@@ -352,6 +310,11 @@ void Graph::draw(cairo_t *cr, int width, int height)
     // Loop over all graph elements, and call each of their corresponding draw functions.
     for(int i = 0; i < current_plot_items.size(); i ++){
         current_plot_items[i]->draw(rc);
+    }
+
+    // Loop over all the axis, and render each to the graph.
+    for(int i = 0; i < current_axis.size(); i ++){
+        current_axis[i]->draw(rc);
     }
 
     draw_version_text(cr, width, height);

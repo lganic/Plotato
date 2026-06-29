@@ -30,6 +30,7 @@ struct AxisStyle {
 
     bool draw_tick = true;
     int tick_length = 5;
+    Color tick_color = Color(0, 0, 0);
     
     bool draw_text = true;
     int text_gap = 5;
@@ -48,11 +49,11 @@ public:
 
     virtual ~Axis() {}
 
-    void draw(RenderContext& ctx);
+    virtual void draw(RenderContext& ctx, int offset_x = 0, int offset_y = 0) = 0;
 
     AxisPixelSize size();
 
-private:
+protected:
     AxisSide side;
 
 };

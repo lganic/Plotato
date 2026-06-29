@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLOTATO_GRAPHBOUNDS_HPP
+#define PLOTATO_GRAPHBOUNDS_HPP
 
 namespace plotato {
 
@@ -27,3 +28,5 @@ struct GraphViewport {
 };
 
 }
+
+#endif // PLOTATO_GRAPHBOUNDS_HPP

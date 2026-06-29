@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLOTATO_GRAPHRENDERER_HPP
+#define PLOTATO_GRAPHRENDERER_HPP
 
 #include <gtk/gtk.h>
 #include <vector>
@@ -65,3 +66,5 @@ private:
 };
 
 }
+
+#endif // PLOTATO_GRAPHRENDERER_HPP

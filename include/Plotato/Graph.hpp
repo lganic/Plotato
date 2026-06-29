@@ -8,6 +8,14 @@
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/items/PlotItem.hpp>
 
+// This is used to store debug image data.
+struct MemoryPng
+{
+    const unsigned char* data;
+    std::size_t size;
+    std::size_t offset;
+};
+
 namespace plotato {
 
 class Graph {
@@ -21,6 +29,9 @@ public:
               const std::vector<double>& y);
 
 private:
+
+    cairo_surface_t* debug_image = nullptr;
+
     GtkWidget* area;
     GraphBounds bounds;
 

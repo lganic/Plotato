@@ -63,6 +63,7 @@ set_source_files_properties("${ICON_OBJECT}"
 
 add_library(plotato
     src/Graph.cpp
+    src/axis/BaseAxis.cpp
     src/items/LinePlot.cpp
     src/util/GraphRenderer.cpp
     src/util/StyleStructs.cpp

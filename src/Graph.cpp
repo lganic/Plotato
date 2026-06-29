@@ -1,5 +1,6 @@
 #include <Plotato/Graph.hpp>
 #include <Plotato/items/LinePlot.hpp>
+#include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -29,8 +30,8 @@ cairo_status_t read_png_from_memory(
 namespace plotato {
 
 // Create a new graph object when given the a drawing area, and the bounds of the graph.
-Graph::Graph(GtkWidget *drawing_area)
-    : area(drawing_area) // Set drawing area, to skip useless default constructor.
+Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
+    : area(drawing_area), style(style) // Set drawing area, and style, to skip useless default constructor.
 {
 
     // Connect signals for events which we would need to respond to.
@@ -239,8 +240,8 @@ void Graph::draw(cairo_t *cr, int width, int height)
     }
 
     // Set background color on the plot.
-    cairo_set_source_rgb(cr, 1, 1, 1);
-    cairo_paint(cr); // Setup the cairo paint.
+    style.background_color.to_cairo_source(cr);
+    cairo_paint(cr); // Paint the background.
 
     // Margin info. TODO: Have this able to be set by the user. / base it on the axis information.
     int left_margin = 60;
@@ -258,20 +259,22 @@ void Graph::draw(cairo_t *cr, int width, int height)
         return; // Plot to small! Abort!
 
     // Plot background
-    cairo_set_source_rgb(cr, 0.96, 0.96, 0.96);
+    style.plot_background_color.to_cairo_source(cr);
     cairo_rectangle(cr, plot_x, plot_y, plot_w, plot_h);
     cairo_fill(cr);
 
     // Draw the border around the graph area. First start by setting the color.
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_set_line_width(cr, 1.0);
-
-    cairo_move_to(cr, plot_x, plot_y); // Move to the top left of the graph area.
-    cairo_line_to(cr, plot_x, plot_y + plot_h); // Line on the left hand side.
-    cairo_line_to(cr, plot_x + plot_w, plot_y + plot_h); // Line on the bottom.
-    cairo_line_to(cr, plot_x + plot_w, plot_y); // Line on the right hand side.
-    cairo_line_to(cr, plot_x, plot_y); // Line on the top.
-    cairo_stroke(cr); // Stroke the border.
+    if (style.draw_border) {
+        style.border_color.to_cairo_source(cr);
+        cairo_set_line_width(cr, 1.0);
+    
+        cairo_move_to(cr, plot_x, plot_y); // Move to the top left of the graph area.
+        cairo_line_to(cr, plot_x, plot_y + plot_h); // Line on the left hand side.
+        cairo_line_to(cr, plot_x + plot_w, plot_y + plot_h); // Line on the bottom.
+        cairo_line_to(cr, plot_x + plot_w, plot_y); // Line on the right hand side.
+        cairo_line_to(cr, plot_x, plot_y); // Line on the top.
+        cairo_stroke(cr); // Stroke the border.
+    }
 
     // Simple grid + tick labels
     int ticks = 5; // TODO: Change this!

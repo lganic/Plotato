@@ -65,6 +65,7 @@ add_library(plotato
     src/Graph.cpp
     src/items/LinePlot.cpp
     src/util/GraphRenderer.cpp
+    src/util/StyleStructs.cpp
     "${ICON_OBJECT}"
 )
 

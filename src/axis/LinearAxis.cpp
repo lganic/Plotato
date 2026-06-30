@@ -10,9 +10,15 @@ void LinearAxis::draw(RenderContext& ctx, int offset_x, int offset_y) {
     cairo_select_font_face(ctx.cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(ctx.cr, style.font_size);
 
+    if (style.num_ticks <= 0) {
+        update_automatic_ticks(ctx.current_viewport.graph_width, ctx.current_viewport.graph_height);
+    }
+
+    int num_ticks = abs(style.num_ticks);
+
     // Loop over each tick, and figure out what we need to do.
     
-    for (int i = 0; i < style.num_ticks; i ++){
+    for (int i = 0; i < num_ticks; i ++){
         // In order to make my life a little easier, I am going to have the switch case figure out where to draw, and what to draw. Then do the draw outside. 
         // Since the draw operations will be the same in all cases, just with different positions.
 
@@ -20,9 +26,9 @@ void LinearAxis::draw(RenderContext& ctx, int offset_x, int offset_y) {
         // Lets first figure out where our axis is on the plot.
         double location;
         if (side == LEFT || side == RIGHT){
-            location = ctx.current_viewport.ymin + (ctx.current_viewport.ymax - ctx.current_viewport.ymin) * i / (style.num_ticks - 1);
+            location = ctx.current_viewport.ymin + (ctx.current_viewport.ymax - ctx.current_viewport.ymin) * i / (num_ticks - 1);
         }else {
-            location = ctx.current_viewport.xmin + (ctx.current_viewport.xmax - ctx.current_viewport.xmin) * i / (style.num_ticks - 1);
+            location = ctx.current_viewport.xmin + (ctx.current_viewport.xmax - ctx.current_viewport.xmin) * i / (num_ticks - 1);
         }
         
         // It would also be useful to know the text size ahead of time. So lets go ahead and do that.

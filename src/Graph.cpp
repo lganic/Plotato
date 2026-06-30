@@ -280,8 +280,15 @@ void Graph::draw(cairo_t *cr, int width, int height)
     int plot_w = width - left_margin - right_margin;
     int plot_h = height - top_margin - bottom_margin;
 
-    if (plot_w <= 0 || plot_h <= 0)
-        return; // Plot to small! Abort!
+    if (plot_w <= 0 || plot_h <= 0) {
+
+        // Plot too small! Fill the area with red, to indicate a problem.
+
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_paint(cr);
+
+        return; // Do not proceed.
+    }
 
     // Plot background
     style.plot_background_color.to_cairo_source(cr);

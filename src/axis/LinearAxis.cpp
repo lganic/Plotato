@@ -122,7 +122,7 @@ void LinearAxis::draw(RenderContext& ctx, int offset_x, int offset_y) {
 
             if (style.draw_text) {
                 text_x = tick_to_x - style.text_gap - extents.width;
-                text_y = base_y + style.font_size / 2;
+                text_y = base_y + extents.height / 2;
             }
 
             break;
@@ -149,7 +149,7 @@ void LinearAxis::draw(RenderContext& ctx, int offset_x, int offset_y) {
 
             if (style.draw_text) {
                 text_x = tick_to_x + style.text_gap;
-                text_y = base_y + style.font_size / 2;
+                text_y = base_y + extents.height / 2;
             }
 
             break;

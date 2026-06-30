@@ -23,7 +23,7 @@ struct AxisPixelSize {
 
 struct AxisStyle {
 
-    int num_ticks = 5; // TODO: Negative will indicate automatic tick #
+    int num_ticks = 0;
 
     bool draw_plot_lines = true;
     Color plot_line_color = Color(209, 209, 209);
@@ -52,6 +52,8 @@ public:
     virtual void draw(RenderContext& ctx, int offset_x = 0, int offset_y = 0) = 0;
 
     AxisPixelSize size();
+
+    void update_automatic_ticks(int graph_width, int graph_height);
 
 protected:
     AxisSide side;

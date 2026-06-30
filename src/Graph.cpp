@@ -83,7 +83,7 @@ void Graph::draw_version_text(cairo_t* cr, int width, int height) {
     cairo_text_extents(cr, version_label, &extents);
 
     double x = width - extents.width - 4;
-    double y = height - extents.height;
+    double y = height - extents.height + 2;
 
     cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
     cairo_move_to(cr, x, y);

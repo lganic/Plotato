@@ -14,7 +14,7 @@ int GraphViewport::map_x_to_screen(double x) {
 }
 
 int GraphViewport::map_y_to_screen(double y) {
-    return map_single_axis(y, ymin, ymax, graph_height, margin_top);
+    return map_single_axis(y, ymax, ymin, graph_height, margin_top); // ymin and ymax are flipped here. Its a janky solution to correctly flip the vertical axis.
 }
 
 }

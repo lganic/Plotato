@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <gtk/gtk.h>
+#include <cstdint>
+#include <string>
 
 namespace plotato {
 
@@ -16,6 +18,18 @@ struct Color {
 
     void to_cairo_source(cairo_t* cr);
 };
+
+struct TextStyle {
+    Color text_color;
+    uint16_t font_size = 12;
+
+    std::string font = "Sans";
+
+    void to_cairo_source(cairo_t* cr);
+};
+
+uint32_t get_approx_vertical_size(uint32_t font_size);
+uint32_t get_approx_horizontal_size(uint32_t font_size);
 
 }
 

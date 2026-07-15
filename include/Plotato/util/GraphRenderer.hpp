@@ -19,12 +19,6 @@ struct MarkerStyle {
     double radius = 3.0;
 };
 
-struct TextStyle {
-    Color color {0, 0, 0};
-    std::string font = "Sans";
-    double size = 12.0;
-};
-
 class GraphRenderer {
 public:
     GraphRenderer(cairo_t* cr, const GraphViewport& viewport);

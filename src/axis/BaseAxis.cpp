@@ -1,14 +1,7 @@
+#include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <cmath>
 #include <iostream>
-
-int get_approx_vertical_size(int font_size) {
-    return font_size * 0.7;
-}
-
-int get_approx_horizontal_size(int font_size) {
-    return get_approx_vertical_size(font_size) * 4; // Putting this here, so that functions call the same.
-}
 
 namespace plotato {
 

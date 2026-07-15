@@ -211,6 +211,42 @@ void Graph::draw(cairo_t *cr, int width, int height)
         return;
     }
 
+    // Set background color on the plot.
+    style.background_color.to_cairo_source(cr);
+    cairo_paint(cr); // Paint the background.
+
+    // Set default margins from style.
+    int left_margin = style.default_margin;
+    int right_margin = style.default_margin;
+    int top_margin = style.default_margin;
+    int bottom_margin = style.default_margin + 10;
+
+    // Adjust the margins based on the axis which are present
+    for (size_t i = 0; i < current_axis.size(); i ++) {
+        AxisPixelSize axis_size = current_axis[i]->size();
+
+        left_margin += axis_size.left;
+        right_margin += axis_size.right;
+        top_margin += axis_size.top;
+        bottom_margin += axis_size.bottom;
+    }
+
+    // Get some plot information based on the margin.
+    int plot_x = left_margin;
+    int plot_y = top_margin;
+    int plot_w = width - left_margin - right_margin;
+    int plot_h = height - top_margin - bottom_margin;
+
+    if (plot_w <= 0 || plot_h <= 0) {
+
+        // Plot too small! Fill the area with red, to indicate a problem.
+
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_paint(cr);
+
+        return; // Do not proceed.
+    }
+
     // Check if we need to do some auto framing.
     if (x_axis_auto_framing || y_axis_auto_framing){
         // Update the bounds first, so we know that everything is up to date before we get started on the draw process.
@@ -250,44 +286,6 @@ void Graph::draw(cairo_t *cr, int width, int height)
             }
         }
         
-    }
-
-    // Set background color on the plot.
-    style.background_color.to_cairo_source(cr);
-    cairo_paint(cr); // Paint the background.
-
-    // Set default margins from style.
-    int left_margin = style.default_margin;
-    int right_margin = style.default_margin;
-    int top_margin = style.default_margin;
-    int bottom_margin = style.default_margin + 10;
-
-    // Adjust the margins based on the axis which are present
-    for (size_t i = 0; i < current_axis.size(); i ++) {
-        AxisPixelSize axis_size = current_axis[i]->size();
-
-        left_margin += axis_size.left;
-        right_margin += axis_size.right;
-        top_margin += axis_size.top;
-        bottom_margin += axis_size.bottom;
-    }
-
-    // std::cout << left_margin << "," << right_margin << "," << top_margin << "," << bottom_margin << std::endl;
-
-    // Get some plot information based on the margin.
-    int plot_x = left_margin;
-    int plot_y = top_margin;
-    int plot_w = width - left_margin - right_margin;
-    int plot_h = height - top_margin - bottom_margin;
-
-    if (plot_w <= 0 || plot_h <= 0) {
-
-        // Plot too small! Fill the area with red, to indicate a problem.
-
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_paint(cr);
-
-        return; // Do not proceed.
     }
 
     // Plot background

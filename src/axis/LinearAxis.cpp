@@ -1,11 +1,13 @@
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/util/RenderContext.hpp>
+#include <Plotato/util/StyleStructs.hpp>
 #include <gtk/gtk.h>
 #include <iostream>
+#include <cstdint>
 
 namespace plotato {
 
-void LinearAxis::draw(RenderContext& ctx, int offset_x, int offset_y) {
+void LinearAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     // Make a font to use for the grid axis.
     cairo_select_font_face(ctx.cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(ctx.cr, style.font_size);
@@ -94,7 +96,7 @@ void LinearAxis::draw(RenderContext& ctx, int offset_x, int offset_y) {
             }
 
             if (style.draw_text) {
-                text_y = tick_to_y + style.text_gap + style.font_size;
+                text_y = tick_to_y + style.text_gap + get_approx_vertical_size(style.font_size);
                 text_x = base_x - extents.width / 2;
             }
 
@@ -182,11 +184,44 @@ void LinearAxis::draw(RenderContext& ctx, int offset_x, int offset_y) {
         if (style.draw_text) {
             style.text_color.to_cairo_source(ctx.cr);
 
-            cairo_move_to(ctx.cr, text_x, text_y);
+            cairo_move_to(ctx.cr, text_x + offset_x, text_y + offset_y);
             cairo_show_text(ctx.cr, label);
         }
     }
-}
 
+    if (style.draw_tick) {
+        // Draw the base line. for the axis.
+        switch (side)
+        {
+        case TOP:
+            style.tick_color.to_cairo_source(ctx.cr);
+            cairo_move_to(ctx.cr, ctx.current_viewport.margin_left + offset_x, ctx.current_viewport.margin_top + offset_y);
+            cairo_line_to(ctx.cr, ctx.current_viewport.margin_left + ctx.current_viewport.graph_width + offset_x, ctx.current_viewport.margin_top + offset_y);
+            cairo_stroke(ctx.cr);
+            break;
+    
+        case BOTTOM:
+            style.tick_color.to_cairo_source(ctx.cr);
+            cairo_move_to(ctx.cr, ctx.current_viewport.margin_left + offset_x, ctx.current_viewport.margin_top + ctx.current_viewport.graph_height + offset_y);
+            cairo_line_to(ctx.cr, ctx.current_viewport.margin_left + ctx.current_viewport.graph_width + offset_x, ctx.current_viewport.margin_top + ctx.current_viewport.graph_height + offset_y);
+            cairo_stroke(ctx.cr);
+            break;
+    
+        case LEFT:
+            style.tick_color.to_cairo_source(ctx.cr);
+            cairo_move_to(ctx.cr, ctx.current_viewport.margin_left + offset_x, ctx.current_viewport.margin_top + offset_y);
+            cairo_line_to(ctx.cr, ctx.current_viewport.margin_left + offset_x, ctx.current_viewport.margin_top + ctx.current_viewport.graph_height + offset_y);
+            cairo_stroke(ctx.cr);
+            break;
+    
+        case RIGHT:
+            style.tick_color.to_cairo_source(ctx.cr);
+            cairo_move_to(ctx.cr, ctx.current_viewport.margin_left + ctx.current_viewport.graph_width + offset_x, ctx.current_viewport.margin_top + offset_y);
+            cairo_line_to(ctx.cr, ctx.current_viewport.margin_left + ctx.current_viewport.graph_width + offset_x, ctx.current_viewport.margin_top + ctx.current_viewport.graph_height + offset_y);
+            cairo_stroke(ctx.cr);
+            break;
+        }
+    }
+}
 
 }

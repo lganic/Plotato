@@ -7,7 +7,7 @@ class LinearAxis : public Axis{
     public:
         LinearAxis(AxisSide side, AxisStyle style = AxisStyle())
         : Axis(side, style) {}
-        void draw(RenderContext& ctx, int offset_x = 0, int offset_y = 0);
+        void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
 };
 
 }

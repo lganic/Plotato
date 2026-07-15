@@ -386,7 +386,7 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
 
         // Then place it above the graph.
-        uint32_t title_y = plot_y - TITLE_PADDING;
+        uint32_t title_y = TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
 
         // Then draw the text. 
         cairo_move_to(cr, title_x, title_y);

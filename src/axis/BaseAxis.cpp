@@ -114,6 +114,9 @@ void Axis::update_automatic_ticks(int graph_width, int graph_height) {
     // The solving for N, assuming that the gap size = content ratio * element size 
     int N = std::round((content_size + approx_content_ratio * element_size) / (element_size * (approx_content_ratio + 1)));
 
+    // Clamp N, so we always have at least 2 ticks. This keeps the arithmetic from breaking later on.
+    if (N < 2) N = 2;
+
     style.num_ticks = -N; // Set to negative number, so we still save the number, but we don't accidentally disable the automatic ticks.
 }
 

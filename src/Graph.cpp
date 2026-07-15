@@ -8,14 +8,19 @@
 #include <cstring>
 #include <limits>
 #include <cmath>
+#include <cstdint>
 #include <algorithm>
 #include "version.hpp"
 #include "EmbeddedAssets.hpp"
 
+using namespace plotato;
+
+const uint32_t TITLE_PADDING = 10;
+
 cairo_status_t read_png_from_memory(
     void* closure,
-    unsigned char* data,
-    unsigned int length)
+    uint8_t* data,
+    uint32_t length)
 {
     MemoryPng* mem = static_cast<MemoryPng*>(closure);
 
@@ -26,6 +31,23 @@ cairo_status_t read_png_from_memory(
     mem->offset += length;
 
     return CAIRO_STATUS_SUCCESS;
+}
+
+void draw_rotated_text(cairo_t *cr, std::string text, double x, double y, double angle_degrees) {
+
+    double radians = angle_degrees * (M_PI / 180.0); // Convert degrees to radians 
+
+    cairo_save(cr); // Save current graphics state to avoid leaking transformations
+    
+    cairo_translate(cr, x, y); // Move the origin directly to the target point
+    
+    cairo_rotate(cr, radians); // Rotate the user space around the new (0, 0) origin
+
+    cairo_move_to(cr, 0.0, 0.0); // Position text exactly at the local origin
+
+    cairo_show_text(cr, text.c_str()); // Draw the string
+
+    cairo_restore(cr); // Revert translation and rotation for subsequent drawings
 }
 
 namespace plotato {
@@ -67,7 +89,7 @@ void Graph::set_bounds(GraphBounds set_bounds) {
     bounds = set_bounds;
 }
 
-void Graph::draw_version_text(cairo_t* cr, int width, int height) {
+void Graph::draw_version_text(cairo_t* cr, uint32_t width, uint32_t height) {
 
     if (style.dont_draw_version_text) {
         return; // Don't proceed. Style indicates to not draw this.
@@ -154,19 +176,19 @@ void Graph::on_size_allocate(GtkWidget *widget,
     gtk_widget_queue_draw(graph->area);
 }
 
-double Graph::map_x(double x, int plot_x, int plot_w) const
+double Graph::map_x(double x, uint32_t plot_x, uint32_t plot_w) const
 {
     double t = (x - bounds.xmin) / (bounds.xmax - bounds.xmin);
     return plot_x + t * plot_w;
 }
 
-double Graph::map_y(double y, int plot_y, int plot_h) const
+double Graph::map_y(double y, uint32_t plot_y, uint32_t plot_h) const
 {
     double t = (y - bounds.ymin) / (bounds.ymax - bounds.ymin);
     return plot_y + plot_h - t * plot_h;
 }
 
-void Graph::draw_no_data(cairo_t *cr, int width, int height) {
+void Graph::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {
 
     // we can calculate the centering position, since we know the plot width, and the image width is 100px
     int center_x = (width - 100) / 2;
@@ -202,7 +224,7 @@ void Graph::draw_no_data(cairo_t *cr, int width, int height) {
     draw_version_text(cr, width, height);
 }
 
-void Graph::draw(cairo_t *cr, int width, int height)
+void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 {
     if (current_plot_items.size() == 0) {
         // Set the placeholder image, so we know that the graph has been initialized properly, just not set to any data, or plotted. 
@@ -216,10 +238,10 @@ void Graph::draw(cairo_t *cr, int width, int height)
     cairo_paint(cr); // Paint the background.
 
     // Set default margins from style.
-    int left_margin = style.default_margin;
-    int right_margin = style.default_margin;
-    int top_margin = style.default_margin;
-    int bottom_margin = style.default_margin + 10;
+    int32_t left_margin = style.default_margin;
+    int32_t right_margin = style.default_margin;
+    int32_t top_margin = style.default_margin;
+    int32_t bottom_margin = style.default_margin + 10;
 
     // Adjust the margins based on the axis which are present
     for (size_t i = 0; i < current_axis.size(); i ++) {
@@ -231,11 +253,24 @@ void Graph::draw(cairo_t *cr, int width, int height)
         bottom_margin += axis_size.bottom;
     }
 
+    // Add in some margin for the titles.
+    if (plot_title.exists) {
+        top_margin += 2 * TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
+    }
+
+    if (x_title.exists) {
+        bottom_margin += 2 * TITLE_PADDING + get_approx_vertical_size(x_title.style.font_size);
+    }
+
+    if (y_title.exists) {
+        left_margin += 2 * TITLE_PADDING + get_approx_vertical_size(y_title.style.font_size);
+    }
+
     // Get some plot information based on the margin.
-    int plot_x = left_margin;
-    int plot_y = top_margin;
-    int plot_w = width - left_margin - right_margin;
-    int plot_h = height - top_margin - bottom_margin;
+    int32_t plot_x = left_margin;
+    int32_t plot_y = top_margin;
+    int32_t plot_w = width - left_margin - right_margin;
+    int32_t plot_h = height - top_margin - bottom_margin;
 
     if (plot_w <= 0 || plot_h <= 0) {
 
@@ -339,7 +374,88 @@ void Graph::draw(cairo_t *cr, int width, int height)
         current_axis[i]->draw(rc);
     }
 
+    // Now we just need to draw the axis.
+    if(plot_title.exists) {
+        plot_title.style.to_cairo_source(cr); // Set the style
+
+        // Figure out the size of the plot title text
+        cairo_text_extents_t extents;
+        cairo_text_extents(cr, plot_title.title.c_str(), &extents);
+
+        // Now we can figure out how to center it.
+        uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
+
+        // Then place it above the graph.
+        uint32_t title_y = plot_y - TITLE_PADDING;
+
+        // Then draw the text. 
+        cairo_move_to(cr, title_x, title_y);
+        cairo_show_text(cr, plot_title.title.c_str());
+    }
+
+    if (x_title.exists) {
+        x_title.style.to_cairo_source(cr); // Set the style
+
+        // Figure out the size of the plot title text
+        cairo_text_extents_t extents;
+        cairo_text_extents(cr, x_title.title.c_str(), &extents);
+
+        // Now we can figure out how to center it.
+        uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
+
+        // Then place it below the graph.
+        uint32_t title_y = height - style.default_margin - TITLE_PADDING; // Hacky, but gets around x axis stuff.
+
+        // Then draw the text. 
+        cairo_move_to(cr, title_x, title_y);
+        cairo_show_text(cr, x_title.title.c_str());
+    }
+
+    if (y_title.exists) {
+        y_title.style.to_cairo_source(cr); // Set the style
+
+       // Figure out the size of the plot title text
+        cairo_text_extents_t extents;
+        cairo_text_extents(cr, y_title.title.c_str(), &extents);
+
+        // These formulas I kinda found through trial and error. Prove them at your own risk.
+        uint32_t title_x = TITLE_PADDING + extents.height + style.default_margin;
+        uint32_t title_y = plot_y + (plot_h + extents.width) / 2;
+
+        draw_rotated_text(cr, y_title.title, title_x, title_y, -90);
+    }
+
     draw_version_text(cr, width, height);
 }
+
+}
+
+GraphTitle& Graph::add_plot_title(std::string title, TextStyle style) {
+
+    plot_title.exists = true;
+    plot_title.style = style;
+    plot_title.title = title;
+
+    return plot_title;
+
+}
+
+GraphTitle& Graph::add_x_title(std::string title, TextStyle style) {
+
+    x_title.exists = true;
+    x_title.style = style;
+    x_title.title = title;
+
+    return x_title;
+
+}
+
+GraphTitle& Graph::add_y_title(std::string title, TextStyle style) {
+
+    y_title.exists = true;
+    y_title.style = style;
+    y_title.title = title;
+
+    return y_title;
 
 }

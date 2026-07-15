@@ -5,6 +5,8 @@
 #include <vector>
 #include <mutex>
 #include <memory>
+#include <string>
+#include <cstdint>
 #include <Plotato/util/GraphBounds.hpp>
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
@@ -21,6 +23,12 @@ struct MemoryPng
 
 namespace plotato {
 
+struct GraphTitle {
+    bool exists = false;
+    std::string title;
+    TextStyle style;
+};
+
 struct GraphStyle {
     Color background_color = Color(255, 255, 255);
 
@@ -29,7 +37,7 @@ struct GraphStyle {
     bool draw_border = true;
     Color border_color = Color(0, 0, 0);
 
-    int default_margin = 10;
+    uint32_t default_margin = 10;
 
     bool dont_draw_version_text = false;
 };
@@ -49,7 +57,15 @@ public:
 
     void set_bounds(GraphBounds set_bounds);
 
+    GraphTitle& add_plot_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle& add_x_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle& add_y_title(std::string title, TextStyle style = TextStyle());
+
     GraphStyle style;
+
+    GraphTitle plot_title;
+    GraphTitle y_title;
+    GraphTitle x_title;
 
 private:
 
@@ -70,13 +86,13 @@ private:
     static gboolean on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data);
     static void on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user_data);
     
-    void draw_no_data(cairo_t* cr, int width, int height);
-    void draw(cairo_t* cr, int width, int height);
+    void draw_no_data(cairo_t* cr, uint32_t width, uint32_t height);
+    void draw(cairo_t* cr, uint32_t width, uint32_t height);
 
-    double map_x(double x, int plot_x, int plot_w) const;
-    double map_y(double y, int plot_y, int plot_h) const;
+    double map_x(double x, uint32_t plot_x, uint32_t plot_w) const;
+    double map_y(double y, uint32_t plot_y, uint32_t plot_h) const;
 
-    void draw_version_text(cairo_t* cr, int width, int height);
+    void draw_version_text(cairo_t* cr, uint32_t width, uint32_t height);
 };
 
 }

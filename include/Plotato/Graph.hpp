@@ -13,15 +13,18 @@
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 
-// This is used to store debug image data.
-struct MemoryPng
-{
-    const unsigned char* data;
-    std::size_t size;
-    std::size_t offset;
-};
 
 namespace plotato {
+    
+namespace detail {
+    // This is used to store debug image data.
+    struct MemoryPng
+    {
+        const unsigned char* data;
+        std::size_t size;
+        std::size_t offset;
+    };
+}
 
 struct GraphTitle {
     bool exists = false;

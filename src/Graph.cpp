@@ -145,13 +145,11 @@ void Graph::draw() {
 void Graph::plot(const std::vector<double> &x,
                  const std::vector<double> &y)
 {
-    {
-        std::lock_guard<std::mutex> lock(data_mutex);
+    std::lock_guard<std::mutex> lock(data_mutex);
 
-        current_plot_items.emplace_back(
-            std::make_unique<LinePlot>(x, y)
-        );
-    }
+    current_plot_items.emplace_back(
+        std::make_unique<LinePlot>(x, y)
+    );
 }
 
 void Graph::add_linear_axis(AxisSide side, AxisStyle style)

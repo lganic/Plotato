@@ -40,9 +40,8 @@ struct AxisStyle {
     // TODO: Put heatmap color data here. Will be wasted space when using a non heatmap object, but will make implementation way easier.
 };
 
-class Axis
+struct Axis
 {
-public:
     AxisStyle style;
 
     Axis(AxisSide side, AxisStyle style = AxisStyle()): side(side), style(style) {}
@@ -55,9 +54,7 @@ public:
 
     void update_automatic_ticks(int graph_width, int graph_height);
 
-protected:
     AxisSide side;
-
 };
 
 }

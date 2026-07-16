@@ -255,7 +255,9 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     int32_t left_margin = style.default_margin;
     int32_t right_margin = style.default_margin;
     int32_t top_margin = style.default_margin;
-    int32_t bottom_margin = style.default_margin + (style.dont_draw_version_text ? 0 : 10) ;
+    int32_t bottom_margin = style.default_margin;
+
+    if (!style.dont_draw_version_text) bottom_margin += 10;
 
     // Adjust the margins based on the axis which are present
     for (size_t i = 0; i < current_axis.size(); i ++) {

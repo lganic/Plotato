@@ -376,11 +376,13 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     rc.cr = cr;
     rc.current_viewport = gv;
 
-    std::lock_guard<std::mutex> lock(data_mutex);
+    {
+        std::lock_guard<std::mutex> lock(data_mutex);
 
-    // Loop over all graph elements, and call each of their corresponding draw functions.
-    for(int i = 0; i < current_plot_items.size(); i ++){
-        current_plot_items[i]->draw(rc);
+        // Loop over all graph elements, and call each of their corresponding draw functions.
+        for(int i = 0; i < current_plot_items.size(); i ++){
+            current_plot_items[i]->draw(rc);
+        }
     }
 
     int32_t left_axis_offset = 0;

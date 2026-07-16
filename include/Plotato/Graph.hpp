@@ -88,6 +88,7 @@ private:
     std::vector<std::unique_ptr<Axis>> current_axis;
 
     std::mutex data_mutex;
+    std::mutex axis_mutex;
 
     static gboolean on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data);
     static void on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user_data);

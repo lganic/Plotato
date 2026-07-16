@@ -18,40 +18,43 @@ using namespace plotato;
 const uint32_t TITLE_PADDING = 10;
 const uint32_t INTER_AXIS_PADDING = 5;
 
-cairo_status_t read_png_from_memory(
-    void* closure,
-    uint8_t* data,
-    uint32_t length)
-{
-    MemoryPng* mem = static_cast<MemoryPng*>(closure);
-
-    if (mem->offset + length > mem->size)
-        return CAIRO_STATUS_READ_ERROR;
-
-    std::memcpy(data, mem->data + mem->offset, length);
-    mem->offset += length;
-
-    return CAIRO_STATUS_SUCCESS;
-}
-
-void draw_rotated_text(cairo_t *cr, std::string text, double x, double y, double angle_degrees) {
-
-    double radians = angle_degrees * (M_PI / 180.0); // Convert degrees to radians 
-
-    cairo_save(cr); // Save current graphics state to avoid leaking transformations
-    
-    cairo_translate(cr, x, y); // Move the origin directly to the target point
-    
-    cairo_rotate(cr, radians); // Rotate the user space around the new (0, 0) origin
-
-    cairo_move_to(cr, 0.0, 0.0); // Position text exactly at the local origin
-
-    cairo_show_text(cr, text.c_str()); // Draw the string
-
-    cairo_restore(cr); // Revert translation and rotation for subsequent drawings
-}
 
 namespace plotato {
+    
+namespace detail {
+    cairo_status_t read_png_from_memory(
+        void* closure,
+        uint8_t* data,
+        uint32_t length)
+    {
+        MemoryPng* mem = static_cast<MemoryPng*>(closure);
+    
+        if (mem->offset + length > mem->size)
+            return CAIRO_STATUS_READ_ERROR;
+    
+        std::memcpy(data, mem->data + mem->offset, length);
+        mem->offset += length;
+    
+        return CAIRO_STATUS_SUCCESS;
+    }
+    
+    void draw_rotated_text(cairo_t *cr, std::string text, double x, double y, double angle_degrees) {
+    
+        double radians = angle_degrees * (M_PI / 180.0); // Convert degrees to radians 
+    
+        cairo_save(cr); // Save current graphics state to avoid leaking transformations
+        
+        cairo_translate(cr, x, y); // Move the origin directly to the target point
+        
+        cairo_rotate(cr, radians); // Rotate the user space around the new (0, 0) origin
+    
+        cairo_move_to(cr, 0.0, 0.0); // Position text exactly at the local origin
+    
+        cairo_show_text(cr, text.c_str()); // Draw the string
+    
+        cairo_restore(cr); // Revert translation and rotation for subsequent drawings
+    }
+}
 
 // Create a new graph object when given the a drawing area, and the bounds of the graph.
 Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
@@ -63,7 +66,7 @@ Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
     g_signal_connect(area, "size-allocate", G_CALLBACK(Graph::on_size_allocate), this); // Called when the graph element is resized.
 
     // Set the debug png image data from the data loaded in the object file by the linker.
-    MemoryPng png {
+    detail::MemoryPng png {
         _binary_Icon_small_png_start,
         static_cast<std::size_t>(
             _binary_Icon_small_png_end - _binary_Icon_small_png_start
@@ -73,7 +76,7 @@ Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
 
     // Then load the debug surface from the png data.
     debug_image = cairo_image_surface_create_from_png_stream(
-        read_png_from_memory,
+        detail::read_png_from_memory,
         &png
     );
 
@@ -453,7 +456,7 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         uint32_t title_x = TITLE_PADDING + extents.height + style.default_margin;
         uint32_t title_y = plot_y + (plot_h + extents.width) / 2;
 
-        draw_rotated_text(cr, y_title.title, title_x, title_y, -90);
+        detail::draw_rotated_text(cr, y_title.title, title_x, title_y, -90);
     }
 
     draw_version_text(cr, width, height);

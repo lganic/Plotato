@@ -123,6 +123,16 @@ void Graph::clear() {
     current_plot_items.clear();
 }
 
+void Graph::clear_axis() {
+    current_axis.clear();
+}
+
+void Graph::reset() {
+    clear();
+    clear_axis();
+}
+
+
 // Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
 void Graph::draw() {
 
@@ -135,16 +145,16 @@ void Graph::draw() {
 void Graph::plot(const std::vector<double> &x,
                  const std::vector<double> &y)
 {
-    {
-        std::lock_guard<std::mutex> lock(data_mutex);
+    std::lock_guard<std::mutex> lock(data_mutex);
 
-        current_plot_items.emplace_back(
-            std::make_unique<LinePlot>(x, y)
-        );
-    }
+    current_plot_items.emplace_back(
+        std::make_unique<LinePlot>(x, y)
+    );
 }
 
-void Graph::add_linear_axis(AxisSide side, AxisStyle style) {
+void Graph::add_linear_axis(AxisSide side, AxisStyle style)
+{
+    std::lock_guard<std::mutex> lock(axis_mutex);
 
     current_axis.emplace_back(
         std::make_unique<LinearAxis>(side, style)
@@ -366,45 +376,51 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     rc.cr = cr;
     rc.current_viewport = gv;
 
-    std::lock_guard<std::mutex> lock(data_mutex);
+    {
+        std::lock_guard<std::mutex> lock(data_mutex);
 
-    // Loop over all graph elements, and call each of their corresponding draw functions.
-    for(int i = 0; i < current_plot_items.size(); i ++){
-        current_plot_items[i]->draw(rc);
+        // Loop over all graph elements, and call each of their corresponding draw functions.
+        for(int i = 0; i < current_plot_items.size(); i ++){
+            current_plot_items[i]->draw(rc);
+        }
     }
 
-    int32_t left_axis_offset = 0;
-    int32_t right_axis_offset = 0;
-    int32_t top_axis_offset = 0;
-    int32_t bottom_axis_offset = 0;
+    {
+        std::lock_guard<std::mutex> lock(axis_mutex);
 
-    // Loop over all the axis, and render each to the graph.
-    // This has to use a switch case, in order to correctly stack multi axis plots.
-    for(int i = 0; i < current_axis.size(); i ++){
-
-        AxisPixelSize size = current_axis[i]->size();
-
-        switch (current_axis[i]->side)
-        {
-        case TOP:
-            current_axis[i] -> draw(rc, 0, -top_axis_offset);
-            top_axis_offset += size.top + INTER_AXIS_PADDING;
-            break;
-
-        case BOTTOM:
-            current_axis[i] -> draw(rc, 0, bottom_axis_offset);
-            bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
-            break;
-
-        case LEFT:
-            current_axis[i] -> draw(rc, -left_axis_offset, 0);
-            left_axis_offset += size.left + INTER_AXIS_PADDING;
-            break;
-
-        case RIGHT:
-            current_axis[i] -> draw(rc, right_axis_offset, 0);
-            right_axis_offset += size.right + INTER_AXIS_PADDING;
-            break;
+        int32_t left_axis_offset = 0;
+        int32_t right_axis_offset = 0;
+        int32_t top_axis_offset = 0;
+        int32_t bottom_axis_offset = 0;
+    
+        // Loop over all the axis, and render each to the graph.
+        // This has to use a switch case, in order to correctly stack multi axis plots.
+        for(int i = 0; i < current_axis.size(); i ++){
+    
+            AxisPixelSize size = current_axis[i]->size();
+    
+            switch (current_axis[i]->side)
+            {
+            case TOP:
+                current_axis[i] -> draw(rc, 0, -top_axis_offset);
+                top_axis_offset += size.top + INTER_AXIS_PADDING;
+                break;
+    
+            case BOTTOM:
+                current_axis[i] -> draw(rc, 0, bottom_axis_offset);
+                bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
+                break;
+    
+            case LEFT:
+                current_axis[i] -> draw(rc, -left_axis_offset, 0);
+                left_axis_offset += size.left + INTER_AXIS_PADDING;
+                break;
+    
+            case RIGHT:
+                current_axis[i] -> draw(rc, right_axis_offset, 0);
+                right_axis_offset += size.right + INTER_AXIS_PADDING;
+                break;
+            }
         }
     }
 

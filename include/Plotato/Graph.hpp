@@ -51,9 +51,12 @@ public:
     Graph(GtkWidget* drawing_area, GraphStyle style = GraphStyle());
 
     void clear();
+    void reset();
     void draw();
 
     void add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
+    
+    void clear_axis();
 
     void plot(const std::vector<double>& x,
               const std::vector<double>& y);
@@ -85,6 +88,7 @@ private:
     std::vector<std::unique_ptr<Axis>> current_axis;
 
     std::mutex data_mutex;
+    std::mutex axis_mutex;
 
     static gboolean on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data);
     static void on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user_data);

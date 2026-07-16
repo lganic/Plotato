@@ -154,7 +154,9 @@ void Graph::plot(const std::vector<double> &x,
     }
 }
 
-void Graph::add_linear_axis(AxisSide side, AxisStyle style) {
+void Graph::add_linear_axis(AxisSide side, AxisStyle style)
+{
+    std::lock_guard<std::mutex> lock(axis_mutex);
 
     current_axis.emplace_back(
         std::make_unique<LinearAxis>(side, style)
@@ -385,38 +387,42 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 
-    int32_t left_axis_offset = 0;
-    int32_t right_axis_offset = 0;
-    int32_t top_axis_offset = 0;
-    int32_t bottom_axis_offset = 0;
+    {
+        std::lock_guard<std::mutex> lock(axis_mutex);
 
-    // Loop over all the axis, and render each to the graph.
-    // This has to use a switch case, in order to correctly stack multi axis plots.
-    for(int i = 0; i < current_axis.size(); i ++){
-
-        AxisPixelSize size = current_axis[i]->size();
-
-        switch (current_axis[i]->side)
-        {
-        case TOP:
-            current_axis[i] -> draw(rc, 0, -top_axis_offset);
-            top_axis_offset += size.top + INTER_AXIS_PADDING;
-            break;
-
-        case BOTTOM:
-            current_axis[i] -> draw(rc, 0, bottom_axis_offset);
-            bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
-            break;
-
-        case LEFT:
-            current_axis[i] -> draw(rc, -left_axis_offset, 0);
-            left_axis_offset += size.left + INTER_AXIS_PADDING;
-            break;
-
-        case RIGHT:
-            current_axis[i] -> draw(rc, right_axis_offset, 0);
-            right_axis_offset += size.right + INTER_AXIS_PADDING;
-            break;
+        int32_t left_axis_offset = 0;
+        int32_t right_axis_offset = 0;
+        int32_t top_axis_offset = 0;
+        int32_t bottom_axis_offset = 0;
+    
+        // Loop over all the axis, and render each to the graph.
+        // This has to use a switch case, in order to correctly stack multi axis plots.
+        for(int i = 0; i < current_axis.size(); i ++){
+    
+            AxisPixelSize size = current_axis[i]->size();
+    
+            switch (current_axis[i]->side)
+            {
+            case TOP:
+                current_axis[i] -> draw(rc, 0, -top_axis_offset);
+                top_axis_offset += size.top + INTER_AXIS_PADDING;
+                break;
+    
+            case BOTTOM:
+                current_axis[i] -> draw(rc, 0, bottom_axis_offset);
+                bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
+                break;
+    
+            case LEFT:
+                current_axis[i] -> draw(rc, -left_axis_offset, 0);
+                left_axis_offset += size.left + INTER_AXIS_PADDING;
+                break;
+    
+            case RIGHT:
+                current_axis[i] -> draw(rc, right_axis_offset, 0);
+                right_axis_offset += size.right + INTER_AXIS_PADDING;
+                break;
+            }
         }
     }
 

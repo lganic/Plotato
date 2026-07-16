@@ -123,6 +123,16 @@ void Graph::clear() {
     current_plot_items.clear();
 }
 
+void Graph::clear_axis() {
+    current_axis.clear();
+}
+
+void Graph::reset() {
+    clear();
+    clear_axis();
+}
+
+
 // Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
 void Graph::draw() {
 

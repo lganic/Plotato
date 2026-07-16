@@ -51,9 +51,12 @@ public:
     Graph(GtkWidget* drawing_area, GraphStyle style = GraphStyle());
 
     void clear();
+    void reset();
     void draw();
 
     void add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
+    
+    void clear_axis();
 
     void plot(const std::vector<double>& x,
               const std::vector<double>& y);

@@ -12,7 +12,7 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
-
+#include <Plotato/axis/LinearAxis.hpp>
 
 namespace plotato {
     
@@ -54,7 +54,7 @@ public:
     void reset();
     void draw();
 
-    void add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
+    LinearAxis* add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
     
     void clear_axis();
 

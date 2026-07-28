@@ -152,13 +152,16 @@ void Graph::plot(const std::vector<double> &x,
     );
 }
 
-void Graph::add_linear_axis(AxisSide side, AxisStyle style)
+LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)
 {
     std::lock_guard<std::mutex> lock(axis_mutex);
 
-    current_axis.emplace_back(
-        std::make_unique<LinearAxis>(side, style)
-    );
+    auto new_axis = std::make_unique<LinearAxis>(side, style);
+    LinearAxis* axis = new_axis.get();
+
+    current_axis.emplace_back(std::move(new_axis));
+
+    return axis;
 }
 
 // Called when the graph is requested to draw.

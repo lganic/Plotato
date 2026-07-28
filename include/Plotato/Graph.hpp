@@ -63,9 +63,9 @@ public:
 
     void set_bounds(GraphBounds set_bounds);
 
-    GraphTitle& add_plot_title(std::string title, TextStyle style = TextStyle());
-    GraphTitle& add_x_title(std::string title, TextStyle style = TextStyle());
-    GraphTitle& add_y_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle* add_plot_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle* add_x_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle* add_y_title(std::string title, TextStyle style = TextStyle());
 
     GraphStyle style;
 

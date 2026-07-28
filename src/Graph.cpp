@@ -485,32 +485,32 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
 }
 
-GraphTitle& Graph::add_plot_title(std::string title, TextStyle style) {
+GraphTitle* Graph::add_plot_title(std::string title, TextStyle style) {
 
     plot_title.exists = true;
     plot_title.style = style;
     plot_title.title = title;
 
-    return plot_title;
+    return &plot_title;
 
 }
 
-GraphTitle& Graph::add_x_title(std::string title, TextStyle style) {
+GraphTitle* Graph::add_x_title(std::string title, TextStyle style) {
 
     x_title.exists = true;
     x_title.style = style;
     x_title.title = title;
 
-    return x_title;
+    return &x_title;
 
 }
 
-GraphTitle& Graph::add_y_title(std::string title, TextStyle style) {
+GraphTitle* Graph::add_y_title(std::string title, TextStyle style) {
 
     y_title.exists = true;
     y_title.style = style;
     y_title.title = title;
 
-    return y_title;
+    return &y_title;
 
 }

@@ -1,6 +1,7 @@
 #include <Plotato/Graph.hpp>
 #include <Plotato/items/LinePlot.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
+#include <Plotato/axis/OffsetAxis.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
@@ -158,6 +159,18 @@ LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)
 
     auto new_axis = std::make_unique<LinearAxis>(side, style);
     LinearAxis* axis = new_axis.get();
+
+    current_axis.emplace_back(std::move(new_axis));
+
+    return axis;
+}
+
+OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
+{
+    std::lock_guard<std::mutex> lock(axis_mutex);
+
+    auto new_axis = std::make_unique<OffsetAxis>(side, style);
+    OffsetAxis* axis = new_axis.get();
 
     current_axis.emplace_back(std::move(new_axis));
 

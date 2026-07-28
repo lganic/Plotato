@@ -13,6 +13,7 @@
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
+#include <Plotato/axis/OffsetAxis.hpp>
 
 namespace plotato {
     
@@ -55,6 +56,7 @@ public:
     void draw();
 
     LinearAxis* add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
+    OffsetAxis* add_offset_axis(AxisSide side, AxisStyle style = AxisStyle());
     
     void clear_axis();
 

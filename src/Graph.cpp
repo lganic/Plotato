@@ -1,6 +1,7 @@
 #include <Plotato/Graph.hpp>
 #include <Plotato/items/LinePlot.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
+#include <Plotato/axis/OffsetAxis.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
@@ -152,13 +153,28 @@ void Graph::plot(const std::vector<double> &x,
     );
 }
 
-void Graph::add_linear_axis(AxisSide side, AxisStyle style)
+LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)
 {
     std::lock_guard<std::mutex> lock(axis_mutex);
 
-    current_axis.emplace_back(
-        std::make_unique<LinearAxis>(side, style)
-    );
+    auto new_axis = std::make_unique<LinearAxis>(side, style);
+    LinearAxis* axis = new_axis.get();
+
+    current_axis.emplace_back(std::move(new_axis));
+
+    return axis;
+}
+
+OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
+{
+    std::lock_guard<std::mutex> lock(axis_mutex);
+
+    auto new_axis = std::make_unique<OffsetAxis>(side, style);
+    OffsetAxis* axis = new_axis.get();
+
+    current_axis.emplace_back(std::move(new_axis));
+
+    return axis;
 }
 
 // Called when the graph is requested to draw.
@@ -482,32 +498,32 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
 }
 
-GraphTitle& Graph::add_plot_title(std::string title, TextStyle style) {
+GraphTitle* Graph::add_plot_title(std::string title, TextStyle style) {
 
     plot_title.exists = true;
     plot_title.style = style;
     plot_title.title = title;
 
-    return plot_title;
+    return &plot_title;
 
 }
 
-GraphTitle& Graph::add_x_title(std::string title, TextStyle style) {
+GraphTitle* Graph::add_x_title(std::string title, TextStyle style) {
 
     x_title.exists = true;
     x_title.style = style;
     x_title.title = title;
 
-    return x_title;
+    return &x_title;
 
 }
 
-GraphTitle& Graph::add_y_title(std::string title, TextStyle style) {
+GraphTitle* Graph::add_y_title(std::string title, TextStyle style) {
 
     y_title.exists = true;
     y_title.style = style;
     y_title.title = title;
 
-    return y_title;
+    return &y_title;
 
 }

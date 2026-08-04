@@ -12,7 +12,8 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
-
+#include <Plotato/axis/LinearAxis.hpp>
+#include <Plotato/axis/OffsetAxis.hpp>
 
 namespace plotato {
     
@@ -54,7 +55,8 @@ public:
     void reset();
     void draw();
 
-    void add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
+    LinearAxis* add_linear_axis(AxisSide side, AxisStyle style = AxisStyle());
+    OffsetAxis* add_offset_axis(AxisSide side, AxisStyle style = AxisStyle());
     
     void clear_axis();
 
@@ -63,9 +65,9 @@ public:
 
     void set_bounds(GraphBounds set_bounds);
 
-    GraphTitle& add_plot_title(std::string title, TextStyle style = TextStyle());
-    GraphTitle& add_x_title(std::string title, TextStyle style = TextStyle());
-    GraphTitle& add_y_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle* add_plot_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle* add_x_title(std::string title, TextStyle style = TextStyle());
+    GraphTitle* add_y_title(std::string title, TextStyle style = TextStyle());
 
     GraphStyle style;
 

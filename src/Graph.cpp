@@ -442,7 +442,7 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 
-    // Now we just need to draw the axis.
+    // Now we just need to draw the plot titles.
     if(plot_title.exists) {
         plot_title.style.to_cairo_source(cr); // Set the style
 

@@ -81,4 +81,102 @@ title->style.text_color = plotato::Color(255, 0, 0);
 
 To make a live plot, we simply need to clear the old contents of the graph, add the new contents, and then call the draw() member function of the graph. Below, we will use a callback to continually update the contents of the graph. 
 
+```cpp
+#include <gtk/gtk.h>
+
+#include <cmath>
+#include <vector>
+
+#include <Plotato/Plotato.hpp>
+
+struct CallbackData
+{
+    plotato::Graph* graph = nullptr;
+
+    double offset = 0.0;
+    double offset_step = 0.01;
+
+    std::vector<double> x;
+    std::vector<double> y;
+};
+
+static gboolean update_graph(gpointer user_data)
+{
+    auto* data = static_cast<CallbackData*>(user_data);
+
+    // This is just making the live data.
+    constexpr std::size_t sample_count = 501;
+
+    data->x.clear();
+    data->y.clear();
+
+    for (std::size_t i = 0; i < sample_count; ++i)
+    {
+        const double t = static_cast<double>(i) / static_cast<double>(sample_count - 1);
+
+        const double x = t + data->offset;
+        const double value = std::sin(5.0 * std::sin(0.01 * x) * x);
+
+        data->x.push_back(x);
+        data->y.push_back(1.0 * value);
+    }
+
+    // This is where we actually get to the plot stuff.
+    data->graph->clear(); // Clear the old plot data.
+
+    data->graph->plot(data->x, data->y); // Plot the new data.
+
+    data->graph->draw(); // Draw the graph.
+
+    data->offset += data->offset_step;
+
+    return G_SOURCE_CONTINUE;
+}
+
+int main(int argc, char** argv)
+{
+    gtk_init(&argc, &argv);
+
+    GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL); // Make a new window.
+
+    GtkWidget* drawing_area = gtk_drawing_area_new(); // Make a drawing area for the graph.
+    gtk_container_add(GTK_CONTAINER(window), drawing_area);
+
+    plotato::Graph graph(drawing_area);
+
+    // Setting bounds manually for y axis.
+    plotato::GraphBounds bounds;
+    bounds.ymax = 1.5;
+    bounds.ymin = -1.5;
+
+    graph.set_bounds(bounds);
+
+    graph.add_linear_axis(plotato::BOTTOM);
+    graph.add_linear_axis(plotato::LEFT);
+
+    auto title = graph.add_plot_title("Testing Plot");
+
+    graph.add_x_title("X Title");
+    graph.add_y_title("Y Title");
+
+    CallbackData callback_data;
+    callback_data.graph = &graph;
+    callback_data.offset_step = 0.01;
+
+    constexpr std::size_t sample_count = 501;
+
+    callback_data.x.reserve(sample_count);
+    callback_data.y.reserve(sample_count);
+
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), nullptr);
+
+    g_timeout_add(10, update_graph, &callback_data);
+
+    gtk_widget_show_all(window);
+    gtk_main();
+
+    return 0;
+}
+```
+
 ![image](static/Example-Live.gif)

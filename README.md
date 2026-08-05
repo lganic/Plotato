@@ -155,6 +155,7 @@ int main(int argc, char** argv)
     graph.add_linear_axis(plotato::LEFT);
 
     auto title = graph.add_plot_title("Testing Plot");
+    title->style.font_size = 20;
 
     graph.add_x_title("X Title");
     graph.add_y_title("Y Title");

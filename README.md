@@ -5,11 +5,11 @@ Plotato is a plotting library designed from the ground up to operate in a GTK3 e
 
 Below, you can see a minimal example of how Plotato can be imported, initialized and used to plot some sample data.
 
+```cpp
 #include <gtk/gtk.h>
 #include <Plotato/Plotato.hpp>
 #include <vector>
 
-```cpp
 int main(int argc, char* argv[])
 {
     gtk_init(&argc, &argv);

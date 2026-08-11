@@ -6,7 +6,9 @@
 
 namespace plotato {
 
-LinePlot::LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style): x(x_data), y(y_data), style(plot_style){}
+LinePlot::LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style): x(x_data), y(y_data){
+    style = plot_style;
+}
 
 void LinePlot::draw(RenderContext& ctx) {
 

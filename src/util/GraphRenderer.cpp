@@ -33,7 +33,7 @@ void GraphRenderer::set_color(const Color& color){
 
 void GraphRenderer::draw_polyline(const std::vector<double>& x,
                                   const std::vector<double>& y,
-                                  const LineStyle& style)
+                                  const PlotStyle& style)
 {
     size_t n = std::min(x.size(), y.size());
 
@@ -42,8 +42,8 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x,
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
     // Set the current painting settings to those indicated by the line style.
-    set_color(style.color);
-    cairo_set_line_width(cr, style.width);
+    set_color(style.line_color);
+    cairo_set_line_width(cr, style.line_width);
 
     bool started = false;
 

@@ -24,6 +24,11 @@ void TextStyle::to_cairo_source(cairo_t* cr){
     cairo_set_font_size(cr, font_size);
 }
 
+void PlotStyle::to_cairo_source(cairo_t* cr){
+
+    line_color.to_cairo_source(cr);
+}
+
 
 uint32_t get_approx_vertical_size(uint32_t font_size) {
     return font_size * 0.7;

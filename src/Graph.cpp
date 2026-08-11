@@ -143,14 +143,16 @@ void Graph::draw() {
 }
 
 // Plot the given data on the graph. 
-void Graph::plot(const std::vector<double> &x,
-                 const std::vector<double> &y)
+LinePlot* Graph::plot(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
 {
     std::lock_guard<std::mutex> lock(data_mutex);
 
-    current_plot_items.emplace_back(
-        std::make_unique<LinePlot>(x, y)
-    );
+    auto new_plot = std::make_unique<LinePlot>(x, y, style);
+    LinePlot* plot = new_plot.get();
+
+    current_plot_items.emplace_back(std::move(new_plot));
+
+    return plot;
 }
 
 LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)

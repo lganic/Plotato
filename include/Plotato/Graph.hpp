@@ -44,10 +44,10 @@ struct GraphStyle {
 
     uint32_t default_margin = 10;
 
-    bool draw_legend = true;
+    bool draw_legend = false;
     TextStyle legend_text_style;
     uint16_t legend_padding = 4;
-    uint16_t legend_inter_object_padding; // TODO : Rename this. Don't like this name.
+    uint16_t legend_inter_object_padding = 4; // TODO : Rename this. Don't like this name.
     uint16_t legend_offset = 4;
     Color legend_color = Color(255, 255, 255);
     Color legend_border_color = Color(200, 200, 200);

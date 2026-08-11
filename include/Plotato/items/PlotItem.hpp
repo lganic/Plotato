@@ -3,6 +3,7 @@
 
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/StyleStructs.hpp>
 
 namespace plotato {
 

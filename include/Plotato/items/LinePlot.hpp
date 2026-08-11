@@ -15,8 +15,6 @@ class LinePlot : public PlotItem
 
     
     public:
-        PlotStyle style;
-
         LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();

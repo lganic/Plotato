@@ -9,11 +9,6 @@
 
 namespace plotato {
 
-struct LineStyle {
-    Color color {25, 64, 230};
-    double width = 2.0;
-};
-
 struct MarkerStyle {
     Color color {25, 64, 230};
     double radius = 3.0;
@@ -30,7 +25,7 @@ public:
 
     void draw_polyline(const std::vector<double>& x,
                        const std::vector<double>& y,
-                       const LineStyle& style);
+                       const PlotStyle& style);
 
     double data_to_screen_x(double x) const;
     double data_to_screen_y(double y) const;

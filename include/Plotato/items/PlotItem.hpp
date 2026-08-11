@@ -3,12 +3,16 @@
 
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/StyleStructs.hpp>
 
 namespace plotato {
 
 class PlotItem
 {
 public:
+
+    PlotStyle style;
+
     virtual ~PlotItem() {}
 
     virtual void draw(RenderContext& ctx) = 0;

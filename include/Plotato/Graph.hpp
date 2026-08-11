@@ -11,6 +11,7 @@
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/items/PlotItem.hpp>
+#include <Plotato/items/LinePlot.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>
@@ -43,6 +44,15 @@ struct GraphStyle {
 
     uint32_t default_margin = 10;
 
+    bool draw_legend = false;
+    TextStyle legend_text_style;
+    uint16_t legend_padding = 4;
+    uint16_t legend_inter_object_padding = 4; // TODO : Rename this. Don't like this name.
+    uint16_t legend_offset = 4;
+    Color legend_color = Color(255, 255, 255);
+    Color legend_border_color = Color(200, 200, 200);
+    double legend_border_width = 2;
+
     bool dont_draw_version_text = false;
 };
 
@@ -60,8 +70,7 @@ public:
     
     void clear_axis();
 
-    void plot(const std::vector<double>& x,
-              const std::vector<double>& y);
+    LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
 
     void set_bounds(GraphBounds set_bounds);
 

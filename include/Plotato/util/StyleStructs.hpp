@@ -28,6 +28,15 @@ struct TextStyle {
     void to_cairo_source(cairo_t* cr);
 };
 
+struct PlotStyle {
+    Color line_color = Color(0, 0, 255);
+    double line_width = 2;
+
+    std::string name = "Plot";
+
+    void to_cairo_source(cairo_t* cr);
+};
+
 uint32_t get_approx_vertical_size(uint32_t font_size);
 uint32_t get_approx_horizontal_size(uint32_t font_size);
 

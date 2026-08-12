@@ -101,6 +101,8 @@ private:
     std::mutex data_mutex;
     std::mutex axis_mutex;
 
+    std::mutex draw_mutex;
+
     static gboolean on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data);
     static void on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user_data);
     

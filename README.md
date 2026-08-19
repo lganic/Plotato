@@ -1,5 +1,7 @@
 # Plotato
-![image](static/Icon.png)
+<p align="center">
+  <img src="https://github.com/lganic/Plotato/blob/main/static/Icon.png?raw=true">
+</p>
 
 Plotato is a plotting library designed from the ground up to operate in a GTK3 environment, for a diverse set of plotting applications, including live plotting of values. It is written in C++, for ease of use and performance. 
 
@@ -43,12 +45,15 @@ int main(int argc, char* argv[])
 
 This minimal example produces a window as seen below. 
 
-![image](static/Example.png)
+<p align="center">
+  <img src="https://github.com/lganic/Plotato/blob/main/static/Example.png?raw=true">
+</p>
 
 This window can be resized, withought any additional changes to the code. Plotato automatically handles the resizing events, re-drawing the graph area for the space given. 
 
-![image](static/Example-Resize.gif)
-
+<p align="center">
+  <img src="https://github.com/lganic/Plotato/blob/main/static/Example-Resize.gif?raw=true">
+</p>
 
 Axis can optionally be added by calling the "add_linear_axis" member function on the graph:
 
@@ -57,7 +62,9 @@ g.add_linear_axis(plotato::BOTTOM);
 g.add_linear_axis(plotato::LEFT);
 ```
 
-![image](static/Example-Axis.png)
+<p align="center">
+  <img src="https://github.com/lganic/Plotato/blob/main/static/Example-Axis.png?raw=true">
+</p>
 
 Similarly, titles can be added to each axis, by calling the corresponding function.
 
@@ -76,8 +83,9 @@ title->style.font_size = 20;
 title->style.text_color = plotato::Color(255, 0, 0);
 ```
 
-![image](static/Example-Title.png)
-
+<p align="center">
+  <img src="https://github.com/lganic/Plotato/blob/main/static/Example-Title.png?raw=true">
+</p>
 
 To make a live plot, we simply need to clear the old contents of the graph, add the new contents, and then call the draw() member function of the graph. Below, we will use a callback to continually update the contents of the graph. 
 
@@ -180,4 +188,6 @@ int main(int argc, char** argv)
 }
 ```
 
-![image](static/Example-Live.gif)
+<p align="center">
+  <img src="https://github.com/lganic/Plotato/blob/main/static/Example-Live.gif?raw=true">
+</p>

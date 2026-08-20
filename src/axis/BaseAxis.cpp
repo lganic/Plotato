@@ -11,6 +11,11 @@ int use_val_if_enabled(int val, bool enabled) {
     return 0;
 }
 
+Axis::Axis() {
+    side = AxisSide::BOTTOM;
+    style = AxisStyle();
+}
+
 AxisPixelSize Axis::size() {
 
     AxisPixelSize output;

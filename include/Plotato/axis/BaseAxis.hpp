@@ -44,6 +44,7 @@ struct Axis
 {
     AxisStyle style;
 
+    Axis();
     Axis(AxisSide side, AxisStyle style = AxisStyle()): side(side), style(style) {}
 
     virtual ~Axis() {}

@@ -96,7 +96,7 @@ private:
     bool y_axis_auto_framing = true;
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
-    std::vector<std::unique_ptr<Axis>> current_axis;
+    std::vector<std::unique_ptr<Axis>> current_axis_items;
 
     std::mutex data_mutex;
     std::mutex axis_mutex;

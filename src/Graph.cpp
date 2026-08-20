@@ -125,14 +125,13 @@ void Graph::clear() {
 }
 
 void Graph::clear_axis() {
-    current_axis.clear();
+    current_axis_items.clear();
 }
 
 void Graph::reset() {
     clear();
     clear_axis();
 }
-
 
 // Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
 void Graph::draw() {
@@ -162,7 +161,7 @@ LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)
     auto new_axis = std::make_unique<LinearAxis>(side, style);
     LinearAxis* axis = new_axis.get();
 
-    current_axis.emplace_back(std::move(new_axis));
+    current_axis_items.emplace_back(std::move(new_axis));
 
     return axis;
 }
@@ -174,7 +173,7 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
     auto new_axis = std::make_unique<OffsetAxis>(side, style);
     OffsetAxis* axis = new_axis.get();
 
-    current_axis.emplace_back(std::move(new_axis));
+    current_axis_items.emplace_back(std::move(new_axis));
 
     return axis;
 }
@@ -282,8 +281,8 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     if (!style.dont_draw_version_text) bottom_margin += 10;
 
     // Adjust the margins based on the axis which are present
-    for (size_t i = 0; i < current_axis.size(); i ++) {
-        AxisPixelSize axis_size = current_axis[i]->size();
+    for (size_t i = 0; i < current_axis_items.size(); i ++) {
+        AxisPixelSize axis_size = current_axis_items[i]->size();
 
         left_margin += axis_size.left;
         right_margin += axis_size.right;
@@ -419,29 +418,29 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     
         // Loop over all the axis, and render each to the graph.
         // This has to use a switch case, in order to correctly stack multi axis plots.
-        for(int i = 0; i < current_axis.size(); i ++){
+        for(int i = 0; i < current_axis_items.size(); i ++){
     
-            AxisPixelSize size = current_axis[i]->size();
+            AxisPixelSize size = current_axis_items[i]->size();
     
-            switch (current_axis[i]->side)
+            switch (current_axis_items[i]->side)
             {
             case TOP:
-                current_axis[i] -> draw(rc, 0, -top_axis_offset);
+                current_axis_items[i] -> draw(rc, 0, -top_axis_offset);
                 top_axis_offset += size.top + INTER_AXIS_PADDING;
                 break;
     
             case BOTTOM:
-                current_axis[i] -> draw(rc, 0, bottom_axis_offset);
+                current_axis_items[i] -> draw(rc, 0, bottom_axis_offset);
                 bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
                 break;
     
             case LEFT:
-                current_axis[i] -> draw(rc, -left_axis_offset, 0);
+                current_axis_items[i] -> draw(rc, -left_axis_offset, 0);
                 left_axis_offset += size.left + INTER_AXIS_PADDING;
                 break;
     
             case RIGHT:
-                current_axis[i] -> draw(rc, right_axis_offset, 0);
+                current_axis_items[i] -> draw(rc, right_axis_offset, 0);
                 right_axis_offset += size.right + INTER_AXIS_PADDING;
                 break;
             }

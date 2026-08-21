@@ -28,11 +28,21 @@ struct TextStyle {
     void to_cairo_source(cairo_t* cr);
 };
 
+struct MarkerStyle {
+    char type;
+    Color fill;
+    
+    Color outline = Color(0, 0, 0, 0);
+    double outline_width = 2;
+};
+
 struct PlotStyle {
     Color line_color = Color(0, 0, 255);
     double line_width = 2;
 
     std::string name = "Plot";
+
+    MarkerStyle marker;
 
     void to_cairo_source(cairo_t* cr);
 };

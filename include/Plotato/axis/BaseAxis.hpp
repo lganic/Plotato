@@ -51,7 +51,7 @@ struct Axis
 
     virtual void draw(RenderContext& ctx, int offset_x = 0, int offset_y = 0) = 0;
 
-    AxisPixelSize size();
+    virtual AxisPixelSize size();
 
     void update_automatic_ticks(int graph_width, int graph_height);
 

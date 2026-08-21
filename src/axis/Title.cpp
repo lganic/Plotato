@@ -85,7 +85,7 @@ void Title::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     case AxisSide::TOP:
         // Top Title
         text_x = viewport.margin_left + (viewport.graph_width - extents.width) / 2 + offset_x;
-        text_y = viewport.margin_top - offset_y;
+        text_y = viewport.margin_top + offset_y;
         text_angle = 0;
 
         break;

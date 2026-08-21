@@ -112,7 +112,7 @@ void Title::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
         // X Axis Title
 
         text_x = viewport.margin_left + (viewport.graph_width - extents.width) / 2 + offset_x;
-        text_y = viewport.margin_top + viewport.graph_height + offset_y;
+        text_y = viewport.margin_top + viewport.graph_height + extents.height + offset_y;
         text_angle = 0;
 
         break;

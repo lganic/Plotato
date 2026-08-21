@@ -160,6 +160,31 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
     return axis;
 }
 
+Title* Graph::add_axis_title(AxisSide side, std::string title, TextStyle style) {
+
+
+    std::lock_guard<std::mutex> lock(axis_mutex);
+
+    auto new_title = std::make_unique<Title>(AxisSide::TOP, title, style);
+    Title* title_object = new_title.get();
+
+    current_axis_items.emplace_back(std::move(new_title));
+
+    return title_object;
+}
+
+Title* Graph::add_plot_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::TOP, title, style);
+}
+
+Title* Graph::add_x_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::BOTTOM, title, style);
+}
+
+Title* Graph::add_y_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::LEFT, title, style);
+}
+
 // Called when the graph is requested to draw.
 gboolean Graph::on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
@@ -505,29 +530,4 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     }
 }
 
-}
-
-Title* Graph::add_axis_title(AxisSide side, std::string title, TextStyle style) {
-
-
-    std::lock_guard<std::mutex> lock(axis_mutex);
-
-    auto new_title = std::make_unique<Title>(AxisSide::TOP, title, style);
-    Title* title_object = new_title.get();
-
-    current_axis_items.emplace_back(std::move(new_title));
-
-    return title_object;
-}
-
-Title* Graph::add_plot_title(std::string title, TextStyle style) {
-    return add_axis_title(AxisSide::TOP, title, style);
-}
-
-Title* Graph::add_x_title(std::string title, TextStyle style) {
-    return add_axis_title(AxisSide::BOTTOM, title, style);
-}
-
-Title* Graph::add_y_title(std::string title, TextStyle style) {
-    return add_axis_title(AxisSide::LEFT, title, style);
 }

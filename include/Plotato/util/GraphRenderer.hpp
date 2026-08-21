@@ -9,11 +9,6 @@
 
 namespace plotato {
 
-struct MarkerStyle {
-    Color color {25, 64, 230};
-    double radius = 3.0;
-};
-
 class GraphRenderer {
 public:
     GraphRenderer(cairo_t* cr, const GraphViewport& viewport);
@@ -24,25 +19,30 @@ public:
     void draw_grid();
 
     void draw_polyline(const std::vector<double>& x,
-                       const std::vector<double>& y,
-                       const PlotStyle& style);
+        const std::vector<double>& y,
+        const PlotStyle& style);
+        
+        void draw_marker(double x, double y, MarkerStyle& style);
+        
+        double data_to_screen_x(double x) const;
+        double data_to_screen_y(double y) const;
+        
+        private:
+        cairo_t* cr;
 
-    double data_to_screen_x(double x) const;
-    double data_to_screen_y(double y) const;
-
-private:
-    cairo_t* cr;
-
-    int widget_width;
-    int widget_height;
-
-    GraphViewport viewport;
-
-    GdkRectangle plot_rect;
-
-    void set_color(const Color& color);
-    void enable_plot_clip();
-    void disable_clip();
+        int widget_width;
+        int widget_height;
+        
+        GraphViewport viewport;
+        
+        GdkRectangle plot_rect;
+        
+        void set_color(const Color& color);
+        void enable_plot_clip();
+        void disable_clip();
+        
+    void draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
+    void draw_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style);
 };
 
 }

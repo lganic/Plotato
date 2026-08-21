@@ -31,7 +31,9 @@ struct TextStyle {
 struct MarkerStyle {
     char type;
     Color fill;
-    
+
+    double size = 10;
+
     Color outline = Color(0, 0, 0, 0);
     double outline_width = 2;
 };

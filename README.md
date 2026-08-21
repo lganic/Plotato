@@ -74,13 +74,13 @@ g.add_y_title("Y Axis");
 g.add_plot_title("Testing Plot");
 ```
 
-Setting the style of the plot titles can be done either while calling the add title function by passing a text style object, or later by modifying the style attribute:
+Setting the style of the plot titles can be done either while calling the add title function by passing a text style object, or later by modifying the text style attribute:
 
 ```cpp
 auto title = g.add_plot_title("Testing Plot");
 
-title->style.font_size = 20;
-title->style.text_color = plotato::Color(255, 0, 0);
+title->text_style.font_size = 20;
+title->text_style.text_color = plotato::Color(255, 0, 0);
 ```
 
 <p align="center">
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
     graph.add_linear_axis(plotato::LEFT);
 
     auto title = graph.add_plot_title("Testing Plot");
-    title->style.font_size = 20;
+    title->text_style.font_size = 20;
 
     graph.add_x_title("X Title");
     graph.add_y_title("Y Title");

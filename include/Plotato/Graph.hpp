@@ -15,6 +15,7 @@
 #include <Plotato/axis/BaseAxis.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>
+#include <Plotato/axis/Title.hpp>
 
 namespace plotato {
     
@@ -27,12 +28,6 @@ namespace detail {
         std::size_t offset;
     };
 }
-
-struct GraphTitle {
-    bool exists = false;
-    std::string title;
-    TextStyle style;
-};
 
 struct GraphStyle {
     Color background_color = Color(255, 255, 255);
@@ -74,15 +69,12 @@ public:
 
     void set_bounds(GraphBounds set_bounds);
 
-    GraphTitle* add_plot_title(std::string title, TextStyle style = TextStyle());
-    GraphTitle* add_x_title(std::string title, TextStyle style = TextStyle());
-    GraphTitle* add_y_title(std::string title, TextStyle style = TextStyle());
+    Title* add_axis_title(AxisSide side, std::string title, TextStyle style);
+    Title* add_plot_title(std::string title, TextStyle style = TextStyle());
+    Title* add_x_title(std::string title, TextStyle style = TextStyle());
+    Title* add_y_title(std::string title, TextStyle style = TextStyle());
 
     GraphStyle style;
-
-    GraphTitle plot_title;
-    GraphTitle y_title;
-    GraphTitle x_title;
 
 private:
 
@@ -96,7 +88,7 @@ private:
     bool y_axis_auto_framing = true;
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
-    std::vector<std::unique_ptr<Axis>> current_axis;
+    std::vector<std::unique_ptr<Axis>> current_axis_items;
 
     std::mutex data_mutex;
     std::mutex axis_mutex;

@@ -34,6 +34,10 @@ uint32_t get_approx_vertical_size(uint32_t font_size) {
     return font_size * 0.7;
 }
 
+uint32_t get_approx_drop_size(uint32_t font_size) {
+    return font_size * 0.4;
+}
+
 uint32_t get_approx_horizontal_size(uint32_t font_size) {
     return get_approx_vertical_size(font_size) * 4; // Very rough approximation!
 }

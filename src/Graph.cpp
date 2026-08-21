@@ -5,10 +5,8 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <cstring>
 #include <limits>
-#include <cmath>
 #include <cstdint>
 #include <algorithm>
 #include "version.hpp"
@@ -37,23 +35,6 @@ namespace detail {
         mem->offset += length;
     
         return CAIRO_STATUS_SUCCESS;
-    }
-    
-    void draw_rotated_text(cairo_t *cr, std::string text, double x, double y, double angle_degrees) {
-    
-        double radians = angle_degrees * (M_PI / 180.0); // Convert degrees to radians 
-    
-        cairo_save(cr); // Save current graphics state to avoid leaking transformations
-        
-        cairo_translate(cr, x, y); // Move the origin directly to the target point
-        
-        cairo_rotate(cr, radians); // Rotate the user space around the new (0, 0) origin
-    
-        cairo_move_to(cr, 0.0, 0.0); // Position text exactly at the local origin
-    
-        cairo_show_text(cr, text.c_str()); // Draw the string
-    
-        cairo_restore(cr); // Revert translation and rotation for subsequent drawings
     }
 }
 
@@ -125,14 +106,13 @@ void Graph::clear() {
 }
 
 void Graph::clear_axis() {
-    current_axis.clear();
+    current_axis_items.clear();
 }
 
 void Graph::reset() {
     clear();
     clear_axis();
 }
-
 
 // Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
 void Graph::draw() {
@@ -162,7 +142,7 @@ LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)
     auto new_axis = std::make_unique<LinearAxis>(side, style);
     LinearAxis* axis = new_axis.get();
 
-    current_axis.emplace_back(std::move(new_axis));
+    current_axis_items.emplace_back(std::move(new_axis));
 
     return axis;
 }
@@ -174,9 +154,34 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
     auto new_axis = std::make_unique<OffsetAxis>(side, style);
     OffsetAxis* axis = new_axis.get();
 
-    current_axis.emplace_back(std::move(new_axis));
+    current_axis_items.emplace_back(std::move(new_axis));
 
     return axis;
+}
+
+Title* Graph::add_axis_title(AxisSide side, std::string title, TextStyle style) {
+
+
+    std::lock_guard<std::mutex> lock(axis_mutex);
+
+    auto new_title = std::make_unique<Title>(side, title, style);
+    Title* title_object = new_title.get();
+
+    current_axis_items.emplace_back(std::move(new_title));
+
+    return title_object;
+}
+
+Title* Graph::add_plot_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::TOP, title, style);
+}
+
+Title* Graph::add_x_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::BOTTOM, title, style);
+}
+
+Title* Graph::add_y_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::LEFT, title, style);
 }
 
 // Called when the graph is requested to draw.
@@ -282,26 +287,38 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     if (!style.dont_draw_version_text) bottom_margin += 10;
 
     // Adjust the margins based on the axis which are present
-    for (size_t i = 0; i < current_axis.size(); i ++) {
-        AxisPixelSize axis_size = current_axis[i]->size();
+    {
+        std::lock_guard<std::mutex> lock(axis_mutex);
 
-        left_margin += axis_size.left;
-        right_margin += axis_size.right;
-        top_margin += axis_size.top;
-        bottom_margin += axis_size.bottom;
-    }
+        for (size_t i = 0; i < current_axis_items.size(); i ++) {
+            AxisPixelSize axis_size = current_axis_items[i]->size();
 
-    // Add in some margin for the titles.
-    if (plot_title.exists) {
-        top_margin += 2 * TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
-    }
+            switch (current_axis_items[i]->side)
+            {
+            case TOP:
+                top_margin += axis_size.top;
+                top_margin += INTER_AXIS_PADDING;
+                break;
 
-    if (x_title.exists) {
-        bottom_margin += 2 * TITLE_PADDING + get_approx_vertical_size(x_title.style.font_size);
-    }
+            case BOTTOM:
+                bottom_margin += axis_size.bottom;
+                bottom_margin += INTER_AXIS_PADDING;
+                break;
 
-    if (y_title.exists) {
-        left_margin += 2 * TITLE_PADDING + get_approx_vertical_size(y_title.style.font_size);
+            case LEFT:
+                left_margin += axis_size.left;
+                left_margin += INTER_AXIS_PADDING;
+                break;
+            
+            case RIGHT:
+                right_margin += axis_size.right;
+                right_margin += INTER_AXIS_PADDING;
+                break;
+            
+            default:
+                break;
+            }
+        }
     }
 
     // Get some plot information based on the margin.
@@ -419,84 +436,33 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     
         // Loop over all the axis, and render each to the graph.
         // This has to use a switch case, in order to correctly stack multi axis plots.
-        for(int i = 0; i < current_axis.size(); i ++){
+        for(int i = 0; i < current_axis_items.size(); i ++){
     
-            AxisPixelSize size = current_axis[i]->size();
+            AxisPixelSize size = current_axis_items[i]->size();
     
-            switch (current_axis[i]->side)
+            switch (current_axis_items[i]->side)
             {
             case TOP:
-                current_axis[i] -> draw(rc, 0, -top_axis_offset);
+                current_axis_items[i] -> draw(rc, 0, -top_axis_offset);
                 top_axis_offset += size.top + INTER_AXIS_PADDING;
                 break;
     
             case BOTTOM:
-                current_axis[i] -> draw(rc, 0, bottom_axis_offset);
+                current_axis_items[i] -> draw(rc, 0, bottom_axis_offset);
                 bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
                 break;
     
             case LEFT:
-                current_axis[i] -> draw(rc, -left_axis_offset, 0);
+                current_axis_items[i] -> draw(rc, -left_axis_offset, 0);
                 left_axis_offset += size.left + INTER_AXIS_PADDING;
                 break;
     
             case RIGHT:
-                current_axis[i] -> draw(rc, right_axis_offset, 0);
+                current_axis_items[i] -> draw(rc, right_axis_offset, 0);
                 right_axis_offset += size.right + INTER_AXIS_PADDING;
                 break;
             }
         }
-    }
-
-    // Now we just need to draw the plot titles.
-    if(plot_title.exists) {
-        plot_title.style.to_cairo_source(cr); // Set the style
-
-        // Figure out the size of the plot title text
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, plot_title.title.c_str(), &extents);
-
-        // Now we can figure out how to center it.
-        uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
-
-        // Then place it above the graph.
-        uint32_t title_y = TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
-
-        // Then draw the text. 
-        cairo_move_to(cr, title_x, title_y);
-        cairo_show_text(cr, plot_title.title.c_str());
-    }
-
-    if (x_title.exists) {
-        x_title.style.to_cairo_source(cr); // Set the style
-
-        // Figure out the size of the plot title text
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, x_title.title.c_str(), &extents);
-
-        // Now we can figure out how to center it.
-        uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
-
-        // Then place it below the graph.
-        uint32_t title_y = height - style.default_margin - TITLE_PADDING; // Hacky, but gets around x axis stuff.
-
-        // Then draw the text. 
-        cairo_move_to(cr, title_x, title_y);
-        cairo_show_text(cr, x_title.title.c_str());
-    }
-
-    if (y_title.exists) {
-        y_title.style.to_cairo_source(cr); // Set the style
-
-       // Figure out the size of the plot title text
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, y_title.title.c_str(), &extents);
-
-        // These formulas I kinda found through trial and error. Prove them at your own risk.
-        uint32_t title_x = TITLE_PADDING + extents.height + style.default_margin;
-        uint32_t title_y = plot_y + (plot_h + extents.width) / 2;
-
-        detail::draw_rotated_text(cr, y_title.title, title_x, title_y, -90);
     }
 
     draw_version_text(cr, width, height);
@@ -587,35 +553,5 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 }
-
-}
-
-GraphTitle* Graph::add_plot_title(std::string title, TextStyle style) {
-
-    plot_title.exists = true;
-    plot_title.style = style;
-    plot_title.title = title;
-
-    return &plot_title;
-
-}
-
-GraphTitle* Graph::add_x_title(std::string title, TextStyle style) {
-
-    x_title.exists = true;
-    x_title.style = style;
-    x_title.title = title;
-
-    return &x_title;
-
-}
-
-GraphTitle* Graph::add_y_title(std::string title, TextStyle style) {
-
-    y_title.exists = true;
-    y_title.style = style;
-    y_title.title = title;
-
-    return &y_title;
 
 }

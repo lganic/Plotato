@@ -1,7 +1,6 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <cmath>
-#include <iostream>
 
 namespace plotato {
 
@@ -9,6 +8,11 @@ int use_val_if_enabled(int val, bool enabled) {
     if (enabled) return val;
 
     return 0;
+}
+
+Axis::Axis() {
+    side = AxisSide::BOTTOM;
+    style = AxisStyle();
 }
 
 AxisPixelSize Axis::size() {

@@ -5,7 +5,6 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <cstring>
 #include <limits>
 #include <cstdint>

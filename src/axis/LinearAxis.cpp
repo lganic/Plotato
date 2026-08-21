@@ -2,7 +2,6 @@
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <gtk/gtk.h>
-#include <iostream>
 #include <cstdint>
 
 namespace plotato {

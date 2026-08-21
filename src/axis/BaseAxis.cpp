@@ -1,7 +1,6 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <cmath>
-#include <iostream>
 
 namespace plotato {
 

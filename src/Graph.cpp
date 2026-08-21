@@ -287,13 +287,17 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     if (!style.dont_draw_version_text) bottom_margin += 10;
 
     // Adjust the margins based on the axis which are present
-    for (size_t i = 0; i < current_axis_items.size(); i ++) {
-        AxisPixelSize axis_size = current_axis_items[i]->size();
+    {
+        std::lock_guard<std::mutex> lock(axis_mutex);
 
-        left_margin += axis_size.left;
-        right_margin += axis_size.right;
-        top_margin += axis_size.top;
-        bottom_margin += axis_size.bottom;
+        for (size_t i = 0; i < current_axis_items.size(); i ++) {
+            AxisPixelSize axis_size = current_axis_items[i]->size();
+    
+            left_margin += axis_size.left;
+            right_margin += axis_size.right;
+            top_margin += axis_size.top;
+            bottom_margin += axis_size.bottom;
+        }
     }
 
     // Get some plot information based on the margin.

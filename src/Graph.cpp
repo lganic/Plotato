@@ -416,57 +416,6 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 
-    // // Now we just need to draw the plot titles.
-    // if(plot_title.exists) {
-    //     plot_title.style.to_cairo_source(cr); // Set the style
-
-    //     // Figure out the size of the plot title text
-    //     cairo_text_extents_t extents;
-    //     cairo_text_extents(cr, plot_title.title.c_str(), &extents);
-
-    //     // Now we can figure out how to center it.
-    //     uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
-
-    //     // Then place it above the graph.
-    //     uint32_t title_y = TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
-
-    //     // Then draw the text. 
-    //     cairo_move_to(cr, title_x, title_y);
-    //     cairo_show_text(cr, plot_title.title.c_str());
-    // }
-
-    // if (x_title.exists) {
-    //     x_title.style.to_cairo_source(cr); // Set the style
-
-    //     // Figure out the size of the plot title text
-    //     cairo_text_extents_t extents;
-    //     cairo_text_extents(cr, x_title.title.c_str(), &extents);
-
-    //     // Now we can figure out how to center it.
-    //     uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
-
-    //     // Then place it below the graph.
-    //     uint32_t title_y = height - style.default_margin - TITLE_PADDING; // Hacky, but gets around x axis stuff.
-
-    //     // Then draw the text. 
-    //     cairo_move_to(cr, title_x, title_y);
-    //     cairo_show_text(cr, x_title.title.c_str());
-    // }
-
-    // if (y_title.exists) {
-    //     y_title.style.to_cairo_source(cr); // Set the style
-
-    //    // Figure out the size of the plot title text
-    //     cairo_text_extents_t extents;
-    //     cairo_text_extents(cr, y_title.title.c_str(), &extents);
-
-    //     // These formulas I kinda found through trial and error. Prove them at your own risk.
-    //     uint32_t title_x = TITLE_PADDING + extents.height + style.default_margin;
-    //     uint32_t title_y = plot_y + (plot_h + extents.width) / 2;
-
-    //     detail::draw_rotated_text(cr, y_title.title, title_x, title_y, -90);
-    // }
-
     draw_version_text(cr, width, height);
 
     // Draw the legend. 

@@ -17,6 +17,7 @@ class Title : public Axis{
         Axis(side), title(title), text_style(text_style) {}
 
         void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
+        AxisPixelSize size();
 };
 
 }

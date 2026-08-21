@@ -8,7 +8,6 @@
 #include <iostream>
 #include <cstring>
 #include <limits>
-#include <cmath>
 #include <cstdint>
 #include <algorithm>
 #include "version.hpp"
@@ -37,23 +36,6 @@ namespace detail {
         mem->offset += length;
     
         return CAIRO_STATUS_SUCCESS;
-    }
-    
-    void draw_rotated_text(cairo_t *cr, std::string text, double x, double y, double angle_degrees) {
-    
-        double radians = angle_degrees * (M_PI / 180.0); // Convert degrees to radians 
-    
-        cairo_save(cr); // Save current graphics state to avoid leaking transformations
-        
-        cairo_translate(cr, x, y); // Move the origin directly to the target point
-        
-        cairo_rotate(cr, radians); // Rotate the user space around the new (0, 0) origin
-    
-        cairo_move_to(cr, 0.0, 0.0); // Position text exactly at the local origin
-    
-        cairo_show_text(cr, text.c_str()); // Draw the string
-    
-        cairo_restore(cr); // Revert translation and rotation for subsequent drawings
     }
 }
 
@@ -290,19 +272,6 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         bottom_margin += axis_size.bottom;
     }
 
-    // Add in some margin for the titles.
-    if (plot_title.exists) {
-        top_margin += 2 * TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
-    }
-
-    if (x_title.exists) {
-        bottom_margin += 2 * TITLE_PADDING + get_approx_vertical_size(x_title.style.font_size);
-    }
-
-    if (y_title.exists) {
-        left_margin += 2 * TITLE_PADDING + get_approx_vertical_size(y_title.style.font_size);
-    }
-
     // Get some plot information based on the margin.
     int32_t plot_x = left_margin;
     int32_t plot_y = top_margin;
@@ -447,56 +416,56 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 
-    // Now we just need to draw the plot titles.
-    if(plot_title.exists) {
-        plot_title.style.to_cairo_source(cr); // Set the style
+    // // Now we just need to draw the plot titles.
+    // if(plot_title.exists) {
+    //     plot_title.style.to_cairo_source(cr); // Set the style
 
-        // Figure out the size of the plot title text
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, plot_title.title.c_str(), &extents);
+    //     // Figure out the size of the plot title text
+    //     cairo_text_extents_t extents;
+    //     cairo_text_extents(cr, plot_title.title.c_str(), &extents);
 
-        // Now we can figure out how to center it.
-        uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
+    //     // Now we can figure out how to center it.
+    //     uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
 
-        // Then place it above the graph.
-        uint32_t title_y = TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
+    //     // Then place it above the graph.
+    //     uint32_t title_y = TITLE_PADDING + get_approx_vertical_size(plot_title.style.font_size);
 
-        // Then draw the text. 
-        cairo_move_to(cr, title_x, title_y);
-        cairo_show_text(cr, plot_title.title.c_str());
-    }
+    //     // Then draw the text. 
+    //     cairo_move_to(cr, title_x, title_y);
+    //     cairo_show_text(cr, plot_title.title.c_str());
+    // }
 
-    if (x_title.exists) {
-        x_title.style.to_cairo_source(cr); // Set the style
+    // if (x_title.exists) {
+    //     x_title.style.to_cairo_source(cr); // Set the style
 
-        // Figure out the size of the plot title text
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, x_title.title.c_str(), &extents);
+    //     // Figure out the size of the plot title text
+    //     cairo_text_extents_t extents;
+    //     cairo_text_extents(cr, x_title.title.c_str(), &extents);
 
-        // Now we can figure out how to center it.
-        uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
+    //     // Now we can figure out how to center it.
+    //     uint32_t title_x = plot_x + (plot_w - extents.width) / 2;
 
-        // Then place it below the graph.
-        uint32_t title_y = height - style.default_margin - TITLE_PADDING; // Hacky, but gets around x axis stuff.
+    //     // Then place it below the graph.
+    //     uint32_t title_y = height - style.default_margin - TITLE_PADDING; // Hacky, but gets around x axis stuff.
 
-        // Then draw the text. 
-        cairo_move_to(cr, title_x, title_y);
-        cairo_show_text(cr, x_title.title.c_str());
-    }
+    //     // Then draw the text. 
+    //     cairo_move_to(cr, title_x, title_y);
+    //     cairo_show_text(cr, x_title.title.c_str());
+    // }
 
-    if (y_title.exists) {
-        y_title.style.to_cairo_source(cr); // Set the style
+    // if (y_title.exists) {
+    //     y_title.style.to_cairo_source(cr); // Set the style
 
-       // Figure out the size of the plot title text
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, y_title.title.c_str(), &extents);
+    //    // Figure out the size of the plot title text
+    //     cairo_text_extents_t extents;
+    //     cairo_text_extents(cr, y_title.title.c_str(), &extents);
 
-        // These formulas I kinda found through trial and error. Prove them at your own risk.
-        uint32_t title_x = TITLE_PADDING + extents.height + style.default_margin;
-        uint32_t title_y = plot_y + (plot_h + extents.width) / 2;
+    //     // These formulas I kinda found through trial and error. Prove them at your own risk.
+    //     uint32_t title_x = TITLE_PADDING + extents.height + style.default_margin;
+    //     uint32_t title_y = plot_y + (plot_h + extents.width) / 2;
 
-        detail::draw_rotated_text(cr, y_title.title, title_x, title_y, -90);
-    }
+    //     detail::draw_rotated_text(cr, y_title.title, title_x, title_y, -90);
+    // }
 
     draw_version_text(cr, width, height);
 
@@ -589,32 +558,27 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
 }
 
-GraphTitle* Graph::add_plot_title(std::string title, TextStyle style) {
+Title* Graph::add_axis_title(AxisSide side, std::string title, TextStyle style) {
 
-    plot_title.exists = true;
-    plot_title.style = style;
-    plot_title.title = title;
 
-    return &plot_title;
+    std::lock_guard<std::mutex> lock(axis_mutex);
 
+    auto new_title = std::make_unique<Title>(AxisSide::TOP, title, style);
+    Title* title_object = new_title.get();
+
+    current_axis_items.emplace_back(std::move(new_title));
+
+    return title_object;
 }
 
-GraphTitle* Graph::add_x_title(std::string title, TextStyle style) {
-
-    x_title.exists = true;
-    x_title.style = style;
-    x_title.title = title;
-
-    return &x_title;
-
+Title* Graph::add_plot_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::TOP, title, style);
 }
 
-GraphTitle* Graph::add_y_title(std::string title, TextStyle style) {
+Title* Graph::add_x_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::BOTTOM, title, style);
+}
 
-    y_title.exists = true;
-    y_title.style = style;
-    y_title.title = title;
-
-    return &y_title;
-
+Title* Graph::add_y_title(std::string title, TextStyle style) {
+    return add_axis_title(AxisSide::LEFT, title, style);
 }

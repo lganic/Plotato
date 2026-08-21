@@ -292,11 +292,32 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
         for (size_t i = 0; i < current_axis_items.size(); i ++) {
             AxisPixelSize axis_size = current_axis_items[i]->size();
-    
-            left_margin += axis_size.left;
-            right_margin += axis_size.right;
-            top_margin += axis_size.top;
-            bottom_margin += axis_size.bottom;
+
+            switch (current_axis_items[i]->side)
+            {
+            case TOP:
+                top_margin += axis_size.top;
+                top_margin += INTER_AXIS_PADDING;
+                break;
+
+            case BOTTOM:
+                bottom_margin += axis_size.bottom;
+                bottom_margin += INTER_AXIS_PADDING;
+                break;
+
+            case LEFT:
+                left_margin += axis_size.left;
+                left_margin += INTER_AXIS_PADDING;
+                break;
+            
+            case RIGHT:
+                right_margin += axis_size.right;
+                right_margin += INTER_AXIS_PADDING;
+                break;
+            
+            default:
+                break;
+            }
         }
     }
 

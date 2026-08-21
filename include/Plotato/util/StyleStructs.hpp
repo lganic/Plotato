@@ -38,6 +38,7 @@ struct PlotStyle {
 };
 
 uint32_t get_approx_vertical_size(uint32_t font_size);
+uint32_t get_approx_drop_size(uint32_t font_size);
 uint32_t get_approx_horizontal_size(uint32_t font_size);
 
 }

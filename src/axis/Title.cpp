@@ -34,27 +34,28 @@ AxisPixelSize Title::size() {
     AxisPixelSize output;
 
     uint32_t approx_text_vertical_size = get_approx_vertical_size(text_style.font_size);
+    uint32_t approx_text_drop = get_approx_drop_size(text_style.font_size); // Gets approximate amount of extra space we should alot for letters like "g" which drop down
 
     switch (side)
     {
     case TOP:
         
-        output.top = approx_text_vertical_size;
+        output.top = approx_text_vertical_size + approx_text_drop;
         break;
 
     case BOTTOM:
 
-        output.bottom = approx_text_vertical_size;
+        output.bottom = approx_text_vertical_size + approx_text_drop;
         break;
 
     case LEFT:
 
-        output.left = approx_text_vertical_size;
+        output.left = approx_text_vertical_size + approx_text_drop;
         break;
 
     case RIGHT:
 
-        output.right = approx_text_vertical_size;
+        output.right = approx_text_vertical_size + approx_text_drop;
         break;
     
     default:
@@ -73,6 +74,8 @@ void Title::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     cairo_text_extents_t extents;
     cairo_text_extents(ctx.cr, title.c_str(), &extents);
 
+    uint32_t text_drop = get_approx_drop_size(text_style.font_size); // How much to raise the text by, so we don't get letter drop intersecting.
+
     // Need to figure out how to center, and angle the text.
     uint32_t text_x;
     uint32_t text_y;
@@ -85,7 +88,7 @@ void Title::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     case AxisSide::TOP:
         // Top Title
         text_x = viewport.margin_left + (viewport.graph_width - extents.width) / 2 + offset_x;
-        text_y = viewport.margin_top + offset_y;
+        text_y = viewport.margin_top + offset_y - text_drop;
         text_angle = 0;
 
         break;
@@ -93,7 +96,7 @@ void Title::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     case AxisSide::LEFT:
         // Y Axis Title
 
-        text_x = viewport.margin_left + offset_x;
+        text_x = viewport.margin_left + offset_x - text_drop;
         text_y = viewport.margin_top + (viewport.graph_height + extents.width) / 2 + offset_y;
         text_angle = -90;
 
@@ -102,7 +105,7 @@ void Title::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     case AxisSide::RIGHT:
         // Y Axis Title, but on the right.
         
-        text_x = viewport.margin_left + viewport.graph_width + offset_x;
+        text_x = viewport.margin_left + viewport.graph_width + offset_x + text_drop;
         text_y = viewport.margin_top + (viewport.graph_height - extents.width) / 2 + offset_y;
         text_angle = 90;
 

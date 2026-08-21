@@ -165,7 +165,7 @@ Title* Graph::add_axis_title(AxisSide side, std::string title, TextStyle style) 
 
     std::lock_guard<std::mutex> lock(axis_mutex);
 
-    auto new_title = std::make_unique<Title>(AxisSide::TOP, title, style);
+    auto new_title = std::make_unique<Title>(side, title, style);
     Title* title_object = new_title.get();
 
     current_axis_items.emplace_back(std::move(new_title));

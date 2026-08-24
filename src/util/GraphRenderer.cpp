@@ -147,10 +147,6 @@ void GraphRenderer::draw_polygon(double x, double y, double angle, uint32_t n, M
 
 void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
 {
-
-    std::vector<double> poly_x;
-    std::vector<double> poly_y;
-
     switch (style.type)
     {
     case '.':

@@ -29,7 +29,7 @@ struct TextStyle {
 };
 
 struct MarkerStyle {
-    char type;
+    char type = 'O';
     Color fill;
 
     double size = 10;

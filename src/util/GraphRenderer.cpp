@@ -201,6 +201,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
         draw_interleaved_polygon(x, y, 4, {0, 27, 63}, {.5, 1, 1}, style);
         break;
     default:
+        std::cerr << "Invalid marker type passed: '" << style.type << "'" << std::endl;
         break;
     }
 }

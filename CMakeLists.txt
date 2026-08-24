@@ -68,6 +68,7 @@ add_library(plotato
     src/axis/LinearAxis.cpp
     src/axis/OffsetAxis.cpp
     src/items/LinePlot.cpp
+    src/items/ScatterPlot.cpp
     src/util/GraphRenderer.cpp
     src/util/GraphBounds.cpp
     src/util/StyleStructs.cpp

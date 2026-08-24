@@ -1,5 +1,6 @@
 #include <Plotato/Graph.hpp>
 #include <Plotato/items/LinePlot.hpp>
+#include <Plotato/items/ScatterPlot.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>
 #include <Plotato/util/StyleStructs.hpp>
@@ -129,6 +130,19 @@ LinePlot* Graph::plot(const std::vector<double> &x, const std::vector<double> &y
 
     auto new_plot = std::make_unique<LinePlot>(x, y, style);
     LinePlot* plot = new_plot.get();
+
+    current_plot_items.emplace_back(std::move(new_plot));
+
+    return plot;
+}
+
+// Plot the scatter plots.
+ScatterPlot* Graph::scatter(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
+{
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    auto new_plot = std::make_unique<ScatterPlot>(x, y, style);
+    ScatterPlot* plot = new_plot.get();
 
     current_plot_items.emplace_back(std::move(new_plot));
 

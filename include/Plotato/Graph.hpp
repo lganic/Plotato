@@ -12,6 +12,7 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/items/LinePlot.hpp>
+#include <Plotato/items/ScatterPlot.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>
@@ -66,6 +67,7 @@ public:
     void clear_axis();
 
     LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
+    ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style = PlotStyle());
 
     void set_bounds(GraphBounds set_bounds);
 

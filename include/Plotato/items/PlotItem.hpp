@@ -11,8 +11,6 @@ class PlotItem
 {
 public:
 
-    PlotStyle style;
-
     virtual ~PlotItem() {}
 
     virtual void draw(RenderContext& ctx) = 0;

@@ -17,7 +17,9 @@ class Text : public PlotItem
     Anchor anchor;
 
     public:
-        Text(double x, double y, std::string text, TextStyle style);
+        GraphTextStyle style;
+
+        Text(double x, double y, std::string text, GraphTextStyle style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();
 };

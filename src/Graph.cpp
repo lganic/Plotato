@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-#include <limits>
 #include <cstdint>
 #include <algorithm>
 #include "version.hpp"
@@ -69,8 +68,8 @@ Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
 void Graph::set_bounds(GraphBounds set_bounds) {
 
     // First set the auto framing flags
-    x_axis_auto_framing = (set_bounds.xmin == 0 && set_bounds.xmax == 0);
-    y_axis_auto_framing = (set_bounds.ymin == 0 && set_bounds.ymax == 0);
+    x_axis_auto_framing = (std::isinf(set_bounds.xmin) || std::isinf(set_bounds.xmax));
+    y_axis_auto_framing = (std::isinf(set_bounds.ymin) || std::isinf(set_bounds.ymax));
 
     // Then lets set these bounds. If the flags above are false, then these bounds won't be touch, so the user doesn't have to call this again.
     bounds = set_bounds;
@@ -355,38 +354,30 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     if (x_axis_auto_framing || y_axis_auto_framing){
         // Update the bounds first, so we know that everything is up to date before we get started on the draw process.
 
-        double auto_min_x =  std::numeric_limits<double>::infinity();
-        double auto_max_x = -std::numeric_limits<double>::infinity();
-
-        double auto_min_y =  std::numeric_limits<double>::infinity();
-        double auto_max_y = -std::numeric_limits<double>::infinity();
+        GraphBounds auto_bounds;
 
         for (size_t i = 0; i < current_plot_items.size(); i ++) {
             
             GraphBounds this_object_bounds = current_plot_items[i]->bounds();
 
-            auto_min_x = std::min(auto_min_x, this_object_bounds.xmin);
-            auto_max_x = std::max(auto_max_x, this_object_bounds.xmax);
-
-            auto_min_y = std::min(auto_min_y, this_object_bounds.ymin);
-            auto_max_y = std::max(auto_max_y, this_object_bounds.ymax);
+            auto_bounds.adjust_with_bounds(this_object_bounds);
         }
 
         // Save values to the bounds object.
         if (x_axis_auto_framing) {
-            if (!std::isinf(auto_min_x)){
-                bounds.xmin = auto_min_x;
+            if (!std::isinf(auto_bounds.xmin)){
+                bounds.xmin = auto_bounds.xmin;
             }
-            if(!std::isinf(auto_max_x)) {
-                bounds.xmax = auto_max_x;
+            if(!std::isinf(auto_bounds.xmax)) {
+                bounds.xmax = auto_bounds.xmax;
             }
         }
         if (y_axis_auto_framing) {
-            if (!std::isinf(auto_min_y)){
-                bounds.ymin = auto_min_y;
+            if (!std::isinf(auto_bounds.ymin)){
+                bounds.ymin = auto_bounds.ymin;
             }
-            if (!std::isinf(auto_max_y)) {
-                bounds.ymax = auto_max_y;
+            if (!std::isinf(auto_bounds.ymax)) {
+                bounds.ymax = auto_bounds.ymax;
             }
         }
         

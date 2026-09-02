@@ -3,7 +3,7 @@
 
 namespace plotato {
 
-enum Anchor {
+enum class Anchor {
     TOP_LEFT,
     TOP_CENTER,
     TOP_RIGHT,

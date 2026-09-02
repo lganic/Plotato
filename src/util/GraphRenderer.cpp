@@ -131,7 +131,7 @@ void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std
     cairo_fill_preserve(cr); // Preserve this, in case we need to do the outline.
 
     // Check if the outline has a color. If it does, then we need to draw it.
-    if (style.outline.a != 0) {
+    if (style.outline.has_opacity()) {
         style.outline.to_cairo_source(cr);
         cairo_set_line_width(cr, style.outline_width);
         cairo_stroke(cr);

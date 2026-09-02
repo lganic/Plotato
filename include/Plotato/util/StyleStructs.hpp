@@ -17,6 +17,7 @@ struct Color {
     constexpr Color (uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255) : r(r), g(g), b(b), a(a) {}
 
     void to_cairo_source(cairo_t* cr);
+    bool has_opacity();
 };
 
 struct TextStyle {

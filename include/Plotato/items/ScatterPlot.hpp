@@ -12,10 +12,9 @@ class ScatterPlot : public PlotItem
 {
     std::vector<double> x;
     std::vector<double> y;
-
     
     public:
-        PlotStyle style;
+        MarkerStyle style;
 
         ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
         void draw(RenderContext& ctx);

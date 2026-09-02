@@ -1,14 +1,19 @@
 #ifndef PLOTATO_GRAPHBOUNDS_HPP
 #define PLOTATO_GRAPHBOUNDS_HPP
 
+#include <limits>
+
 namespace plotato {
 
 // Tracks the strict bounds of the graph. To be configured by user, and passed to Graph object on init.
 struct GraphBounds {
-    double xmin = 0;
-    double xmax = 0;
-    double ymin = 0;
-    double ymax = 0;
+    double xmin =  std::numeric_limits<double>::infinity();
+    double xmax = -std::numeric_limits<double>::infinity();
+    double ymin =  std::numeric_limits<double>::infinity();
+    double ymax = -std::numeric_limits<double>::infinity();
+
+    void adjust_with_bounds(GraphBounds bounds);
+    void adjust_with_point(double x, double y);
 };
 
 // Constructed by graph, and passed to graph renderers to allign everything properly, after accounting for margins.

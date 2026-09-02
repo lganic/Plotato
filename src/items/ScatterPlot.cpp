@@ -7,7 +7,7 @@
 
 namespace plotato {
 
-ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style): x(x_data), y(y_data){
+ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style): x(x_data), y(y_data){
     style = plot_style;
 }
 
@@ -19,7 +19,7 @@ void ScatterPlot::draw(RenderContext& ctx) {
     // Loop over all the x data, and plot each individual element using the graphrenderer.  
 
     for (size_t i = 0; i < x.size(); i ++) {
-        renderer.draw_marker(x[i], y[i], style.marker);
+        renderer.draw_marker(x[i], y[i], style);
     }
 }
 

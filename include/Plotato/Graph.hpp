@@ -67,7 +67,7 @@ public:
     void clear_axis();
 
     LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
-    ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style = PlotStyle());
+    ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style = MarkerStyle());
 
     void set_bounds(GraphBounds set_bounds);
 

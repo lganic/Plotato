@@ -137,7 +137,7 @@ LinePlot* Graph::plot(const std::vector<double> &x, const std::vector<double> &y
 }
 
 // Plot the scatter plots.
-ScatterPlot* Graph::scatter(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
+ScatterPlot* Graph::scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style)
 {
     std::lock_guard<std::mutex> lock(data_mutex);
 
@@ -501,14 +501,20 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
             for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
 
-                // Make a new extents object.
-                auto new_extents = std::make_unique<cairo_text_extents_t>();
+                if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
 
-                // Update the cairo text extents.
-                cairo_text_extents(cr, current_plot_items[plot_item_index]->style.name.c_str(), new_extents.get());
+                    LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
 
-                // Add the text extents ptr to the array.
-                all_extents.emplace_back(std::move(new_extents));           
+                    // Make a new extents object.
+                    auto new_extents = std::make_unique<cairo_text_extents_t>();
+    
+                    // Update the cairo text extents.
+                    cairo_text_extents(cr, line_plot->style.name.c_str(), new_extents.get());
+    
+                    // Add the text extents ptr to the array.
+                    all_extents.emplace_back(std::move(new_extents));
+                }
+
             }
         }
 
@@ -549,20 +555,25 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
             for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
 
-                style.legend_text_style.to_cairo_source(cr);
+                if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
 
-                cairo_move_to(cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+                    LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
 
-                cairo_show_text(cr, current_plot_items[plot_item_index]->style.name.c_str());
-
-                // Draw the swatch color
-                current_plot_items[plot_item_index]->style.line_color.to_cairo_source(cr);
-                cairo_rectangle(cr, legend_x + style.legend_offset, legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), max_height, max_height);
-                cairo_fill_preserve(cr); // Fill, and keep path
-
-                style.legend_border_color.to_cairo_source(cr);
-                cairo_set_line_width(cr, style.legend_border_width);
-                cairo_stroke(cr); // Use our kept path from the rectangle to stroke
+                    style.legend_text_style.to_cairo_source(cr);
+    
+                    cairo_move_to(cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+    
+                    cairo_show_text(cr, line_plot->style.name.c_str());
+    
+                    // Draw the swatch color
+                    line_plot->style.line_color.to_cairo_source(cr);
+                    cairo_rectangle(cr, legend_x + style.legend_offset, legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), max_height, max_height);
+                    cairo_fill_preserve(cr); // Fill, and keep path
+    
+                    style.legend_border_color.to_cairo_source(cr);
+                    cairo_set_line_width(cr, style.legend_border_width);
+                    cairo_stroke(cr); // Use our kept path from the rectangle to stroke
+                }
             }
         }
     }

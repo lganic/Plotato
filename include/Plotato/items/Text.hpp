@@ -17,6 +17,11 @@ class Text : public PlotItem
     Anchor anchor;
 
     public:
+
+        virtual PlotType type() const {
+            return PlotType::TEXT;
+        }
+
         GraphTextStyle style;
 
         Text(double x, double y, std::string text, GraphTextStyle style);

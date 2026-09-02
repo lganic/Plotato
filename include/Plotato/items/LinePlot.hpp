@@ -12,9 +12,13 @@ class LinePlot : public PlotItem
 {
     std::vector<double> x;
     std::vector<double> y;
-
     
     public:
+
+        virtual PlotType type() const {
+            return PlotType::LINEPLOT;
+        }
+
         PlotStyle style;
 
         LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);

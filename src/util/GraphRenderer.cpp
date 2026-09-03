@@ -263,7 +263,7 @@ void GraphRenderer::draw_text(double x, double y, std::string text, GraphTextSty
 
     // Now we just have to draw the text.
     style.to_cairo_source(cr); // Reset the text style.
-    cairo_move_to(cr, sx - extents.width / 2, sy - extents.y_bearing - extents.height / 2);
+    cairo_move_to(cr, sx - extents.x_bearing - extents.width / 2, sy - extents.y_bearing - extents.height / 2);
     cairo_show_text(cr, text.c_str());
 
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.

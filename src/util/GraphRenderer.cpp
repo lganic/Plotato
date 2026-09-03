@@ -1,4 +1,5 @@
 #include <Plotato/util/GraphRenderer.hpp>
+#include <Plotato/util/Anchor.hpp>
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -131,7 +132,7 @@ void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std
     cairo_fill_preserve(cr); // Preserve this, in case we need to do the outline.
 
     // Check if the outline has a color. If it does, then we need to draw it.
-    if (style.outline.a != 0) {
+    if (style.outline.has_opacity()) {
         style.outline.to_cairo_source(cr);
         cairo_set_line_width(cr, style.outline_width);
         cairo_stroke(cr);
@@ -205,5 +206,68 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
         break;
     }
 }
+
+void GraphRenderer::draw_text(double x, double y, std::string text, GraphTextStyle style) {
+
+    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
+
+    style.to_cairo_source(cr);
+    
+    // Get the extents of the text. 
+    cairo_text_extents_t extents;
+    cairo_text_extents(cr, text.c_str(), &extents);
+
+    double full_pixel_width = extents.width + style.text_padding * 2;
+    double full_pixel_height = extents.height + style.text_padding * 2;
+
+    double sx, sy;
+
+    if (style.absolute) {
+        sx = x + plot_rect.x + plot_rect.width / 2; // Offset by plot position, and center.
+        sy = y + plot_rect.y + plot_rect.height / 2; // Offset by plot position, and center.
+
+        // Get the absolute anchor offset.
+        auto [plot_offset_x, plot_offset_y] = get_offset(plot_rect.width, plot_rect.height, style.absolute_anchor);
+
+        sx -= plot_offset_x;
+        sy -= plot_offset_y;
+    }
+    else {
+        // The coordinates are not absolute. We need to map them to the screen space.
+
+        sx = data_to_screen_x(x);
+        sy = data_to_screen_y(y);
+    }
+
+    // Get the offset from the anchors.
+    auto [offset_x, offset_y] = get_offset(full_pixel_width, full_pixel_height, style.anchor);
+
+    // Add the offset to the screen position.
+    sx += offset_x;
+    sy += offset_y;
+
+    // Draw the text background, if the color has opacity.
+    if (style.background_color.has_opacity()) {
+        style.background_color.to_cairo_source(cr);
+        cairo_rectangle(cr, sx - full_pixel_width / 2, sy - full_pixel_height / 2, full_pixel_width, full_pixel_height);
+        cairo_fill(cr);
+    }
+
+    // Draw the text outline, if the color has opacity.
+    if (style.outline_color.has_opacity()) {
+        style.outline_color.to_cairo_source(cr);
+        cairo_rectangle(cr, sx - full_pixel_width / 2, sy - full_pixel_height / 2, full_pixel_width, full_pixel_height);
+        cairo_set_line_width(cr, style.outline_width);
+        cairo_stroke(cr);
+    }
+
+    // Now we just have to draw the text.
+    style.to_cairo_source(cr); // Reset the text style.
+    cairo_move_to(cr, sx - extents.x_bearing - extents.width / 2, sy - extents.y_bearing - extents.height / 2);
+    cairo_show_text(cr, text.c_str());
+
+    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+}
+
 
 }

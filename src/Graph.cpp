@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-#include <limits>
 #include <cstdint>
 #include <algorithm>
 #include "version.hpp"
@@ -69,8 +68,8 @@ Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
 void Graph::set_bounds(GraphBounds set_bounds) {
 
     // First set the auto framing flags
-    x_axis_auto_framing = (set_bounds.xmin == 0 && set_bounds.xmax == 0);
-    y_axis_auto_framing = (set_bounds.ymin == 0 && set_bounds.ymax == 0);
+    x_axis_auto_framing = (std::isinf(set_bounds.xmin) || std::isinf(set_bounds.xmax));
+    y_axis_auto_framing = (std::isinf(set_bounds.ymin) || std::isinf(set_bounds.ymax));
 
     // Then lets set these bounds. If the flags above are false, then these bounds won't be touch, so the user doesn't have to call this again.
     bounds = set_bounds;
@@ -137,7 +136,7 @@ LinePlot* Graph::plot(const std::vector<double> &x, const std::vector<double> &y
 }
 
 // Plot the scatter plots.
-ScatterPlot* Graph::scatter(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
+ScatterPlot* Graph::scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style)
 {
     std::lock_guard<std::mutex> lock(data_mutex);
 
@@ -196,6 +195,18 @@ Title* Graph::add_x_title(std::string title, TextStyle style) {
 
 Title* Graph::add_y_title(std::string title, TextStyle style) {
     return add_axis_title(AxisSide::LEFT, title, style);
+}
+
+Text* Graph::add_text(double x, double y, std::string text, GraphTextStyle style)
+{
+    std::lock_guard<std::mutex> lock(text_mutex);
+
+    auto new_text = std::make_unique<Text>(x, y, text, style);
+    Text* text_pointer = new_text.get();
+
+    text_items.emplace_back(std::move(new_text));
+
+    return text_pointer;
 }
 
 // Called when the graph is requested to draw.
@@ -355,38 +366,30 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     if (x_axis_auto_framing || y_axis_auto_framing){
         // Update the bounds first, so we know that everything is up to date before we get started on the draw process.
 
-        double auto_min_x =  std::numeric_limits<double>::infinity();
-        double auto_max_x = -std::numeric_limits<double>::infinity();
-
-        double auto_min_y =  std::numeric_limits<double>::infinity();
-        double auto_max_y = -std::numeric_limits<double>::infinity();
+        GraphBounds auto_bounds;
 
         for (size_t i = 0; i < current_plot_items.size(); i ++) {
             
             GraphBounds this_object_bounds = current_plot_items[i]->bounds();
 
-            auto_min_x = std::min(auto_min_x, this_object_bounds.xmin);
-            auto_max_x = std::max(auto_max_x, this_object_bounds.xmax);
-
-            auto_min_y = std::min(auto_min_y, this_object_bounds.ymin);
-            auto_max_y = std::max(auto_max_y, this_object_bounds.ymax);
+            auto_bounds.adjust_with_bounds(this_object_bounds);
         }
 
         // Save values to the bounds object.
         if (x_axis_auto_framing) {
-            if (!std::isinf(auto_min_x)){
-                bounds.xmin = auto_min_x;
+            if (!std::isinf(auto_bounds.xmin)){
+                bounds.xmin = auto_bounds.xmin;
             }
-            if(!std::isinf(auto_max_x)) {
-                bounds.xmax = auto_max_x;
+            if(!std::isinf(auto_bounds.xmax)) {
+                bounds.xmax = auto_bounds.xmax;
             }
         }
         if (y_axis_auto_framing) {
-            if (!std::isinf(auto_min_y)){
-                bounds.ymin = auto_min_y;
+            if (!std::isinf(auto_bounds.ymin)){
+                bounds.ymin = auto_bounds.ymin;
             }
-            if (!std::isinf(auto_max_y)) {
-                bounds.ymax = auto_max_y;
+            if (!std::isinf(auto_bounds.ymax)) {
+                bounds.ymax = auto_bounds.ymax;
             }
         }
         
@@ -501,14 +504,20 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
             for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
 
-                // Make a new extents object.
-                auto new_extents = std::make_unique<cairo_text_extents_t>();
+                if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
 
-                // Update the cairo text extents.
-                cairo_text_extents(cr, current_plot_items[plot_item_index]->style.name.c_str(), new_extents.get());
+                    LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
 
-                // Add the text extents ptr to the array.
-                all_extents.emplace_back(std::move(new_extents));           
+                    // Make a new extents object.
+                    auto new_extents = std::make_unique<cairo_text_extents_t>();
+    
+                    // Update the cairo text extents.
+                    cairo_text_extents(cr, line_plot->style.name.c_str(), new_extents.get());
+    
+                    // Add the text extents ptr to the array.
+                    all_extents.emplace_back(std::move(new_extents));
+                }
+
             }
         }
 
@@ -549,21 +558,35 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
             for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
 
-                style.legend_text_style.to_cairo_source(cr);
+                if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
 
-                cairo_move_to(cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+                    LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
 
-                cairo_show_text(cr, current_plot_items[plot_item_index]->style.name.c_str());
-
-                // Draw the swatch color
-                current_plot_items[plot_item_index]->style.line_color.to_cairo_source(cr);
-                cairo_rectangle(cr, legend_x + style.legend_offset, legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), max_height, max_height);
-                cairo_fill_preserve(cr); // Fill, and keep path
-
-                style.legend_border_color.to_cairo_source(cr);
-                cairo_set_line_width(cr, style.legend_border_width);
-                cairo_stroke(cr); // Use our kept path from the rectangle to stroke
+                    style.legend_text_style.to_cairo_source(cr);
+    
+                    cairo_move_to(cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+    
+                    cairo_show_text(cr, line_plot->style.name.c_str());
+    
+                    // Draw the swatch color
+                    line_plot->style.line_color.to_cairo_source(cr);
+                    cairo_rectangle(cr, legend_x + style.legend_offset, legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), max_height, max_height);
+                    cairo_fill_preserve(cr); // Fill, and keep path
+    
+                    style.legend_border_color.to_cairo_source(cr);
+                    cairo_set_line_width(cr, style.legend_border_width);
+                    cairo_stroke(cr); // Use our kept path from the rectangle to stroke
+                }
             }
+        }
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(text_mutex);
+
+        // Loop over all text elements, and call each of their corresponding draw functions.
+        for(int i = 0; i < text_items.size(); i ++){
+            text_items[i]->draw(rc);
         }
     }
 }

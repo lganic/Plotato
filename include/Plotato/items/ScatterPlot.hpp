@@ -12,10 +12,16 @@ class ScatterPlot : public PlotItem
 {
     std::vector<double> x;
     std::vector<double> y;
-
     
     public:
-        ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
+
+        virtual PlotType type() const {
+            return PlotType::SCATTERPLOT;
+        }
+
+        MarkerStyle style;
+
+        ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();
 };

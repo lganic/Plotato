@@ -7,11 +7,22 @@
 
 namespace plotato {
 
+enum class PlotType {
+    NONE,
+    LINEPLOT,
+    SCATTERPLOT,
+    TEXT,
+};
+
 class PlotItem
 {
 public:
 
-    PlotStyle style;
+    virtual PlotType type() const {
+        return PlotType::NONE;
+    }
+
+    bool check_is(PlotType type);
 
     virtual ~PlotItem() {}
 

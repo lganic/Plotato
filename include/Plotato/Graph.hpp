@@ -13,6 +13,7 @@
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/items/LinePlot.hpp>
 #include <Plotato/items/ScatterPlot.hpp>
+#include <Plotato/items/Text.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>
@@ -67,7 +68,7 @@ public:
     void clear_axis();
 
     LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
-    ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style = PlotStyle());
+    ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style = MarkerStyle());
 
     void set_bounds(GraphBounds set_bounds);
 
@@ -75,6 +76,8 @@ public:
     Title* add_plot_title(std::string title, TextStyle style = TextStyle());
     Title* add_x_title(std::string title, TextStyle style = TextStyle());
     Title* add_y_title(std::string title, TextStyle style = TextStyle());
+
+    Text* add_text(double x, double y, std::string text, GraphTextStyle style = GraphTextStyle());
 
     GraphStyle style;
 
@@ -91,9 +94,11 @@ private:
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
     std::vector<std::unique_ptr<Axis>> current_axis_items;
+    std::vector<std::unique_ptr<PlotItem>> text_items; // We have a separate vector for this, to ensure text items get rendered on top.
 
     std::mutex data_mutex;
     std::mutex axis_mutex;
+    std::mutex text_mutex;
 
     std::mutex draw_mutex;
 

@@ -23,6 +23,8 @@ public:
     const PlotStyle& style);
     
     void draw_marker(double x, double y, MarkerStyle& style);
+
+    void draw_text(double x, double y, std::string text, GraphTextStyle style);
     
     double data_to_screen_x(double x) const;
     double data_to_screen_y(double y) const;

@@ -15,6 +15,10 @@ void Color::to_cairo_source(cairo_t* cr){
 
 }
 
+bool Color::has_opacity() {
+    return a != 0;
+}
+
 void TextStyle::to_cairo_source(cairo_t* cr){
 
     text_color.to_cairo_source(cr);

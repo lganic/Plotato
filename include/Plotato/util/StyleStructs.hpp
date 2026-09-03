@@ -1,6 +1,7 @@
 #ifndef PLOTATO_STYLESTRUCTS_HPP
 #define PLOTATO_STYLESTRUCTS_HPP
 
+#include "Anchor.hpp"
 #include <cstdint>
 #include <gtk/gtk.h>
 #include <cstdint>
@@ -17,6 +18,7 @@ struct Color {
     constexpr Color (uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255) : r(r), g(g), b(b), a(a) {}
 
     void to_cairo_source(cairo_t* cr);
+    bool has_opacity();
 };
 
 struct TextStyle {
@@ -26,6 +28,20 @@ struct TextStyle {
     std::string font = "Sans";
 
     void to_cairo_source(cairo_t* cr);
+};
+
+struct GraphTextStyle : public TextStyle {
+
+    bool absolute = true;
+
+    Anchor anchor = Anchor::MIDDLE_CENTER;
+    Anchor absolute_anchor = Anchor::TOP_LEFT;
+
+    Color background_color {255, 255, 255, 255};
+    Color outline_color {0, 0, 0, 255};
+
+    double outline_width = 2;
+    double text_padding = 5;
 };
 
 struct MarkerStyle {

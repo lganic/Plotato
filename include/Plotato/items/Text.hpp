@@ -17,7 +17,6 @@ class Text : public PlotItem
             return PlotType::TEXT;
         }
 
-        bool absolute = false;
         std::string text;
 
         double x;

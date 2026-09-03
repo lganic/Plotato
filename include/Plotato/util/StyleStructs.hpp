@@ -31,12 +31,15 @@ struct TextStyle {
 };
 
 struct GraphTextStyle : public TextStyle {
+
+    bool absolute = true;
+
     Anchor anchor = Anchor::MIDDLE_CENTER;
     Anchor absolute_anchor = Anchor::TOP_LEFT;
 
     Color background_color {255, 255, 255, 255};
     Color outline_color {0, 0, 0, 255};
-    
+
     double outline_width = 2;
     double text_padding = 5;
 };

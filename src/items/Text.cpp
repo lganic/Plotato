@@ -10,7 +10,7 @@ namespace plotato {
 
         GraphBounds bounds;
 
-        if (!absolute) {
+        if (!style.absolute) {
             bounds.adjust_with_point(x, y);
         }
 
@@ -22,6 +22,6 @@ namespace plotato {
         // Create a graph renderer.
         GraphRenderer renderer(ctx.cr, ctx.current_viewport);
 
-        renderer.draw_text(x, y, text, absolute, style);
+        renderer.draw_text(x, y, text, style);
     }
 }

@@ -207,7 +207,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     }
 }
 
-void GraphRenderer::draw_text(double x, double y, std::string text, bool absolute, GraphTextStyle style) {
+void GraphRenderer::draw_text(double x, double y, std::string text, GraphTextStyle style) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
@@ -222,7 +222,7 @@ void GraphRenderer::draw_text(double x, double y, std::string text, bool absolut
 
     double sx, sy;
 
-    if (absolute) {
+    if (style.absolute) {
         sx = x + plot_rect.x + plot_rect.width / 2; // Offset by plot position, and center.
         sy = y + plot_rect.y + plot_rect.height / 2; // Offset by plot position, and center.
 

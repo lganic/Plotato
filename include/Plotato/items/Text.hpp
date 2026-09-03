@@ -19,7 +19,6 @@ class Text : public PlotItem
 
         bool absolute = false;
         std::string text;
-        Anchor anchor = Anchor::MIDDLE_CENTER;
 
         double x;
         double y;

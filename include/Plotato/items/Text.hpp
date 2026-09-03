@@ -11,16 +11,18 @@ namespace plotato {
 
 class Text : public PlotItem
 {
-
-    bool absolute = false;
-    std::string text;
-    Anchor anchor;
-
     public:
 
         virtual PlotType type() const {
             return PlotType::TEXT;
         }
+
+        bool absolute = false;
+        std::string text;
+        Anchor anchor = Anchor::MIDDLE_CENTER;
+
+        double x;
+        double y;
 
         GraphTextStyle style;
 

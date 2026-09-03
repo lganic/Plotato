@@ -32,7 +32,11 @@ struct TextStyle {
 
 struct GraphTextStyle : public TextStyle {
     Anchor anchor;
-    Color background_color;
+    Color background_color {255, 255, 255, 255};
+    
+    Color outline_color {0, 0, 0, 255};
+    double outline_width = 2;
+    double text_padding = 5;
 };
 
 struct MarkerStyle {

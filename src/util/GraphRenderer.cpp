@@ -1,4 +1,5 @@
 #include <Plotato/util/GraphRenderer.hpp>
+#include <Plotato/util/Anchor.hpp>
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -205,5 +206,60 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
         break;
     }
 }
+
+void GraphRenderer::draw_text(double x, double y, std::string text, bool absolute, GraphTextStyle style) {
+
+    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
+
+    style.to_cairo_source(cr);
+    
+    // Get the extents of the text. 
+    cairo_text_extents_t extents;
+    cairo_text_extents(cr, text.c_str(), &extents);
+
+    double full_pixel_width = extents.width + style.text_padding * 2;
+    double full_pixel_height = extents.height + style.text_padding * 2;
+
+    // For now, lets just assume the x and y coordinate are absolute, so just treat them as pixel measures on the graph.
+    double sx = x + plot_rect.x; // Offset by plot position.
+    double sy = y + plot_rect.y; // Offset by plot position.
+
+    if (!absolute) {
+        // The coordinates are not absolute. We need to map them to the screen space.
+
+        sx = data_to_screen_x(x);
+        sy = data_to_screen_y(y);
+    }
+
+    // Get the offset from the anchors.
+    auto [offset_x, offset_y] = get_offset(full_pixel_width, full_pixel_height, style.anchor);
+
+    // Add the offset to the screen position.
+    sx += offset_x;
+    sy += offset_y;
+
+    // Draw the text background, if the color has opacity.
+    if (style.background_color.has_opacity()) {
+        style.background_color.to_cairo_source(cr);
+        cairo_rectangle(cr, sx - full_pixel_width / 2, sy - full_pixel_height / 2, full_pixel_width, full_pixel_height);
+        cairo_fill(cr);
+    }
+
+    // Draw the text outline, if the color has opacity.
+    if (style.outline_color.has_opacity()) {
+        style.outline_color.to_cairo_source(cr);
+        cairo_rectangle(cr, sx - full_pixel_width / 2, sy - full_pixel_height / 2, full_pixel_width, full_pixel_height);
+        cairo_set_line_width(cr, style.outline_width);
+        cairo_stroke(cr);
+    }
+
+    // Now we just have to draw the text.
+    style.to_cairo_source(cr); // Reset the text style.
+    cairo_move_to(cr, sx - extents.width / 2, sy - extents.y_bearing - extents.height / 2);
+    cairo_show_text(cr, text.c_str());
+
+    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+}
+
 
 }

@@ -70,6 +70,8 @@ add_library(plotato
     src/items/PlotItem.cpp
     src/items/LinePlot.cpp
     src/items/ScatterPlot.cpp
+    src/items/Text.cpp
+    src/util/Anchor.cpp
     src/util/GraphRenderer.cpp
     src/util/GraphBounds.cpp
     src/util/StyleStructs.cpp

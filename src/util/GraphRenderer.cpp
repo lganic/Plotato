@@ -220,11 +220,19 @@ void GraphRenderer::draw_text(double x, double y, std::string text, bool absolut
     double full_pixel_width = extents.width + style.text_padding * 2;
     double full_pixel_height = extents.height + style.text_padding * 2;
 
-    // For now, lets just assume the x and y coordinate are absolute, so just treat them as pixel measures on the graph.
-    double sx = x + plot_rect.x; // Offset by plot position.
-    double sy = y + plot_rect.y; // Offset by plot position.
+    double sx, sy;
 
-    if (!absolute) {
+    if (absolute) {
+        sx = x + plot_rect.x + plot_rect.width / 2; // Offset by plot position, and center.
+        sy = y + plot_rect.y + plot_rect.height / 2; // Offset by plot position, and center.
+
+        // Get the absolute anchor offset.
+        auto [plot_offset_x, plot_offset_y] = get_offset(plot_rect.width, plot_rect.height, style.absolute_anchor);
+
+        sx -= plot_offset_x;
+        sy -= plot_offset_y;
+    }
+    else {
         // The coordinates are not absolute. We need to map them to the screen space.
 
         sx = data_to_screen_x(x);

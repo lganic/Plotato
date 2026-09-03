@@ -197,6 +197,18 @@ Title* Graph::add_y_title(std::string title, TextStyle style) {
     return add_axis_title(AxisSide::LEFT, title, style);
 }
 
+Text* Graph::add_text(double x, double y, std::string text, GraphTextStyle style)
+{
+    std::lock_guard<std::mutex> lock(text_mutex);
+
+    auto new_text = std::make_unique<Text>(x, y, text, style);
+    Text* text_pointer = new_text.get();
+
+    text_items.emplace_back(std::move(new_text));
+
+    return text_pointer;
+}
+
 // Called when the graph is requested to draw.
 gboolean Graph::on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
@@ -566,6 +578,15 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
                     cairo_stroke(cr); // Use our kept path from the rectangle to stroke
                 }
             }
+        }
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(text_mutex);
+
+        // Loop over all text elements, and call each of their corresponding draw functions.
+        for(int i = 0; i < text_items.size(); i ++){
+            text_items[i]->draw(rc);
         }
     }
 }

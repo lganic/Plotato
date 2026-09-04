@@ -3,12 +3,18 @@
 
 #include <gtk/gtk.h>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/GraphRenderer.hpp>
 
 namespace plotato{
 
-struct RenderContext {
-    cairo_t* cr;
-    GraphViewport current_viewport;
+class RenderContext {
+
+    public:
+        cairo_t* cr;
+        GraphViewport current_viewport;
+        GraphRenderer renderer;
+
+        RenderContext(cairo_t* cr, GraphViewport current_viewport);
 };
 
 }

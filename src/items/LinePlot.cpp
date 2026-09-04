@@ -11,12 +11,8 @@ LinePlot::LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotS
 }
 
 void LinePlot::draw(RenderContext& ctx) {
-
-    // First, create a graph renderer, which will abstract away a lot of the drawing logic.
-    GraphRenderer renderer(ctx.cr, ctx.current_viewport);
-
     // Pass our line data to the graph renderer. 
-    renderer.draw_polyline(x, y, style);
+    ctx.renderer.draw_polyline(x, y, style);
 }
 
 GraphBounds LinePlot::bounds(){

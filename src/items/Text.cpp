@@ -20,10 +20,7 @@ namespace plotato {
     }
 
     void Text::draw(RenderContext& ctx) {
-
-        // Create a graph renderer.
-        GraphRenderer renderer(ctx.cr, ctx.current_viewport);
-
-        renderer.draw_text(x, y, text, style);
+        // Draw the text using the renderer
+        ctx.renderer.draw_text(x, y, text, style);
     }
 }

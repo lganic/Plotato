@@ -77,6 +77,137 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x,
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
+
+// Draw a circle at exact pixel coordinates, with exact pixel sizes.
+void GraphRenderer::draw_pixel_circle(double pixel_x, double pixel_y, double pixel_radius, Color background, Color outline, double margin) {
+
+    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
+
+    // First, calculate how many segments we need to render this. 
+    // We do this based on an approximate solution to this equation:
+
+    // r*(1-sqrt(2pi/(N * sin(360 / N)))) < M
+
+    // Where M is the maximum amount of pixel margin that the polygon is allowed to be off at the vertexes.
+    // To derive that, just solve first for the radius of a polygon where the area matches the circle equivalent
+    // then re-arrange to find rp-rc < M where rp is radius of polygon, and rc is radius of circle.
+
+    // You will see my rp formula in a sec.
+
+    // Approximate solution to N is this:
+    uint32_t num_faces = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / pixel_radius, -2))));
+
+    // Then we can find the radius of the polygon like so:
+    double radius_polygon = pixel_radius * std::sqrt(2 * M_PI / (num_faces * std::sin(2 * M_PI / num_faces)));
+
+    // And now we can draw. I am tempted to re-use the interleaved polygon, but it would be messy.
+    // So I will make another method here.
+
+    bool started = false;
+
+    for (uint32_t i = 0; i < num_faces; i ++) {
+        double angle = static_cast<double>(i) * 2.0 * M_PI / static_cast<double>(num_faces);
+        
+        double sx = pixel_x + radius_polygon * std::cos(angle);
+        double sy = pixel_y + radius_polygon * std::sin(angle);
+
+        if (!started) {
+            // Loop not started yet. Just move to the coordinate.
+            cairo_move_to(cr, sx, sy);
+        }
+        else {
+            // Loop started. Just keep going.
+            cairo_line_to(cr, sx, sy);
+        }
+
+        started = true;
+    }
+
+    // Path complete. Close it.
+    cairo_close_path(cr);
+
+    // Now lets stroke it.
+    if (background.has_opacity()) {
+        // Fill the background.
+        background.to_cairo_source(cr);
+        cairo_fill_preserve(cr);
+    }
+
+    // Check if we should do a background as well.
+    if (outline.has_opacity()) {
+        // Stroke the outline.
+        outline.to_cairo_source(cr);
+        cairo_stroke_preserve(cr);
+    }
+
+    cairo_new_path(cr); // Clear out the preserved path. Since we use preserve twice to cover all bases.
+
+    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+}
+
+
+void GraphRenderer::draw_circle(double x, double y, double radius, Color background, Color outline, double margin) {
+
+    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
+
+    // Believe it or not, this one actually needs its own function. Since we are now dealing with screen coordinates.
+    // I.e. if the graph were skewed, we would need to be rendering an ellipse.
+
+    // Lets do the same circle calculation as before to figure out the number of faces. 
+    // We will just do this once per axis, then figure out which axis is best.
+
+    // TODO Probably a cleaner way to do this. Need to do algebra:
+    double delta_x_pixels = data_to_screen_x(x + radius) - data_to_screen_x(x); // Offset x by radius, and see how far offset.
+    double delta_y_pixels = data_to_screen_y(y + radius) - data_to_screen_y(y); // Offset x by radius, and see how far offset.
+
+    uint32_t num_faces_x = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_x_pixels, -2))));
+    uint32_t num_faces_y = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_y_pixels, -2))));
+
+    uint32_t num_faces = std::max(num_faces_x, num_faces_y);
+
+    bool started = false;
+
+    for (uint32_t i = 0; i < num_faces; i ++) {
+
+        double angle = static_cast<double>(i) * 2.0 * M_PI / static_cast<double>(num_faces);
+        
+        double poly_x = data_to_screen_x(x + radius * std::cos(angle));
+        double poly_y = data_to_screen_y(y + radius * std::sin(angle));
+
+        if (!started) {
+            // Loop not started yet. Just move to the coordinate.
+            cairo_move_to(cr, poly_x, poly_y);
+        }
+        else {
+            // Loop started. Just keep going.
+            cairo_line_to(cr, poly_x, poly_y);
+        }
+
+        started = true;
+    }
+
+    // Path complete. Close it.
+    cairo_close_path(cr);
+
+    // Now lets stroke it.
+    if (background.has_opacity()) {
+        // Fill the background.
+        background.to_cairo_source(cr);
+        cairo_fill_preserve(cr);
+    }
+
+    // Check if we should do a background as well.
+    if (outline.has_opacity()) {
+        // Stroke the outline.
+        outline.to_cairo_source(cr);
+        cairo_stroke_preserve(cr);
+    }
+
+    cairo_new_path(cr); // Clear out the preserved path. Since we use preserve twice to cover all bases.
+
+    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+}
+
 void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, MarkerStyle& style) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
@@ -152,7 +283,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_polygon(x, y, 0, 20, style); // Draw circle as 20 sided polygon.
+        draw_pixel_circle(data_to_screen_x(x), data_to_screen_y(y), style.size, style.fill, style.outline);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':

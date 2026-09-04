@@ -13,13 +13,9 @@ ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data,
 
 void ScatterPlot::draw(RenderContext& ctx) {
 
-    // First, create a graph renderer, which will abstract away a lot of the drawing logic.
-    GraphRenderer renderer(ctx.cr, ctx.current_viewport);
-
     // Loop over all the x data, and plot each individual element using the graphrenderer.  
-
     for (size_t i = 0; i < x.size(); i ++) {
-        renderer.draw_marker(x[i], y[i], style);
+        ctx.renderer.draw_marker(x[i], y[i], style);
     }
 }
 

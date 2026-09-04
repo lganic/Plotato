@@ -162,8 +162,6 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
 
     uint32_t num_faces = std::max(num_faces_x, num_faces_y);
 
-    std::cout << num_faces << std::endl;
-
     bool started = false;
 
     for (uint32_t i = 0; i < num_faces; i ++) {

@@ -416,13 +416,12 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     // Do the actual plotting.
     // Create a new viewport / render context which we will pass to the renderers.
     GraphViewport gv;
-    RenderContext rc;
-
+    
     gv.xmin = bounds.xmin;
     gv.xmax = bounds.xmax;
     gv.ymin = bounds.ymin;
     gv.ymax = bounds.ymax;
-
+    
     gv.graph_height = plot_h;
     gv.graph_width = plot_w;
 
@@ -430,9 +429,8 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     gv.margin_right = right_margin;
     gv.margin_top = top_margin;
     gv.margin_bottom = bottom_margin;
-
-    rc.cr = cr;
-    rc.current_viewport = gv;
+    
+    RenderContext rc(cr, gv);
 
     {
         std::lock_guard<std::mutex> lock(data_mutex);

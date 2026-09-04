@@ -277,7 +277,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_polygon(x, y, 0, 20, style); // Draw circle as 20 sided polygon.
+        draw_circle(data_to_screen_x(x), data_to_screen_y(y), style.size, style.fill, style.outline);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':

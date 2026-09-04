@@ -535,8 +535,18 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         double legend_box_width = max_width + 2 * style.legend_padding + max_height + 5;
         double legend_box_height = all_extents.size() * (max_height + style.legend_inter_object_padding) - style.legend_inter_object_padding + 2 * style.legend_padding;
 
-        double legend_x = plot_x + plot_w - style.legend_offset - legend_box_width;
-        double legend_y = plot_y + style.legend_offset;
+        // Calculate the legend based on the anchor position.
+        auto [plot_off_x, plot_off_y] = get_offset(plot_w, plot_h, style.legend_anchor);
+        auto [anchor_x, anchor_y] = get_offset(legend_box_width, legend_box_height, style.legend_anchor);
+        auto [padding_x, padding_y] = get_offset(2 * style.legend_offset, 2 * style.legend_offset, style.legend_anchor); // Hacky.
+
+        // First, calculate a legend position which puts it in the exact center of the graph.
+        double legend_x = plot_x + (plot_w / 2) - (legend_box_width / 2);
+        double legend_y = plot_y + (plot_h / 2) - (legend_box_height / 2);
+
+        // Then use the anchors to offset into the correct position.
+        legend_x -= plot_off_x - anchor_x - padding_x;
+        legend_y -= plot_off_y - anchor_y - padding_y;
 
         double swatch_x = legend_x + style.legend_padding;
         double text_x = swatch_x + max_height + 5;

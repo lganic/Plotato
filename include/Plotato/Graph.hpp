@@ -49,6 +49,7 @@ struct GraphStyle {
     Color legend_color = Color(255, 255, 255);
     Color legend_border_color = Color(200, 200, 200);
     double legend_border_width = 2;
+    Anchor legend_anchor = Anchor::TOP_RIGHT;
 
     bool dont_draw_version_text = false;
 };

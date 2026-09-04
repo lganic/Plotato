@@ -162,6 +162,8 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
 
     uint32_t num_faces = std::max(num_faces_x, num_faces_y);
 
+    std::cout << num_faces << std::endl;
+
     bool started = false;
 
     for (uint32_t i = 0; i < num_faces; i ++) {
@@ -277,7 +279,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_circle(data_to_screen_x(x), data_to_screen_y(y), style.size, style.fill, style.outline);
+        draw_pixel_circle(data_to_screen_x(x), data_to_screen_y(y), style.size, style.fill, style.outline);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':

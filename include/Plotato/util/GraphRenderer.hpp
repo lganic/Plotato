@@ -18,9 +18,10 @@ public:
     void draw_axes();
     void draw_grid();
 
-    void draw_polyline(const std::vector<double>& x,
-    const std::vector<double>& y,
-    const PlotStyle& style);
+    void draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
+    void draw_pixel_circle(double pixel_x, double pixel_y, double pixel_radius, Color background, Color outline, double margin = 1);
+    void draw_circle(double x, double y, double radius, Color background, Color outline, double margin = 1);
+    
     
     void draw_marker(double x, double y, MarkerStyle& style);
 

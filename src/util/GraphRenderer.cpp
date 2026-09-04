@@ -123,6 +123,9 @@ void GraphRenderer::draw_pixel_circle(double pixel_x, double pixel_y, double pix
         started = true;
     }
 
+    // Path complete. Close it.
+    cairo_close_path(cr);
+
     // Now lets stroke it.
     if (background.has_opacity()) {
         // Fill the background.
@@ -182,6 +185,9 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
 
         started = true;
     }
+
+    // Path complete. Close it.
+    cairo_close_path(cr);
 
     // Now lets stroke it.
     if (background.has_opacity()) {

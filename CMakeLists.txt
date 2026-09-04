@@ -74,6 +74,7 @@ add_library(plotato
     src/util/Anchor.cpp
     src/util/GraphRenderer.cpp
     src/util/GraphBounds.cpp
+    src/util/RenderContext.cpp
     src/util/StyleStructs.cpp
     "${ICON_OBJECT}"
 )

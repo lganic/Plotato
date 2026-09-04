@@ -523,8 +523,8 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
 
         // Now we can calculate the text size. 
         // I am going to use the maximum of the height, instead of each element so spacing is even.
-        double max_height;
-        double max_width;
+        double max_height = 0;
+        double max_width = 0;
 
         for (size_t extents_index = 0; extents_index < all_extents.size(); extents_index ++) {
             max_height = std::max(max_height, all_extents[extents_index]->height);

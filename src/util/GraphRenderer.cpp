@@ -98,7 +98,7 @@ void GraphRenderer::draw_pixel_circle(double pixel_x, double pixel_y, double pix
     uint32_t num_faces = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / pixel_radius, -2))));
 
     // Then we can find the radius of the polygon like so:
-    double radius_polygon = pixel_radius * std::sqrt(2 * M_PI / (num_faces * std::sin(360.0 / num_faces)));
+    double radius_polygon = pixel_radius * std::sqrt(2 * M_PI / (num_faces * std::sin(2 * M_PI / num_faces)));
 
     // And now we can draw. I am tempted to re-use the interleaved polygon, but it would be messy.
     // So I will make another method here.

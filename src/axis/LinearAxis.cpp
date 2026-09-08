@@ -27,9 +27,9 @@ void LinearAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
         // Lets first figure out where our axis is on the plot.
         double location;
         if (side == LEFT || side == RIGHT){
-            location = ctx.current_viewport.ymin + (ctx.current_viewport.ymax - ctx.current_viewport.ymin) * i / (num_ticks - 1);
+            location = ctx.current_viewport.bounds.ymin + (ctx.current_viewport.bounds.ymax - ctx.current_viewport.bounds.ymin) * i / (num_ticks - 1);
         }else {
-            location = ctx.current_viewport.xmin + (ctx.current_viewport.xmax - ctx.current_viewport.xmin) * i / (num_ticks - 1);
+            location = ctx.current_viewport.bounds.xmin + (ctx.current_viewport.bounds.xmax - ctx.current_viewport.bounds.xmin) * i / (num_ticks - 1);
         }
         
         // It would also be useful to know the text size ahead of time. So lets go ahead and do that.

@@ -13,12 +13,12 @@ void OffsetAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
 
     // Figure out which axis to offset
     if (side == TOP || side == BOTTOM) {
-        new_viewport.xmin += offset;
-        new_viewport.xmax += offset;
+        new_viewport.bounds.xmin += offset;
+        new_viewport.bounds.xmax += offset;
     }
     else { // Left or Right
-        new_viewport.ymin += offset;
-        new_viewport.ymax += offset;
+        new_viewport.bounds.ymin += offset;
+        new_viewport.bounds.ymax += offset;
     }
 
     // Create a new render context using the same cairo ptr, but the offset viewport.

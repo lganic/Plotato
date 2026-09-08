@@ -35,11 +35,11 @@ void GraphBounds::adjust_with_point(double x, double y) {
 }
 
 int GraphViewport::map_x_to_screen(double x) {
-    return detail::map_single_axis(x, xmin, xmax, graph_width, margin_left);
+    return detail::map_single_axis(x, bounds.xmin, bounds.xmax, graph_width, margin_left);
 }
 
 int GraphViewport::map_y_to_screen(double y) {
-    return detail::map_single_axis(y, ymax, ymin, graph_height, margin_top); // ymin and ymax are flipped here. Its a janky solution to correctly flip the vertical axis.
+    return detail::map_single_axis(y, bounds.ymax, bounds.ymin, graph_height, margin_top); // ymin and ymax are flipped here. Its a janky solution to correctly flip the vertical axis.
 }
 
 }

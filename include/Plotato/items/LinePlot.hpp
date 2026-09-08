@@ -15,6 +15,8 @@ class LinePlot : public PlotItem
     
     public:
 
+        bool marker_active = false;
+
         virtual PlotType type() const {
             return PlotType::LINEPLOT;
         }
@@ -24,6 +26,8 @@ class LinePlot : public PlotItem
         LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();
+
+        void marker(MarkerStyle style = MarkerStyle());
 };
 
 }

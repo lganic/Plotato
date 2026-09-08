@@ -18,10 +18,7 @@ struct GraphBounds {
 
 // Constructed by graph, and passed to graph renderers to allign everything properly, after accounting for margins.
 struct GraphViewport {
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
+    GraphBounds bounds;
 
     int margin_left = 10;
     int margin_right = 10;

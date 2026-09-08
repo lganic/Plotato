@@ -20,13 +20,13 @@ GraphRenderer::GraphRenderer(cairo_t *cr, const GraphViewport &viewport)
 
 double GraphRenderer::data_to_screen_x(double x) const
 {
-    double t = (x - viewport.xmin) / (viewport.xmax - viewport.xmin);
+    double t = (x - viewport.bounds.xmin) / (viewport.bounds.xmax - viewport.bounds.xmin);
     return plot_rect.x + t * plot_rect.width;
 }
 
 double GraphRenderer::data_to_screen_y(double y) const
 {
-    double t = (y - viewport.ymin) / (viewport.ymax - viewport.ymin);
+    double t = (y - viewport.bounds.ymin) / (viewport.bounds.ymax - viewport.bounds.ymin);
     return plot_rect.y + plot_rect.height - t * plot_rect.height;
 }
 

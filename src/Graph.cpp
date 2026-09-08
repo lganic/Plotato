@@ -417,10 +417,7 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     // Create a new viewport / render context which we will pass to the renderers.
     GraphViewport gv;
     
-    gv.xmin = bounds.xmin;
-    gv.xmax = bounds.xmax;
-    gv.ymin = bounds.ymin;
-    gv.ymax = bounds.ymax;
+    gv.bounds = bounds;
     
     gv.graph_height = plot_h;
     gv.graph_width = plot_w;

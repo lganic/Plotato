@@ -326,6 +326,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     case 'd':
         draw_interleaved_polygon(x, y, 2, {0, 90}, {.5, 1}, style);
         break;
+    case '+':
     case 'P':
         draw_interleaved_polygon(x, y, 4, {-18, 18, 45}, {1, 1, .5}, style);
         break;

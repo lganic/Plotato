@@ -27,4 +27,11 @@ GraphBounds LinePlot::bounds(){
     return GraphBounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
 }
 
+void LinePlot::marker(MarkerStyle marker_style) {
+
+    marker_active = true;
+    style.marker = marker_style;
+
+}
+
 }

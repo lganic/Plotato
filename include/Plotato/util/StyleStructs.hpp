@@ -46,9 +46,9 @@ struct GraphTextStyle : public TextStyle {
 
 struct MarkerStyle {
     char type = 'O';
-    Color fill;
+    Color fill = Color(0, 0, 0);
 
-    double size = 10;
+    double size = 6;
 
     Color outline = Color(0, 0, 0, 0);
     double outline_width = 2;

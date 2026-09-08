@@ -258,16 +258,21 @@ void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std
     // Path complete. Close it.
     cairo_close_path(cr);
 
-    // Now we can fill it
-    style.fill.to_cairo_source(cr);
-    cairo_fill_preserve(cr); // Preserve this, in case we need to do the outline.
-
-    // Check if the outline has a color. If it does, then we need to draw it.
-    if (style.outline.has_opacity()) {
-        style.outline.to_cairo_source(cr);
-        cairo_set_line_width(cr, style.outline_width);
-        cairo_stroke(cr);
+    // Now lets stroke it.
+    if (style.fill.has_opacity()) {
+        // Fill the background.
+        style.fill.to_cairo_source(cr);
+        cairo_fill_preserve(cr);
     }
+
+    // Check if we should do a background as well.
+    if (style.outline.has_opacity()) {
+        // Stroke the outline.
+        style.outline.to_cairo_source(cr);
+        cairo_stroke_preserve(cr);
+    }
+
+    cairo_new_path(cr); // Clear out the preserved path. Since we use preserve twice to cover all bases.
 
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
@@ -326,6 +331,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     case 'd':
         draw_interleaved_polygon(x, y, 2, {0, 90}, {.5, 1}, style);
         break;
+    case '+':
     case 'P':
         draw_interleaved_polygon(x, y, 4, {-18, 18, 45}, {1, 1, .5}, style);
         break;

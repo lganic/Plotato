@@ -13,6 +13,15 @@ LinePlot::LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotS
 void LinePlot::draw(RenderContext& ctx) {
     // Pass our line data to the graph renderer. 
     ctx.renderer.draw_polyline(x, y, style);
+
+    if (marker_active) {
+        
+        // Loop over all the x data, and plot each individual element using the graphrenderer.  
+        for (size_t i = 0; i < x.size(); i ++) {
+            ctx.renderer.draw_marker(x[i], y[i], style.marker);
+        }
+
+    }
 }
 
 GraphBounds LinePlot::bounds(){

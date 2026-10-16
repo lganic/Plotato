@@ -1,5 +1,5 @@
-#ifndef PLOTATO_BASEAXIS_HPP
-#define PLOTATO_BASEAXIS_HPP
+#ifndef PLOTATO_BASE_AXIS_HPP
+#define PLOTATO_BASE_AXIS_HPP
 
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/GraphBounds.hpp>
@@ -60,4 +60,4 @@ struct Axis
 
 }
 
-#endif // PLOTATO_BASEAXIS_HPP
+#endif // PLOTATO_BASE_AXIS_HPP

@@ -344,7 +344,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     }
 }
 
-void GraphRenderer::draw_text(double x, double y, std::string text, GraphTextStyle style) {
+void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 

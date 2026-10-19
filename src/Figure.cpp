@@ -245,8 +245,6 @@ double Figure::map_y(double x, double y, GraphViewport viewport) {return 0;}
 
 void Figure::draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height) {}
 
-}
-
 void Figure::draw_axis(RenderContext& rc) {
 
     // Draw the axis data onto some generic figure.
@@ -398,4 +396,6 @@ void Figure::draw_legend(RenderContext& rc) {
             }
         }
     }
+}
+
 }

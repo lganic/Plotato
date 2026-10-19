@@ -79,28 +79,7 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
         return;
     }
 
-    // Create a new viewport / render context which we will pass to the renderers.
-    RenderContext rc = get_render_context(cr, width, height);
-
-    uint32_t plot_x = rc.current_viewport.margin_left;
-    uint32_t plot_y = rc.current_viewport.margin_top;
-    uint32_t plot_w = rc.current_viewport.graph_width;
-    uint32_t plot_h = rc.current_viewport.graph_height;
-
-    // Set background color on the plot.
-    style.background_color.to_cairo_source(cr);
-    cairo_paint(cr); // Paint the background.
-
-    if (plot_w <= 0 || plot_h <= 0) {
-
-        // Plot too small! Fill the area with red, to indicate a problem.
-
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_paint(cr);
-
-        return; // Do not proceed.
-    }
-
+    // Update bounds before we create the render context object.
     // Check if we need to do some auto framing.
     if (x_axis_auto_framing || y_axis_auto_framing){
         // Update the bounds first, so we know that everything is up to date before we get started on the draw process.
@@ -133,7 +112,27 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 
-    rc.current_viewport.bounds = bounds;
+    // Create a new viewport / render context which we will pass to the renderers.
+    RenderContext rc = get_render_context(cr, width, height);
+
+    uint32_t plot_x = rc.current_viewport.margin_left;
+    uint32_t plot_y = rc.current_viewport.margin_top;
+    uint32_t plot_w = rc.current_viewport.graph_width;
+    uint32_t plot_h = rc.current_viewport.graph_height;
+
+    // Set background color on the plot.
+    style.background_color.to_cairo_source(cr);
+    cairo_paint(cr); // Paint the background.
+
+    if (plot_w <= 0 || plot_h <= 0) {
+
+        // Plot too small! Fill the area with red, to indicate a problem.
+
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_paint(cr);
+
+        return; // Do not proceed.
+    }
 
     // Plot background
     style.plot_background_color.to_cairo_source(cr);

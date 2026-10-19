@@ -451,6 +451,8 @@ RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t h
 
     GraphViewport gv;
 
+    gv.bounds = bounds;
+
     gv.graph_height = plot_h;
     gv.graph_width = plot_w;
 

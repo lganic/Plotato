@@ -24,8 +24,8 @@ private:
     bool x_axis_auto_framing = true;
     bool y_axis_auto_framing = true;
 
-    virtual double map_x(double x, uint32_t plot_x, uint32_t plot_w) const;
-    virtual double map_y(double y, uint32_t plot_y, uint32_t plot_h) const;
+    virtual double map_x(double x, double y, GraphViewport viewport) const;
+    virtual double map_y(double x, double y, GraphViewport viewport) const;
 
     void draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height);
 };

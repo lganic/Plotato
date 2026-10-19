@@ -54,16 +54,16 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
     return axis;
 }
 
-double Graph::map_x(double x, uint32_t plot_x, uint32_t plot_w) const
+double Graph::map_x(double x, double y, GraphViewport viewport) const
 {
     double t = (x - bounds.xmin) / (bounds.xmax - bounds.xmin);
-    return plot_x + t * plot_w;
+    return viewport.margin_left + t * viewport.graph_width;
 }
 
-double Graph::map_y(double y, uint32_t plot_y, uint32_t plot_h) const
+double Graph::map_y(double x, double y, GraphViewport viewport) const
 {
     double t = (y - bounds.ymin) / (bounds.ymax - bounds.ymin);
-    return plot_y + plot_h - t * plot_h;
+    return viewport.margin_top + viewport.graph_height * (1 - t);
 }
 
 void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)

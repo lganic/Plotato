@@ -240,8 +240,8 @@ void Figure::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {
     draw_version_text(cr, width, height);
 }
 
-double Figure::map_x(double x, uint32_t plot_x, uint32_t plot_w) {return 0;}
-double Figure::map_y(double y, uint32_t plot_y, uint32_t plot_h) {return 0;}
+double Figure::map_x(double x, double y, GraphViewport viewport) {return 0;}
+double Figure::map_y(double x, double y, GraphViewport viewport) {return 0;}
 
 void Figure::draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height) {}
 

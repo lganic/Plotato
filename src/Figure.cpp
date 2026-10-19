@@ -398,4 +398,72 @@ void Figure::draw_legend(RenderContext& rc) {
     }
 }
 
+RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height) {
+
+    // Set default margins from style.
+    int32_t left_margin = style.default_margin;
+    int32_t right_margin = style.default_margin;
+    int32_t top_margin = style.default_margin;
+    int32_t bottom_margin = style.default_margin;
+
+    if (!style.dont_draw_version_text) bottom_margin += 10;
+
+    // Adjust the margins based on the axis which are present
+    {
+        std::lock_guard<std::mutex> lock(axis_mutex);
+
+        for (size_t i = 0; i < current_axis_items.size(); i ++) {
+            AxisPixelSize axis_size = current_axis_items[i]->size();
+
+            switch (current_axis_items[i]->side)
+            {
+            case TOP:
+                top_margin += axis_size.top;
+                top_margin += INTER_AXIS_PADDING;
+                break;
+
+            case BOTTOM:
+                bottom_margin += axis_size.bottom;
+                bottom_margin += INTER_AXIS_PADDING;
+                break;
+
+            case LEFT:
+                left_margin += axis_size.left;
+                left_margin += INTER_AXIS_PADDING;
+                break;
+            
+            case RIGHT:
+                right_margin += axis_size.right;
+                right_margin += INTER_AXIS_PADDING;
+                break;
+            
+            default:
+                break;
+            }
+        }
+    }
+
+    // Get some plot information based on the margin.
+    int32_t plot_x = left_margin;
+    int32_t plot_y = top_margin;
+    int32_t plot_w = width - left_margin - right_margin;
+    int32_t plot_h = height - top_margin - bottom_margin;
+
+    GraphViewport gv;
+
+    gv.graph_height = plot_h;
+    gv.graph_width = plot_w;
+
+    gv.margin_left = left_margin;
+    gv.margin_right = right_margin;
+    gv.margin_top = top_margin;
+    gv.margin_bottom = bottom_margin;
+
+    RenderContext rc(cr, gv, std::bind(&Figure::map_x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), std::bind(&Figure::map_y, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    return rc;
+
+}
+
+
 }

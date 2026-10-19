@@ -108,6 +108,8 @@ protected:
     void draw_legend(RenderContext& rc);
 
     virtual void draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height);
+
+    RenderContext get_render_context(cairo_t* cr, uint32_t width, uint32_t height);
 };
 
 }

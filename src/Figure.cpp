@@ -288,3 +288,114 @@ void Figure::draw_axis(RenderContext& rc) {
         }
     }
 }
+
+void Figure::draw_legend(RenderContext& rc) {
+
+    // Lets calculate the total size of the thing. 
+    // To make this look good, we are going to need to know the size of all the text elements ahead of time.
+    // So lets make a vector of all the text extents
+
+    std::vector<std::unique_ptr<cairo_text_extents_t>> all_extents;
+
+    GraphViewport viewport = rc.current_viewport;
+
+    uint32_t plot_w = viewport.graph_width;
+    uint32_t plot_h = viewport.graph_height;
+    uint32_t plot_x = viewport.margin_left;
+    uint32_t plot_y = viewport.margin_top;
+
+    // Set the text style, so we have up to date font info.
+    style.legend_text_style.to_cairo_source(rc.cr);
+
+    // Do this inside of a scope, since we are accessing mutexed data.
+    {
+        std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
+
+        for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
+
+            if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
+
+                LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
+
+                // Make a new extents object.
+                auto new_extents = std::make_unique<cairo_text_extents_t>();
+
+                // Update the cairo text extents.
+                cairo_text_extents(rc.cr, line_plot->style.name.c_str(), new_extents.get());
+
+                // Add the text extents ptr to the array.
+                all_extents.emplace_back(std::move(new_extents));
+            }
+
+        }
+    }
+
+    // Now we can calculate the text size. 
+    // I am going to use the maximum of the height, instead of each element so spacing is even.
+    double max_height = 0;
+    double max_width = 0;
+
+    for (size_t extents_index = 0; extents_index < all_extents.size(); extents_index ++) {
+        max_height = std::max(max_height, all_extents[extents_index]->height);
+        max_width = std::max(max_width, all_extents[extents_index]->width);
+    }
+
+    // Final size calculation.
+    double legend_box_width = max_width + 2 * style.legend_padding + max_height + 5;
+    double legend_box_height = all_extents.size() * (max_height + style.legend_inter_object_padding) - style.legend_inter_object_padding + 2 * style.legend_padding;
+
+    // Calculate the legend based on the anchor position.
+    auto [plot_off_x, plot_off_y] = get_offset(plot_w, plot_h, style.legend_anchor);
+    auto [anchor_x, anchor_y] = get_offset(legend_box_width, legend_box_height, style.legend_anchor);
+    auto [padding_x, padding_y] = get_offset(2 * style.legend_offset, 2 * style.legend_offset, style.legend_anchor); // Hacky.
+
+    // First, calculate a legend position which puts it in the exact center of the graph.
+    double legend_x = plot_x + (plot_w / 2) - (legend_box_width / 2);
+    double legend_y = plot_y + (plot_h / 2) - (legend_box_height / 2);
+
+    // Then use the anchors to offset into the correct position.
+    legend_x -= plot_off_x - anchor_x - padding_x;
+    legend_y -= plot_off_y - anchor_y - padding_y;
+
+    double swatch_x = legend_x + style.legend_padding;
+    double text_x = swatch_x + max_height + 5;
+
+    // Draw legend filled rectangle
+    style.legend_color.to_cairo_source(rc.cr);
+    cairo_rectangle(rc.cr, legend_x, legend_y, legend_box_width, legend_box_height);
+    cairo_fill_preserve(rc.cr); // Fill, and keep path
+
+    style.legend_border_color.to_cairo_source(rc.cr);
+    cairo_set_line_width(rc.cr, style.legend_border_width);
+    cairo_stroke(rc.cr); // Use our kept path from the rectangle to stroke
+
+    // Now we can draw the text and the color swatches.
+    // Do this inside of a scope, since we are accessing mutexed data.
+    style.legend_text_style.to_cairo_source(rc.cr);
+    {
+        std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
+
+        for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
+
+            if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
+
+                LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
+
+                style.legend_text_style.to_cairo_source(rc.cr);
+
+                cairo_move_to(rc.cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+
+                cairo_show_text(rc.cr, line_plot->style.name.c_str());
+
+                // Draw the swatch color
+                line_plot->style.line_color.to_cairo_source(rc.cr);
+                cairo_rectangle(rc.cr, legend_x + style.legend_offset, legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), max_height, max_height);
+                cairo_fill_preserve(rc.cr); // Fill, and keep path
+
+                style.legend_border_color.to_cairo_source(rc.cr);
+                cairo_set_line_width(rc.cr, style.legend_border_width);
+                cairo_stroke(rc.cr); // Use our kept path from the rectangle to stroke
+            }
+        }
+    }
+}

@@ -68,8 +68,6 @@ double Graph::map_y(double x, double y, GraphViewport viewport)
 
 void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 {
-    // TODO: I don't like how many things are in this draw function. Cleanup is required.
-
     std::lock_guard<std::mutex> draw_guard(draw_mutex); // Ensure that only one draw is being called at a time.
 
     if (current_plot_items.size() == 0) {

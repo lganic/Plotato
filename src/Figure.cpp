@@ -184,6 +184,8 @@ gboolean Figure::on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
 
+    std::lock_guard<std::mutex> draw_guard(figure->draw_mutex); // Ensure that only one draw is being called at a time.
+
     // Pass the drawing information to the drawer.
     figure->draw_to_canvas(cr, allocation.width, allocation.height);
     return FALSE;

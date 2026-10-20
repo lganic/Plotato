@@ -13,16 +13,11 @@ class RenderContext {
 
     public:
 
-        using MapFunction = std::function<double(double, double, GraphViewport)>;
-
         cairo_t* cr;
         GraphViewport current_viewport;
         GraphRenderer renderer;
 
-        std::function<double(double, double, GraphViewport)> map_x;
-        std::function<double(double, double, GraphViewport)> map_y;
-
-        RenderContext(cairo_t* cr, GraphViewport current_viewport, MapFunction map_x, MapFunction map_y);
+        RenderContext(cairo_t* cr, GraphViewport current_viewport, GraphRenderer::MapFunction map_x, GraphRenderer::MapFunction map_y);
 };
 
 }

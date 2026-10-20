@@ -54,13 +54,13 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
     return axis;
 }
 
-double Graph::map_x(double x, double y, GraphViewport viewport) const
+double Graph::map_x(double x, double y, GraphViewport viewport)
 {
     double t = (x - bounds.xmin) / (bounds.xmax - bounds.xmin);
     return viewport.margin_left + t * viewport.graph_width;
 }
 
-double Graph::map_y(double x, double y, GraphViewport viewport) const
+double Graph::map_y(double x, double y, GraphViewport viewport)
 {
     double t = (y - bounds.ymin) / (bounds.ymax - bounds.ymin);
     return viewport.margin_top + viewport.graph_height * (1 - t);

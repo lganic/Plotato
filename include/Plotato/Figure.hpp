@@ -100,14 +100,16 @@ protected:
     
     void draw_no_data(cairo_t* cr, uint32_t width, uint32_t height);
     
-    virtual double map_x(double x, uint32_t plot_x, uint32_t plot_w);
-    virtual double map_y(double y, uint32_t plot_y, uint32_t plot_h);
+    virtual double map_x(double x, double y, GraphViewport viewport);
+    virtual double map_y(double x, double y, GraphViewport viewport);
     
     void draw_version_text(cairo_t* cr, uint32_t width, uint32_t height);
     void draw_axis(RenderContext& rc);
     void draw_legend(RenderContext& rc);
 
     virtual void draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height);
+
+    RenderContext get_render_context(cairo_t* cr, uint32_t width, uint32_t height);
 };
 
 }

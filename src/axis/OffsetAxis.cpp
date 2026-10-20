@@ -22,10 +22,9 @@ void OffsetAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     }
 
     // Create a new render context using the same cairo ptr, but the offset viewport.
-    RenderContext new_context {
-        ctx.cr,
-        new_viewport
-    };
+    RenderContext new_context(ctx);
+
+    new_context.current_viewport = new_viewport;
 
     // Call the linear axis renderer, which we have inherited.
     LinearAxis::draw(new_context, offset_x, offset_y);

@@ -54,16 +54,16 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
     return axis;
 }
 
-double Graph::map_x(double x, uint32_t plot_x, uint32_t plot_w) const
+double Graph::map_x(double x, double y, GraphViewport viewport)
 {
     double t = (x - bounds.xmin) / (bounds.xmax - bounds.xmin);
-    return plot_x + t * plot_w;
+    return viewport.margin_left + t * viewport.graph_width;
 }
 
-double Graph::map_y(double y, uint32_t plot_y, uint32_t plot_h) const
+double Graph::map_y(double x, double y, GraphViewport viewport)
 {
     double t = (y - bounds.ymin) / (bounds.ymax - bounds.ymin);
-    return plot_y + plot_h - t * plot_h;
+    return viewport.margin_top + viewport.graph_height * (1 - t);
 }
 
 void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
@@ -79,69 +79,7 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
         return;
     }
 
-    // Set background color on the plot.
-    style.background_color.to_cairo_source(cr);
-    cairo_paint(cr); // Paint the background.
-
-    // Set default margins from style.
-    int32_t left_margin = style.default_margin;
-    int32_t right_margin = style.default_margin;
-    int32_t top_margin = style.default_margin;
-    int32_t bottom_margin = style.default_margin;
-
-    if (!style.dont_draw_version_text) bottom_margin += 10;
-
-    // Adjust the margins based on the axis which are present
-    {
-        std::lock_guard<std::mutex> lock(axis_mutex);
-
-        for (size_t i = 0; i < current_axis_items.size(); i ++) {
-            AxisPixelSize axis_size = current_axis_items[i]->size();
-
-            switch (current_axis_items[i]->side)
-            {
-            case TOP:
-                top_margin += axis_size.top;
-                top_margin += INTER_AXIS_PADDING;
-                break;
-
-            case BOTTOM:
-                bottom_margin += axis_size.bottom;
-                bottom_margin += INTER_AXIS_PADDING;
-                break;
-
-            case LEFT:
-                left_margin += axis_size.left;
-                left_margin += INTER_AXIS_PADDING;
-                break;
-            
-            case RIGHT:
-                right_margin += axis_size.right;
-                right_margin += INTER_AXIS_PADDING;
-                break;
-            
-            default:
-                break;
-            }
-        }
-    }
-
-    // Get some plot information based on the margin.
-    int32_t plot_x = left_margin;
-    int32_t plot_y = top_margin;
-    int32_t plot_w = width - left_margin - right_margin;
-    int32_t plot_h = height - top_margin - bottom_margin;
-
-    if (plot_w <= 0 || plot_h <= 0) {
-
-        // Plot too small! Fill the area with red, to indicate a problem.
-
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_paint(cr);
-
-        return; // Do not proceed.
-    }
-
+    // Update bounds before we create the render context object.
     // Check if we need to do some auto framing.
     if (x_axis_auto_framing || y_axis_auto_framing){
         // Update the bounds first, so we know that everything is up to date before we get started on the draw process.
@@ -172,7 +110,28 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
                 bounds.ymax = auto_bounds.ymax;
             }
         }
-        
+    }
+
+    // Create a new viewport / render context which we will pass to the renderers.
+    RenderContext rc = get_render_context(cr, width, height);
+
+    uint32_t plot_x = rc.current_viewport.margin_left;
+    uint32_t plot_y = rc.current_viewport.margin_top;
+    uint32_t plot_w = rc.current_viewport.graph_width;
+    uint32_t plot_h = rc.current_viewport.graph_height;
+
+    // Set background color on the plot.
+    style.background_color.to_cairo_source(cr);
+    cairo_paint(cr); // Paint the background.
+
+    if (plot_w <= 0 || plot_h <= 0) {
+
+        // Plot too small! Fill the area with red, to indicate a problem.
+
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_paint(cr);
+
+        return; // Do not proceed.
     }
 
     // Plot background
@@ -194,21 +153,6 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     }
 
     // Do the actual plotting.
-    // Create a new viewport / render context which we will pass to the renderers.
-    GraphViewport gv;
-    
-    gv.bounds = bounds;
-    
-    gv.graph_height = plot_h;
-    gv.graph_width = plot_w;
-
-    gv.margin_left = left_margin;
-    gv.margin_right = right_margin;
-    gv.margin_top = top_margin;
-    gv.margin_bottom = bottom_margin;
-    
-    RenderContext rc(cr, gv);
-
     {
         std::lock_guard<std::mutex> lock(data_mutex);
 

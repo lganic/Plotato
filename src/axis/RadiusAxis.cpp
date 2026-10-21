@@ -26,7 +26,7 @@ void RadiusAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
 
         double radius = outside_radius * i / (num_ticks - 1);
 
-        ctx.renderer.draw_pixel_circle(center_x, center_y, radius, Color(0, 0, 0, 0), style.plot_line_color);
+        ctx.renderer.draw_circle_absolute(center_x, center_y, radius, Color(0, 0, 0, 0), style.plot_line_color);
     }
 }
 

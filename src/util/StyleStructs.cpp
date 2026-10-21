@@ -19,6 +19,11 @@ bool Color::has_opacity() {
     return a != 0;
 }
 
+TextStyle::TextStyle(uint16_t new_font_size) {
+
+    font_size = new_font_size;
+}
+
 void TextStyle::to_cairo_source(cairo_t* cr){
 
     text_color.to_cairo_source(cr);

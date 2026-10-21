@@ -21,6 +21,8 @@ class LinePlot : public PlotItem
             return PlotType::LINEPLOT;
         }
 
+        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+
         PlotStyle style;
 
         LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);

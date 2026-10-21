@@ -22,6 +22,8 @@ struct Color {
 };
 
 struct TextStyle {
+    TextStyle(uint16_t font_size = 12);
+    
     Color text_color;
     uint16_t font_size = 12;
 
@@ -57,8 +59,6 @@ struct MarkerStyle {
 struct PlotStyle {
     Color line_color = Color(0, 0, 255);
     double line_width = 2;
-
-    std::string name = "Plot";
 
     MarkerStyle marker;
 

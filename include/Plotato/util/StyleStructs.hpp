@@ -58,8 +58,6 @@ struct PlotStyle {
     Color line_color = Color(0, 0, 255);
     double line_width = 2;
 
-    std::string name = "";
-
     MarkerStyle marker;
 
     void to_cairo_source(cairo_t* cr);

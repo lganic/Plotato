@@ -18,6 +18,8 @@ class PlotItem
 {
 public:
 
+    std::string name = "";
+
     virtual PlotType type() const {
         return PlotType::NONE;
     }

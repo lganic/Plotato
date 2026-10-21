@@ -58,7 +58,7 @@ struct PlotStyle {
     Color line_color = Color(0, 0, 255);
     double line_width = 2;
 
-    std::string name = "Plot";
+    std::string name = "";
 
     MarkerStyle marker;
 

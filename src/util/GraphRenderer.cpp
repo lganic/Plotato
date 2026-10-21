@@ -356,6 +356,21 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
 
 }
 
+void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style) {
+
+    double mapped_x = data_to_screen_x(x, y);
+    double mapped_y = data_to_screen_y(x, y);
+
+    draw_interleaved_polygon_absolute(mapped_x, mapped_y, n, angles, scales, style);
+}
+void GraphRenderer::draw_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style) {
+
+    double mapped_x = data_to_screen_x(x, y);
+    double mapped_y = data_to_screen_y(x, y);
+
+    draw_polygon_absolute(mapped_x, mapped_y, angle, n, style);
+}
+
 void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.

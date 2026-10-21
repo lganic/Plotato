@@ -53,6 +53,9 @@ private:
         
     void draw_interleaved_polygon_absolute(double absolute_x, double absolute_y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
     void draw_polygon_absolute(double absolute_x, double absolute_y, double angle, uint32_t n, MarkerStyle& style);
+
+    void draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
+    void draw_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style);
 };
 
 }

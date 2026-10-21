@@ -2,6 +2,7 @@
 #define PLOTATO_HPP
 
 #include <Plotato/Graph.hpp>
+#include <Plotato/PolarGraph.hpp>
 #include <Plotato/axis/Title.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>

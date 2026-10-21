@@ -64,6 +64,7 @@ set_source_files_properties("${ICON_OBJECT}"
 add_library(plotato
     src/Figure.cpp
     src/Graph.cpp
+    src/PolarGraph.cpp
     src/axis/BaseAxis.cpp
     src/axis/Title.cpp
     src/axis/LinearAxis.cpp

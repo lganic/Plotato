@@ -1,16 +1,16 @@
 #include <Plotato/util/GraphRenderer.hpp>
 #include <Plotato/util/Anchor.hpp>
 #include <cmath>
+#include <utility>
 #include <vector>
 #include <iostream>
 
 namespace plotato
 {
 
-GraphRenderer::GraphRenderer(cairo_t *cr, const GraphViewport &viewport)
-    : cr(cr), viewport(viewport) // Default constructors for this, to optimize initialization pathways.
+GraphRenderer::GraphRenderer(cairo_t *cr, const GraphViewport &viewport, MapFunction map_x, MapFunction map_y)
+    : cr(cr), viewport(viewport), map_x(std::move(map_x)), map_y(std::move(map_y)) // Default constructors for this, to optimize initialization pathways.
 {
-
     // Assign the values of the plot rect here.
     plot_rect.x = viewport.margin_left;
     plot_rect.y = viewport.margin_top;
@@ -18,16 +18,16 @@ GraphRenderer::GraphRenderer(cairo_t *cr, const GraphViewport &viewport)
     plot_rect.height = viewport.graph_height;
 }
 
-double GraphRenderer::data_to_screen_x(double x) const
+double GraphRenderer::data_to_screen_x(double x, double y)
 {
-    double t = (x - viewport.bounds.xmin) / (viewport.bounds.xmax - viewport.bounds.xmin);
-    return plot_rect.x + t * plot_rect.width;
+
+    return map_x(x, y, viewport);
+
 }
 
-double GraphRenderer::data_to_screen_y(double y) const
+double GraphRenderer::data_to_screen_y(double x, double y)
 {
-    double t = (y - viewport.bounds.ymin) / (viewport.bounds.ymax - viewport.bounds.ymin);
-    return plot_rect.y + plot_rect.height - t * plot_rect.height;
+    return map_y(x, y, viewport);
 }
 
 void GraphRenderer::set_color(const Color& color){
@@ -59,9 +59,12 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x,
             continue;
         }
 
+        double cx = x[i];
+        double cy = y[i];
+
         // Map the coordinate to the screen space.
-        double sx = data_to_screen_x(x[i]);
-        double sy = data_to_screen_y(y[i]);
+        double sx = data_to_screen_x(cx, cy);
+        double sy = data_to_screen_y(cx, cy);
 
         if (!started) {
             // Line segment not started yet. Just move to the coordinate. We will draw the line in a sec.
@@ -157,8 +160,8 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
     // We will just do this once per axis, then figure out which axis is best.
 
     // TODO Probably a cleaner way to do this. Need to do algebra:
-    double delta_x_pixels = data_to_screen_x(x + radius) - data_to_screen_x(x); // Offset x by radius, and see how far offset.
-    double delta_y_pixels = data_to_screen_y(y + radius) - data_to_screen_y(y); // Offset x by radius, and see how far offset.
+    double delta_x_pixels = data_to_screen_x(x + radius, y) - data_to_screen_x(x, y); // Offset x by radius, and see how far offset.
+    double delta_y_pixels = data_to_screen_y(y, y + radius) - data_to_screen_y(x, y); // Offset y by radius, and see how far offset.
 
     uint32_t num_faces_x = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_x_pixels, -2))));
     uint32_t num_faces_y = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_y_pixels, -2))));
@@ -171,8 +174,11 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
 
         double angle = static_cast<double>(i) * 2.0 * M_PI / static_cast<double>(num_faces);
         
-        double poly_x = data_to_screen_x(x + radius * std::cos(angle));
-        double poly_y = data_to_screen_y(y + radius * std::sin(angle));
+        double cx = x + radius * std::cos(angle);
+        double cy = y + radius * std::sin(angle);
+
+        double poly_x = data_to_screen_x(cx, cy);
+        double poly_y = data_to_screen_y(cx, cy);
 
         if (!started) {
             // Loop not started yet. Just move to the coordinate.
@@ -228,8 +234,8 @@ void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std
     }
 
     // Map the polygon coordinates to the screen space.
-    double poly_x = data_to_screen_x(x);
-    double poly_y = data_to_screen_y(y);
+    double poly_x = data_to_screen_x(x, y);
+    double poly_y = data_to_screen_y(x, y);
 
     bool started = false;
 
@@ -288,7 +294,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_pixel_circle(data_to_screen_x(x), data_to_screen_y(y), style.size, style.fill, style.outline);
+        draw_pixel_circle(data_to_screen_x(x, y), data_to_screen_y(x, y), style.size, style.fill, style.outline);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':
@@ -344,7 +350,7 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
     }
 }
 
-void GraphRenderer::draw_text(double x, double y, std::string text, GraphTextStyle style) {
+void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
@@ -372,8 +378,8 @@ void GraphRenderer::draw_text(double x, double y, std::string text, GraphTextSty
     else {
         // The coordinates are not absolute. We need to map them to the screen space.
 
-        sx = data_to_screen_x(x);
-        sy = data_to_screen_y(y);
+        sx = data_to_screen_x(x, y);
+        sy = data_to_screen_y(x, y);
     }
 
     // Get the offset from the anchors.

@@ -1,5 +1,5 @@
-#ifndef PLOTATO_OFFSETAXIS_HPP
-#define PLOTATO_OFFSETAXIS_HPP
+#ifndef PLOTATO_OFFSET_AXIS_HPP
+#define PLOTATO_OFFSET_AXIS_HPP
 
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/util/RenderContext.hpp>
@@ -18,4 +18,4 @@ class OffsetAxis : public LinearAxis{
 
 }
 
-#endif // PLOTATO_OFFSETAXIS_HPP
+#endif // PLOTATO_OFFSET_AXIS_HPP

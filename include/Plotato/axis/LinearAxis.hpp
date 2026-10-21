@@ -1,5 +1,5 @@
-#ifndef PLOTATO_LINEARAXIS_HPP
-#define PLOTATO_LINEARAXIS_HPP
+#ifndef PLOTATO_LINEAR_AXIS_HPP
+#define PLOTATO_LINEAR_AXIS_HPP
 
 #include <Plotato/axis/BaseAxis.hpp>
 #include <Plotato/util/RenderContext.hpp>
@@ -15,4 +15,4 @@ class LinearAxis : public Axis{
 
 }
 
-#endif // PLOTATO_LINEARAXIS_HPP
+#endif // PLOTATO_LINEAR_AXIS_HPP

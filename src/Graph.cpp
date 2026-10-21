@@ -9,143 +9,19 @@
 #include <cstring>
 #include <cstdint>
 #include <algorithm>
-#include "version.hpp"
-#include "EmbeddedAssets.hpp"
 
 using namespace plotato;
 
-const uint32_t TITLE_PADDING = 10;
-const uint32_t INTER_AXIS_PADDING = 5;
-
-
 namespace plotato {
     
-namespace detail {
-    cairo_status_t read_png_from_memory(
-        void* closure,
-        uint8_t* data,
-        uint32_t length)
-    {
-        MemoryPng* mem = static_cast<MemoryPng*>(closure);
-    
-        if (mem->offset + length > mem->size)
-            return CAIRO_STATUS_READ_ERROR;
-    
-        std::memcpy(data, mem->data + mem->offset, length);
-        mem->offset += length;
-    
-        return CAIRO_STATUS_SUCCESS;
-    }
-}
-
-// Create a new graph object when given the a drawing area, and the bounds of the graph.
-Graph::Graph(GtkWidget *drawing_area, GraphStyle style)
-    : area(drawing_area), style(style) // Set drawing area, and style, to skip useless default constructor.
-{
-
-    // Connect signals for events which we would need to respond to.
-    g_signal_connect(area, "draw", G_CALLBACK(Graph::on_draw), this); // Is called when this is first revealed, or something else indicates that a draw is required.
-    g_signal_connect(area, "size-allocate", G_CALLBACK(Graph::on_size_allocate), this); // Called when the graph element is resized.
-
-    // Set the debug png image data from the data loaded in the object file by the linker.
-    detail::MemoryPng png {
-        _binary_Icon_small_png_start,
-        static_cast<std::size_t>(
-            _binary_Icon_small_png_end - _binary_Icon_small_png_start
-        ),
-        0
-    };
-
-    // Then load the debug surface from the png data.
-    debug_image = cairo_image_surface_create_from_png_stream(
-        detail::read_png_from_memory,
-        &png
-    );
-
-    snprintf(version_label, sizeof(version_label), "Plotato - v%s", PLOTATO_VERSION); // Create the version string.
-}
-
 void Graph::set_bounds(GraphBounds set_bounds) {
 
     // First set the auto framing flags
     x_axis_auto_framing = (std::isinf(set_bounds.xmin) || std::isinf(set_bounds.xmax));
     y_axis_auto_framing = (std::isinf(set_bounds.ymin) || std::isinf(set_bounds.ymax));
 
-    // Then lets set these bounds. If the flags above are false, then these bounds won't be touch, so the user doesn't have to call this again.
+    // Then lets set these bounds. If the flags above are false, then these bounds won't be touched, so the user doesn't have to call this again.
     bounds = set_bounds;
-}
-
-void Graph::draw_version_text(cairo_t* cr, uint32_t width, uint32_t height) {
-
-    if (style.dont_draw_version_text) {
-        return; // Don't proceed. Style indicates to not draw this.
-    }
-
-    // Draw the version info as a small translucent bit of text in the bottom right. (For easier debugging) TODO: Add a bit to the styling which allows you to disable this.
-
-    cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 10);
-    cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
-
-    cairo_text_extents_t extents;
-    cairo_text_extents(cr, version_label, &extents);
-
-    double x = width - extents.width - 4;
-    double y = height - extents.height + 2;
-
-    cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
-    cairo_move_to(cr, x, y);
-    cairo_show_text(cr, version_label);
-}
-
-// Clear the elements from the graph.
-void Graph::clear() {
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    current_plot_items.clear();
-}
-
-void Graph::clear_axis() {
-    current_axis_items.clear();
-}
-
-void Graph::reset() {
-    clear();
-    clear_axis();
-}
-
-// Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
-void Graph::draw() {
-
-    // Queue up a draw event, which will call the on_draw method.
-    gtk_widget_queue_draw(area);
-
-}
-
-// Plot the given data on the graph. 
-LinePlot* Graph::plot(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
-{
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<LinePlot>(x, y, style);
-    LinePlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
-}
-
-// Plot the scatter plots.
-ScatterPlot* Graph::scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style)
-{
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<ScatterPlot>(x, y, style);
-    ScatterPlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
 }
 
 LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)
@@ -172,126 +48,20 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
     return axis;
 }
 
-Title* Graph::add_axis_title(AxisSide side, std::string title, TextStyle style) {
-
-
-    std::lock_guard<std::mutex> lock(axis_mutex);
-
-    auto new_title = std::make_unique<Title>(side, title, style);
-    Title* title_object = new_title.get();
-
-    current_axis_items.emplace_back(std::move(new_title));
-
-    return title_object;
-}
-
-Title* Graph::add_plot_title(std::string title, TextStyle style) {
-    return add_axis_title(AxisSide::TOP, title, style);
-}
-
-Title* Graph::add_x_title(std::string title, TextStyle style) {
-    return add_axis_title(AxisSide::BOTTOM, title, style);
-}
-
-Title* Graph::add_y_title(std::string title, TextStyle style) {
-    return add_axis_title(AxisSide::LEFT, title, style);
-}
-
-Text* Graph::add_text(double x, double y, std::string text, GraphTextStyle style)
-{
-    std::lock_guard<std::mutex> lock(text_mutex);
-
-    auto new_text = std::make_unique<Text>(x, y, text, style);
-    Text* text_pointer = new_text.get();
-
-    text_items.emplace_back(std::move(new_text));
-
-    return text_pointer;
-}
-
-// Called when the graph is requested to draw.
-gboolean Graph::on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-    Graph *graph = static_cast<Graph *>(user_data);
-
-    // Get the current size of the allocated area for the drawing widget.
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-
-    // Pass the drawing information to the drawer.
-    graph->draw(cr, allocation.width, allocation.height);
-    return FALSE;
-}
-
-// Called when the graph is resized.
-void Graph::on_size_allocate(GtkWidget *widget,
-                             GdkRectangle *allocation,
-                             gpointer user_data)
-{
-    Graph *graph = static_cast<Graph *>(user_data);
-
-    // Sizing is mostly automatic because draw() receives the current size.
-    // This hook exists so we can later rebuild cached surfaces, text layouts,
-    // heatmap buffers, etc.
-
-    // So we really just need to grab the graph element from the ref, and signal a draw event. 
-    gtk_widget_queue_draw(graph->area);
-}
-
-double Graph::map_x(double x, uint32_t plot_x, uint32_t plot_w) const
+double Graph::map_x(double x, double y, GraphViewport viewport)
 {
     double t = (x - bounds.xmin) / (bounds.xmax - bounds.xmin);
-    return plot_x + t * plot_w;
+    return viewport.margin_left + t * viewport.graph_width;
 }
 
-double Graph::map_y(double y, uint32_t plot_y, uint32_t plot_h) const
+double Graph::map_y(double x, double y, GraphViewport viewport)
 {
     double t = (y - bounds.ymin) / (bounds.ymax - bounds.ymin);
-    return plot_y + plot_h - t * plot_h;
+    return viewport.margin_top + viewport.graph_height * (1 - t);
 }
 
-void Graph::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {
-
-    // we can calculate the centering position, since we know the plot width, and the image width is 100px
-    int center_x = (width - 100) / 2;
-    int center_y = (height - 100) / 2;
-
-    // Check if the image loaded successfully
-    if (cairo_surface_status(debug_image) == CAIRO_STATUS_SUCCESS) {
-        // Set the image surface as the source pattern
-        cairo_set_source_surface(cr, debug_image, center_x, center_y);
-
-        // Paint the source surface onto the destination context
-        cairo_paint(cr);
-    } // Not really a problem if this doesn't work, since its mostly just for debugging
-
-    // Draw some text.
-    const char* msg = "Graph Initialized - No Data";
-
-    cairo_select_font_face(cr, "Sans",
-                           CAIRO_FONT_SLANT_NORMAL,
-                           CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 16);
-
-    cairo_text_extents_t extents;
-    cairo_text_extents(cr, msg, &extents);
-
-    double x = 50 + center_x - extents.width / 2;
-    double y = 100 + center_y;
-
-    cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
-    cairo_move_to(cr, x, y);
-    cairo_show_text(cr, msg);
-
-    draw_version_text(cr, width, height);
-}
-
-void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
+void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 {
-    // TODO: I don't like how many things are in this draw function. Cleanup is required.
-
-    std::lock_guard<std::mutex> draw_guard(draw_mutex); // Ensure that only one draw is being called at a time.
-
     if (current_plot_items.size() == 0) {
         // Set the placeholder image, so we know that the graph has been initialized properly, just not set to any data, or plotted. 
         draw_no_data(cr, width, height);
@@ -299,69 +69,7 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         return;
     }
 
-    // Set background color on the plot.
-    style.background_color.to_cairo_source(cr);
-    cairo_paint(cr); // Paint the background.
-
-    // Set default margins from style.
-    int32_t left_margin = style.default_margin;
-    int32_t right_margin = style.default_margin;
-    int32_t top_margin = style.default_margin;
-    int32_t bottom_margin = style.default_margin;
-
-    if (!style.dont_draw_version_text) bottom_margin += 10;
-
-    // Adjust the margins based on the axis which are present
-    {
-        std::lock_guard<std::mutex> lock(axis_mutex);
-
-        for (size_t i = 0; i < current_axis_items.size(); i ++) {
-            AxisPixelSize axis_size = current_axis_items[i]->size();
-
-            switch (current_axis_items[i]->side)
-            {
-            case TOP:
-                top_margin += axis_size.top;
-                top_margin += INTER_AXIS_PADDING;
-                break;
-
-            case BOTTOM:
-                bottom_margin += axis_size.bottom;
-                bottom_margin += INTER_AXIS_PADDING;
-                break;
-
-            case LEFT:
-                left_margin += axis_size.left;
-                left_margin += INTER_AXIS_PADDING;
-                break;
-            
-            case RIGHT:
-                right_margin += axis_size.right;
-                right_margin += INTER_AXIS_PADDING;
-                break;
-            
-            default:
-                break;
-            }
-        }
-    }
-
-    // Get some plot information based on the margin.
-    int32_t plot_x = left_margin;
-    int32_t plot_y = top_margin;
-    int32_t plot_w = width - left_margin - right_margin;
-    int32_t plot_h = height - top_margin - bottom_margin;
-
-    if (plot_w <= 0 || plot_h <= 0) {
-
-        // Plot too small! Fill the area with red, to indicate a problem.
-
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_paint(cr);
-
-        return; // Do not proceed.
-    }
-
+    // Update bounds before we create the render context object.
     // Check if we need to do some auto framing.
     if (x_axis_auto_framing || y_axis_auto_framing){
         // Update the bounds first, so we know that everything is up to date before we get started on the draw process.
@@ -392,7 +100,28 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
                 bounds.ymax = auto_bounds.ymax;
             }
         }
-        
+    }
+
+    // Create a new viewport / render context which we will pass to the renderers.
+    RenderContext rc = get_render_context(cr, width, height);
+
+    uint32_t plot_x = rc.current_viewport.margin_left;
+    uint32_t plot_y = rc.current_viewport.margin_top;
+    uint32_t plot_w = rc.current_viewport.graph_width;
+    uint32_t plot_h = rc.current_viewport.graph_height;
+
+    // Set background color on the plot.
+    style.background_color.to_cairo_source(cr);
+    cairo_paint(cr); // Paint the background.
+
+    if (plot_w <= 0 || plot_h <= 0) {
+
+        // Plot too small! Fill the area with red, to indicate a problem.
+
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_paint(cr);
+
+        return; // Do not proceed.
     }
 
     // Plot background
@@ -414,21 +143,6 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
     }
 
     // Do the actual plotting.
-    // Create a new viewport / render context which we will pass to the renderers.
-    GraphViewport gv;
-    
-    gv.bounds = bounds;
-    
-    gv.graph_height = plot_h;
-    gv.graph_width = plot_w;
-
-    gv.margin_left = left_margin;
-    gv.margin_right = right_margin;
-    gv.margin_top = top_margin;
-    gv.margin_bottom = bottom_margin;
-    
-    RenderContext rc(cr, gv);
-
     {
         std::lock_guard<std::mutex> lock(data_mutex);
 
@@ -438,152 +152,12 @@ void Graph::draw(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 
-    {
-        std::lock_guard<std::mutex> lock(axis_mutex);
-
-        int32_t left_axis_offset = 0;
-        int32_t right_axis_offset = 0;
-        int32_t top_axis_offset = 0;
-        int32_t bottom_axis_offset = 0;
-    
-        // Loop over all the axis, and render each to the graph.
-        // This has to use a switch case, in order to correctly stack multi axis plots.
-        for(int i = 0; i < current_axis_items.size(); i ++){
-    
-            AxisPixelSize size = current_axis_items[i]->size();
-    
-            switch (current_axis_items[i]->side)
-            {
-            case TOP:
-                current_axis_items[i] -> draw(rc, 0, -top_axis_offset);
-                top_axis_offset += size.top + INTER_AXIS_PADDING;
-                break;
-    
-            case BOTTOM:
-                current_axis_items[i] -> draw(rc, 0, bottom_axis_offset);
-                bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
-                break;
-    
-            case LEFT:
-                current_axis_items[i] -> draw(rc, -left_axis_offset, 0);
-                left_axis_offset += size.left + INTER_AXIS_PADDING;
-                break;
-    
-            case RIGHT:
-                current_axis_items[i] -> draw(rc, right_axis_offset, 0);
-                right_axis_offset += size.right + INTER_AXIS_PADDING;
-                break;
-            }
-        }
-    }
-
+    draw_axis(rc);
     draw_version_text(cr, width, height);
 
     // Draw the legend. 
     if (style.draw_legend) {
-
-        // TODO: Allow the user to place the legend wherever, instead of just in the top right corner.
-
-        // Lets calculate the total size of the thing. 
-        // To make this look good, we are going to need to know the size of all the text elements ahead of time.
-        // So lets make a vector of all the text extents
-
-        std::vector<std::unique_ptr<cairo_text_extents_t>> all_extents;
-
-        // Set the text style, so we have up to date font info.
-        style.legend_text_style.to_cairo_source(cr);
-
-        // Do this inside of a scope, since we are accessing mutexed data.
-        {
-            std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
-
-            for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
-
-                if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
-
-                    LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
-
-                    // Make a new extents object.
-                    auto new_extents = std::make_unique<cairo_text_extents_t>();
-    
-                    // Update the cairo text extents.
-                    cairo_text_extents(cr, line_plot->style.name.c_str(), new_extents.get());
-    
-                    // Add the text extents ptr to the array.
-                    all_extents.emplace_back(std::move(new_extents));
-                }
-
-            }
-        }
-
-        // Now we can calculate the text size. 
-        // I am going to use the maximum of the height, instead of each element so spacing is even.
-        double max_height = 0;
-        double max_width = 0;
-
-        for (size_t extents_index = 0; extents_index < all_extents.size(); extents_index ++) {
-            max_height = std::max(max_height, all_extents[extents_index]->height);
-            max_width = std::max(max_width, all_extents[extents_index]->width);
-        }
-
-        // Final size calculation.
-        double legend_box_width = max_width + 2 * style.legend_padding + max_height + 5;
-        double legend_box_height = all_extents.size() * (max_height + style.legend_inter_object_padding) - style.legend_inter_object_padding + 2 * style.legend_padding;
-
-        // Calculate the legend based on the anchor position.
-        auto [plot_off_x, plot_off_y] = get_offset(plot_w, plot_h, style.legend_anchor);
-        auto [anchor_x, anchor_y] = get_offset(legend_box_width, legend_box_height, style.legend_anchor);
-        auto [padding_x, padding_y] = get_offset(2 * style.legend_offset, 2 * style.legend_offset, style.legend_anchor); // Hacky.
-
-        // First, calculate a legend position which puts it in the exact center of the graph.
-        double legend_x = plot_x + (plot_w / 2) - (legend_box_width / 2);
-        double legend_y = plot_y + (plot_h / 2) - (legend_box_height / 2);
-
-        // Then use the anchors to offset into the correct position.
-        legend_x -= plot_off_x - anchor_x - padding_x;
-        legend_y -= plot_off_y - anchor_y - padding_y;
-
-        double swatch_x = legend_x + style.legend_padding;
-        double text_x = swatch_x + max_height + 5;
-
-        // Draw legend filled rectangle
-        style.legend_color.to_cairo_source(cr);
-        cairo_rectangle(cr, legend_x, legend_y, legend_box_width, legend_box_height);
-        cairo_fill_preserve(cr); // Fill, and keep path
-
-        style.legend_border_color.to_cairo_source(cr);
-        cairo_set_line_width(cr, style.legend_border_width);
-        cairo_stroke(cr); // Use our kept path from the rectangle to stroke
-
-        // Now we can draw the text and the color swatches.
-        // Do this inside of a scope, since we are accessing mutexed data.
-        style.legend_text_style.to_cairo_source(cr);
-        {
-            std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
-
-            for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
-
-                if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
-
-                    LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
-
-                    style.legend_text_style.to_cairo_source(cr);
-    
-                    cairo_move_to(cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
-    
-                    cairo_show_text(cr, line_plot->style.name.c_str());
-    
-                    // Draw the swatch color
-                    line_plot->style.line_color.to_cairo_source(cr);
-                    cairo_rectangle(cr, legend_x + style.legend_offset, legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), max_height, max_height);
-                    cairo_fill_preserve(cr); // Fill, and keep path
-    
-                    style.legend_border_color.to_cairo_source(cr);
-                    cairo_set_line_width(cr, style.legend_border_width);
-                    cairo_stroke(cr); // Use our kept path from the rectangle to stroke
-                }
-            }
-        }
+        draw_legend(rc);
     }
 
     {

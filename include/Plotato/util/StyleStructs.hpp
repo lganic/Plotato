@@ -30,7 +30,7 @@ struct TextStyle {
     void to_cairo_source(cairo_t* cr);
 };
 
-struct GraphTextStyle : public TextStyle {
+struct FigureTextStyle : public TextStyle {
 
     bool absolute = true;
 

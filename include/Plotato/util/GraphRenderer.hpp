@@ -3,6 +3,7 @@
 
 #include <gtk/gtk.h>
 #include <vector>
+#include <functional>
 #include <string>
 #include <Plotato/util/GraphBounds.hpp>
 #include <Plotato/util/StyleStructs.hpp>
@@ -11,7 +12,10 @@ namespace plotato {
 
 class GraphRenderer {
 public:
-    GraphRenderer(cairo_t* cr, const GraphViewport& viewport);
+
+    using MapFunction = std::function<double(double, double, GraphViewport)>;
+
+    GraphRenderer(cairo_t* cr, const GraphViewport& viewport, MapFunction map_x, MapFunction map_y);
 
     void begin_frame();
     void draw_plot_background();
@@ -25,10 +29,10 @@ public:
     
     void draw_marker(double x, double y, MarkerStyle& style);
 
-    void draw_text(double x, double y, std::string text, GraphTextStyle style);
+    void draw_text(double x, double y, std::string text, FigureTextStyle style);
     
-    double data_to_screen_x(double x) const;
-    double data_to_screen_y(double y) const;
+    double data_to_screen_x(double x, double y);
+    double data_to_screen_y(double x, double y);
         
 private:
     cairo_t* cr;
@@ -39,6 +43,9 @@ private:
     GraphViewport viewport;
     
     GdkRectangle plot_rect;
+
+    MapFunction map_x;
+    MapFunction map_y;
     
     void set_color(const Color& color);
     void enable_plot_clip();

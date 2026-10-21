@@ -446,8 +446,6 @@ RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t h
     }
 
     // Get some plot information based on the margin.
-    int32_t plot_x = left_margin;
-    int32_t plot_y = top_margin;
     int32_t plot_w = width - left_margin - right_margin;
     int32_t plot_h = height - top_margin - bottom_margin;
 

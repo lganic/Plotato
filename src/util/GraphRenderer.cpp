@@ -82,7 +82,7 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x,
 
 
 // Draw a circle at exact pixel coordinates, with exact pixel sizes.
-void GraphRenderer::draw_pixel_circle(double pixel_x, double pixel_y, double pixel_radius, Color background, Color outline, double margin) {
+void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, Color background, Color outline, double margin) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
@@ -111,8 +111,8 @@ void GraphRenderer::draw_pixel_circle(double pixel_x, double pixel_y, double pix
     for (uint32_t i = 0; i < num_faces; i ++) {
         double angle = static_cast<double>(i) * 2.0 * M_PI / static_cast<double>(num_faces);
         
-        double sx = pixel_x + radius_polygon * std::cos(angle);
-        double sy = pixel_y + radius_polygon * std::sin(angle);
+        double sx = absolute_x + radius_polygon * std::cos(angle);
+        double sy = absolute_y + radius_polygon * std::sin(angle);
 
         if (!started) {
             // Loop not started yet. Just move to the coordinate.
@@ -290,7 +290,7 @@ void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, M
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_pixel_circle(absolute_x, absolute_y, style.size, style.fill, style.outline);
+        draw_circle_absolute(absolute_x, absolute_y, style.size, style.fill, style.outline);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':

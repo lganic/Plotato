@@ -318,7 +318,7 @@ void Figure::draw_legend(RenderContext& rc) {
 
             PlotItem* plot_item = current_plot_items[plot_item_index].get();
 
-            if (plot_item->name.length() != 0) continue; // Skip plots with no name.
+            if (plot_item->name.length() == 0) continue; // Skip plots with no name.
 
             // Make a new extents object.
             auto new_extents = std::make_unique<cairo_text_extents_t>();
@@ -386,7 +386,7 @@ void Figure::draw_legend(RenderContext& rc) {
 
                 cairo_move_to(rc.cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
 
-                cairo_show_text(rc.cr, line_plot->style.name.c_str());
+                cairo_show_text(rc.cr, line_plot->name.c_str());
 
                 // Draw the swatch color
                 line_plot->style.line_color.to_cairo_source(rc.cr);

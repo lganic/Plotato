@@ -316,20 +316,18 @@ void Figure::draw_legend(RenderContext& rc) {
 
         for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
 
-            if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
+            PlotItem* plot_item = current_plot_items[plot_item_index].get();
 
-                LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
+            if (plot_item->name.length() != 0) continue; // Skip plots with no name.
 
-                // Make a new extents object.
-                auto new_extents = std::make_unique<cairo_text_extents_t>();
+            // Make a new extents object.
+            auto new_extents = std::make_unique<cairo_text_extents_t>();
 
-                // Update the cairo text extents.
-                cairo_text_extents(rc.cr, line_plot->style.name.c_str(), new_extents.get());
+            // Update the cairo text extents.
+            cairo_text_extents(rc.cr, plot_item->name.c_str(), new_extents.get());
 
-                // Add the text extents ptr to the array.
-                all_extents.emplace_back(std::move(new_extents));
-            }
-
+            // Add the text extents ptr to the array.
+            all_extents.emplace_back(std::move(new_extents));
         }
     }
 

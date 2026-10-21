@@ -17,6 +17,8 @@ class Text : public PlotItem
             return PlotType::TEXT;
         }
 
+        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+
         std::string text;
 
         double x;

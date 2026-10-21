@@ -43,4 +43,15 @@ void LinePlot::marker(MarkerStyle marker_style) {
 
 }
 
+void LinePlot::draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) {
+    // Draw the swatch color
+    style.line_color.to_cairo_source(rc.cr);
+    cairo_rectangle(rc.cr, x, y, width, height);
+    cairo_fill_preserve(rc.cr); // Fill, and keep path
+
+    border_color.to_cairo_source(rc.cr);
+    cairo_set_line_width(rc.cr, border_width);
+    cairo_stroke(rc.cr); // Use our kept path from the rectangle to stroke
+}
+
 }

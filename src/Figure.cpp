@@ -378,25 +378,24 @@ void Figure::draw_legend(RenderContext& rc) {
 
         for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
 
-            if (current_plot_items[plot_item_index]->check_is(PlotType::LINEPLOT)) {
+            PlotItem* plot_item = current_plot_items[plot_item_index].get();
 
-                LinePlot* line_plot = static_cast<LinePlot*>(current_plot_items[plot_item_index].get());
+            if (plot_item->name.length() == 0) continue; // Skip plots with no name.
 
-                style.legend_text_style.to_cairo_source(rc.cr);
+            style.legend_text_style.to_cairo_source(rc.cr);
+            cairo_move_to(rc.cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+            cairo_show_text(rc.cr, plot_item->name.c_str());
 
-                cairo_move_to(rc.cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+            plot_item->draw_legend_element(
+                rc,
+                legend_x + style.legend_offset, 
+                legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), 
+                max_height, 
+                max_height,
+                style.legend_border_color,
+                style.legend_border_width
+            );
 
-                cairo_show_text(rc.cr, line_plot->name.c_str());
-
-                // Draw the swatch color
-                line_plot->style.line_color.to_cairo_source(rc.cr);
-                cairo_rectangle(rc.cr, legend_x + style.legend_offset, legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), max_height, max_height);
-                cairo_fill_preserve(rc.cr); // Fill, and keep path
-
-                style.legend_border_color.to_cairo_source(rc.cr);
-                cairo_set_line_width(rc.cr, style.legend_border_width);
-                cairo_stroke(rc.cr); // Use our kept path from the rectangle to stroke
-            }
         }
     }
 }

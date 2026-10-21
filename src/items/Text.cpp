@@ -23,4 +23,8 @@ namespace plotato {
         // Draw the text using the renderer
         ctx.renderer.draw_text(x, y, text, style);
     }
+
+    void Text::draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) {
+    }
+
 }

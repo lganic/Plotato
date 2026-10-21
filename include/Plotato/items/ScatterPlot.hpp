@@ -19,6 +19,8 @@ class ScatterPlot : public PlotItem
             return PlotType::SCATTERPLOT;
         }
 
+        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+
         MarkerStyle style;
 
         ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style);

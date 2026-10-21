@@ -31,4 +31,7 @@ GraphBounds ScatterPlot::bounds(){
     return GraphBounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
 }
 
+void ScatterPlot::draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) {
+}
+
 }

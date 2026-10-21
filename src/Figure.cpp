@@ -12,6 +12,8 @@
 #include "version.hpp"
 #include "EmbeddedAssets.hpp"
 
+#include <iostream>
+
 using namespace plotato;
 
 const uint32_t TITLE_PADDING = 10;
@@ -375,6 +377,7 @@ void Figure::draw_legend(RenderContext& rc) {
     style.legend_text_style.to_cairo_source(rc.cr);
     {
         std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
+        size_t legend_item_index = 0;
 
         for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
 
@@ -383,18 +386,20 @@ void Figure::draw_legend(RenderContext& rc) {
             if (plot_item->name.length() == 0) continue; // Skip plots with no name.
 
             style.legend_text_style.to_cairo_source(rc.cr);
-            cairo_move_to(rc.cr, text_x, max_height + legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding));
+            cairo_move_to(rc.cr, text_x, max_height + legend_y + style.legend_offset + legend_item_index * (max_height + style.legend_inter_object_padding));
             cairo_show_text(rc.cr, plot_item->name.c_str());
 
             plot_item->draw_legend_element(
                 rc,
                 legend_x + style.legend_offset, 
-                legend_y + style.legend_offset + plot_item_index * (max_height + style.legend_inter_object_padding), 
+                legend_y + style.legend_offset + legend_item_index * (max_height + style.legend_inter_object_padding), 
                 max_height, 
                 max_height,
                 style.legend_border_color,
                 style.legend_border_width
             );
+
+            legend_item_index ++;
 
         }
     }

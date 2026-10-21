@@ -77,6 +77,8 @@ public:
 
     FigureStyle style;
 
+    void export_image(std::string filename, uint32_t width, uint32_t height);
+
 protected:
 
     cairo_surface_t* debug_image = nullptr;

@@ -285,6 +285,9 @@ void Figure::draw_axis(RenderContext& rc) {
             current_axis_items[i] -> draw(rc, right_axis_offset, 0);
             right_axis_offset += size.right + INTER_AXIS_PADDING;
             break;
+
+        case NONE:
+            current_axis_items[i] -> draw(rc, 0, 0);
         }
     }
 }
@@ -491,6 +494,33 @@ RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t h
     return rc;
 
 }
+
+void Figure::export_image(std::string filename, uint32_t width, uint32_t height) {
+
+    std::lock_guard<std::mutex> draw_guard(draw_mutex); // Ensure that only one draw is being called at a time.
+
+    cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+
+    cairo_t* cr = cairo_create(surface);
+
+    // Paint white background
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+    cairo_paint(cr);
+
+    // Call the main draw command.
+    draw_to_canvas(cr, width, height);
+
+    cairo_status_t status = cairo_status(cr);
+    if (status == CAIRO_STATUS_SUCCESS)
+        status = cairo_surface_write_to_png(surface, filename.c_str());
+
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
+
+    if (status != CAIRO_STATUS_SUCCESS)
+        throw std::runtime_error(cairo_status_to_string(status));
+}
+
 
 
 }

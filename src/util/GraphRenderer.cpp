@@ -290,7 +290,7 @@ void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, M
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_pixel_circle(data_to_screen_x(absolute_x, absolute_y), data_to_screen_y(absolute_x, absolute_y), style.size, style.fill, style.outline);
+        draw_pixel_circle(absolute_x, absolute_y, style.size, style.fill, style.outline);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':

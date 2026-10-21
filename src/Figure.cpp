@@ -400,7 +400,7 @@ void Figure::draw_legend(RenderContext& rc) {
     }
 }
 
-RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height) {
+RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height, bool square) {
 
     // Set default margins from style.
     int32_t left_margin = style.default_margin;
@@ -448,6 +448,31 @@ RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t h
     // Get some plot information based on the margin.
     int32_t plot_w = width - left_margin - right_margin;
     int32_t plot_h = height - top_margin - bottom_margin;
+
+    if (square) {
+        // Adjust margins to center the graph, with a square aspect ratio.
+        if (plot_w < plot_h) {
+            // Plot is less wide than it is tall. We should adjust the top and bottom margin.
+
+            int32_t delta = plot_h - plot_w;
+
+            top_margin += delta / 2;
+            bottom_margin += delta / 2;
+        }
+        else if (plot_h < plot_w) {
+
+            // Plot is more wide than it is tall. We should adjust the left and right margin.
+
+            int32_t delta = plot_w - plot_h;
+
+            left_margin += delta / 2;
+            right_margin += delta / 2;
+        }
+
+        // Update the plot width and height with the new margin data. (Should be the same, or within a pixel of eachother now)
+        plot_w = width - left_margin - right_margin;
+        plot_h = height - top_margin - bottom_margin;
+    }
 
     GraphViewport gv;
 

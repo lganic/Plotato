@@ -9,14 +9,8 @@
 #include <cstring>
 #include <cstdint>
 #include <algorithm>
-#include "version.hpp"
-#include "EmbeddedAssets.hpp"
 
 using namespace plotato;
-
-const uint32_t TITLE_PADDING = 10;
-const uint32_t INTER_AXIS_PADDING = 5;
-
 
 namespace plotato {
     

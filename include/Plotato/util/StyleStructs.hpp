@@ -22,6 +22,8 @@ struct Color {
 };
 
 struct TextStyle {
+    TextStyle(uint16_t font_size = 12);
+    
     Color text_color;
     uint16_t font_size = 12;
 

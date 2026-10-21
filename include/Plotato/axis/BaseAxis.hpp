@@ -11,7 +11,8 @@ enum AxisSide {
     TOP, 
     RIGHT,
     BOTTOM, 
-    LEFT
+    LEFT,
+    NONE
 };
 
 struct AxisPixelSize {
@@ -19,6 +20,8 @@ struct AxisPixelSize {
     int right = 0;
     int top = 0;
     int bottom = 0;
+    int theta = 0;
+    int r = 0;
 };
 
 struct AxisStyle {

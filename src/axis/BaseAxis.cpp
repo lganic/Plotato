@@ -19,6 +19,12 @@ AxisPixelSize Axis::size() {
 
     AxisPixelSize output;
 
+    // Set default stuff for polar graphs. 
+    // TODO: Think about if this default size operator should be on the base axis, or linear axis, since offset axis just inherits from that anyway.
+    // I think it should be the latter, since we are going to make the polar axis also use the root axis type.
+    output.r = 0;
+    output.theta = 0;
+
     // Just some approximations, so we can output things correctly.
     int approx_text_vertical_size = get_approx_vertical_size(style.font_size);
     int approx_text_horizontal_size = get_approx_horizontal_size(style.font_size); // Very rough approximation.

@@ -214,7 +214,7 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
-void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, MarkerStyle& style) {
+void GraphRenderer::draw_interleaved_polygon_absolute(double poly_x, double poly_y, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, MarkerStyle& style) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
@@ -232,10 +232,6 @@ void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std
         angles_radians[i] = angles_degrees[i] * M_PI / 180.0;
         scaled_sizes[i] = scales[i] * style.size;
     }
-
-    // Map the polygon coordinates to the screen space.
-    double poly_x = data_to_screen_x(x, y);
-    double poly_y = data_to_screen_y(x, y);
 
     bool started = false;
 
@@ -284,70 +280,80 @@ void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std
 }
 
 // Private helper function, since a lot of the markers are gonna need this.
-void GraphRenderer::draw_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style){
-    draw_interleaved_polygon(x, y, n, {angle}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
+void GraphRenderer::draw_polygon_absolute(double x, double y, double angle, uint32_t n, MarkerStyle& style){
+    draw_interleaved_polygon_absolute(x, y, n, {angle}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
 }
 
-void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
+void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, MarkerStyle& style)
 {
     switch (style.type)
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_pixel_circle(data_to_screen_x(x, y), data_to_screen_y(x, y), style.size, style.fill, style.outline);
+        draw_pixel_circle(data_to_screen_x(absolute_x, absolute_y), data_to_screen_y(absolute_x, absolute_y), style.size, style.fill, style.outline);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':
-        draw_polygon(x, y, 90, 3, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 90, 3, style);
         break;
     case '3':
     case '^':
-        draw_polygon(x, y, -90, 3, style);
+        draw_polygon_absolute(absolute_x, absolute_y, -90, 3, style);
         break;
     case '<':
-        draw_polygon(x, y, 180, 3, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 180, 3, style);
         break;
     case '>':
-        draw_polygon(x, y, 0, 3, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 0, 3, style);
         break;
     case '4':
     case 's':
     case 'S': // Fallthrough case, in case the user specified this as uppercase for some reason.
-        draw_polygon(x, y, 45, 4, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 45, 4, style);
         break;
     case '5':
     case 'p':
-        draw_polygon(x, y, -18, 5, style);
+        draw_polygon_absolute(absolute_x, absolute_y, -18, 5, style);
         break;
     case '8':
-        draw_polygon(x, y, 22.5, 8, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 22.5, 8, style);
         break;
     case '*':
-        draw_interleaved_polygon(x, y, 5, {-18, 18}, {1, 0.5}, style);
+        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 5, {-18, 18}, {1, 0.5}, style);
         break;
     case 'h':
-        draw_polygon(x, y, 30, 6, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 30, 6, style);
         break;
     case 'H':
-        draw_polygon(x, y, 0, 6, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 0, 6, style);
         break;
     case 'D':
-        draw_polygon(x, y, 0, 4, style);
+        draw_polygon_absolute(absolute_x, absolute_y, 0, 4, style);
         break;
     case 'd':
-        draw_interleaved_polygon(x, y, 2, {0, 90}, {.5, 1}, style);
+        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 2, {0, 90}, {.5, 1}, style);
         break;
     case '+':
     case 'P':
-        draw_interleaved_polygon(x, y, 4, {-18, 18, 45}, {1, 1, .5}, style);
+        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 4, {-18, 18, 45}, {1, 1, .5}, style);
         break;
     case 'X':
-        draw_interleaved_polygon(x, y, 4, {0, 27, 63}, {.5, 1, 1}, style);
+        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 4, {0, 27, 63}, {.5, 1, 1}, style);
         break;
     default:
         std::cerr << "Invalid marker type passed: '" << style.type << "'" << std::endl;
         break;
     }
+}
+
+void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
+{
+
+    double mapped_x = data_to_screen_x(x, y);
+    double mapped_y = data_to_screen_y(x, y);
+
+    draw_marker_absolute(mapped_x, mapped_y, style);
+
 }
 
 void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {

@@ -26,7 +26,7 @@ public:
     void draw_pixel_circle(double pixel_x, double pixel_y, double pixel_radius, Color background, Color outline, double margin = 0.1);
     void draw_circle(double x, double y, double radius, Color background, Color outline, double margin = 0.1);
     
-    
+    void draw_marker_absolute(double absolute_x, double absolute_y, MarkerStyle& style);
     void draw_marker(double x, double y, MarkerStyle& style);
 
     void draw_text(double x, double y, std::string text, FigureTextStyle style);
@@ -51,8 +51,8 @@ private:
     void enable_plot_clip();
     void disable_clip();
         
-    void draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
-    void draw_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style);
+    void draw_interleaved_polygon_absolute(double absolute_x, double absolute_y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
+    void draw_polygon_absolute(double absolute_x, double absolute_y, double angle, uint32_t n, MarkerStyle& style);
 };
 
 }

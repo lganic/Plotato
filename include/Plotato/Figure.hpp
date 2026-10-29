@@ -89,7 +89,7 @@ protected:
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
     std::vector<std::unique_ptr<Axis>> current_axis_items;
-    std::vector<std::unique_ptr<PlotItem>> text_items; // We have a separate vector for this, to ensure text items get rendered on top.
+    std::vector<std::unique_ptr<Text>> text_items; // We have a separate vector for this, to ensure text items get rendered on top.
 
     std::mutex data_mutex;
     std::mutex axis_mutex;

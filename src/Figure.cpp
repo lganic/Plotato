@@ -412,8 +412,21 @@ void Figure::draw_legend(RenderContext& rc) {
 void Figure::draw_text_items(RenderContext& rc) {
     std::lock_guard<std::mutex> lock(text_mutex);
 
+    GraphBounds graph_bounds = rc.current_viewport.bounds;
+
     // Loop over all text elements, and call each of their corresponding draw functions.
     for(int i = 0; i < text_items.size(); i ++){
+
+        if (!text_items[i]->style.absolute) {
+            // Don't check absolute elements, assume the user knows what they are doing.
+
+            // Get the text position.
+            GraphBounds bounds = text_items[i]->bounds();
+
+            // We only need to check xmin and ymin, since min=max for text items right now
+            if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
+        }
+
         text_items[i]->draw(rc);
     }
 }

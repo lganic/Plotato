@@ -89,7 +89,7 @@ protected:
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
     std::vector<std::unique_ptr<Axis>> current_axis_items;
-    std::vector<std::unique_ptr<PlotItem>> text_items; // We have a separate vector for this, to ensure text items get rendered on top.
+    std::vector<std::unique_ptr<Text>> text_items; // We have a separate vector for this, to ensure text items get rendered on top.
 
     std::mutex data_mutex;
     std::mutex axis_mutex;
@@ -108,6 +108,8 @@ protected:
     void draw_version_text(cairo_t* cr, uint32_t width, uint32_t height);
     void draw_axis(RenderContext& rc);
     void draw_legend(RenderContext& rc);
+    void draw_text_items(RenderContext& rc);
+    void draw_items(RenderContext& rc);
 
     virtual void draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height);
 

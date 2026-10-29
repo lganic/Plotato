@@ -296,6 +296,10 @@ void Figure::draw_axis(RenderContext& rc) {
 
 void Figure::draw_legend(RenderContext& rc) {
 
+    if (!style.draw_legend) {
+        return;
+    }
+
     // Lets calculate the total size of the thing. 
     // To make this look good, we are going to need to know the size of all the text elements ahead of time.
     // So lets make a vector of all the text extents
@@ -403,6 +407,67 @@ void Figure::draw_legend(RenderContext& rc) {
 
         }
     }
+}
+
+void Figure::draw_text_items(RenderContext& rc) {
+    std::lock_guard<std::mutex> lock(text_mutex);
+
+    GraphBounds graph_bounds = rc.current_viewport.bounds;
+
+    // Loop over all text elements, and call each of their corresponding draw functions.
+    for(int i = 0; i < text_items.size(); i ++){
+
+        if (!text_items[i]->style.absolute) {
+            // Don't check absolute elements, assume the user knows what they are doing.
+
+            // Get the text position.
+            GraphBounds bounds = text_items[i]->bounds();
+
+            // We only need to check xmin and ymin, since min=max for text items right now
+            if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
+        }
+
+        text_items[i]->draw(rc);
+    }
+}
+
+void Figure::draw_items(RenderContext& rc) {
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    GraphBounds graph_bounds = rc.current_viewport.bounds;
+
+    // Loop over all graph elements, and call each of their corresponding draw functions.
+    for(int i = 0; i < current_plot_items.size(); i ++){
+
+        // Get the bounds of this object.
+        GraphBounds bounds = current_plot_items[i]->bounds();
+
+        if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
+
+        current_plot_items[i]->draw(rc);
+    }
+
+    GraphViewport viewport = rc.current_viewport;
+
+    // At this point, we draw a padding zone around the graph to hide anything which went outside the graph.
+
+    style.background_color.to_cairo_source(rc.cr); // Set the background color.
+
+    // Left side
+    cairo_rectangle(rc.cr, 0, 0, viewport.margin_left, viewport.margin_top + viewport.graph_height + viewport.margin_bottom);
+    cairo_fill(rc.cr);
+
+    // Right side
+    cairo_rectangle(rc.cr, viewport.margin_left + viewport.graph_width, 0, viewport.margin_right, viewport.margin_top + viewport.graph_height + viewport.margin_bottom);
+    cairo_fill(rc.cr);
+
+    // Top side
+    cairo_rectangle(rc.cr, 0, 0, viewport.margin_left + viewport.graph_width + viewport.margin_right, viewport.margin_top);
+    cairo_fill(rc.cr);
+
+    // Bottom side
+    cairo_rectangle(rc.cr, 0, viewport.margin_top + viewport.graph_height, viewport.margin_left + viewport.graph_width + viewport.margin_right, viewport.margin_top);
+    cairo_fill(rc.cr);
 }
 
 RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height, bool square) {

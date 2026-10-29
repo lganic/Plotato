@@ -34,6 +34,20 @@ void GraphBounds::adjust_with_point(double x, double y) {
     
 }
 
+bool GraphBounds::overlap(GraphBounds target) {
+
+    // If one rectangle is on left side of other
+    if (xmin > target.xmax || target.xmin > xmax)
+        return false;
+
+    // If one rectangle is above other
+    if (ymin > target.ymax || target.ymin > ymax)
+        return false;
+
+    return true;
+
+}
+
 int GraphViewport::map_x_to_screen(double x) {
     return detail::map_single_axis(x, bounds.xmin, bounds.xmax, graph_width, margin_left);
 }

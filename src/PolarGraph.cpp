@@ -161,11 +161,7 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     draw_axis(rc);
     draw_version_text(cr, width, height);
     draw_items(rc);
-
-    // Draw the legend. 
-    if (style.draw_legend) {
-        draw_legend(rc);
-    }
+    draw_legend(rc);
 }
 
 }

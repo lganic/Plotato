@@ -296,6 +296,10 @@ void Figure::draw_axis(RenderContext& rc) {
 
 void Figure::draw_legend(RenderContext& rc) {
 
+    if (!style.draw_legend) {
+        return;
+    }
+
     // Lets calculate the total size of the thing. 
     // To make this look good, we are going to need to know the size of all the text elements ahead of time.
     // So lets make a vector of all the text extents

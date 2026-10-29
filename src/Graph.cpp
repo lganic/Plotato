@@ -154,15 +154,7 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 
     draw_axis(rc);
     draw_version_text(cr, width, height);
-
-    {
-        std::lock_guard<std::mutex> lock(text_mutex);
-
-        // Loop over all text elements, and call each of their corresponding draw functions.
-        for(int i = 0; i < text_items.size(); i ++){
-            text_items[i]->draw(rc);
-        }
-    }
+    draw_items(rc);
 
     // Draw the legend. 
     if (style.draw_legend) {

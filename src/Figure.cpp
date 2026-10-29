@@ -405,6 +405,15 @@ void Figure::draw_legend(RenderContext& rc) {
     }
 }
 
+void Figure::draw_items(RenderContext& rc) {
+    std::lock_guard<std::mutex> lock(text_mutex);
+
+    // Loop over all text elements, and call each of their corresponding draw functions.
+    for(int i = 0; i < text_items.size(); i ++){
+        text_items[i]->draw(rc);
+    }
+}
+
 RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height, bool square) {
 
     // Set default margins from style.

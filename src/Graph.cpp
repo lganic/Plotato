@@ -154,7 +154,7 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 
     draw_axis(rc);
     draw_version_text(cr, width, height);
-    draw_items(rc);
+    draw_text_items(rc);
     draw_legend(rc);
 }
 

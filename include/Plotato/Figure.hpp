@@ -108,7 +108,7 @@ protected:
     void draw_version_text(cairo_t* cr, uint32_t width, uint32_t height);
     void draw_axis(RenderContext& rc);
     void draw_legend(RenderContext& rc);
-    void draw_items(RenderContext& rc);
+    void draw_text_items(RenderContext& rc);
 
     virtual void draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height);
 

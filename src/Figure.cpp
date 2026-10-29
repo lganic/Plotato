@@ -409,7 +409,7 @@ void Figure::draw_legend(RenderContext& rc) {
     }
 }
 
-void Figure::draw_items(RenderContext& rc) {
+void Figure::draw_text_items(RenderContext& rc) {
     std::lock_guard<std::mutex> lock(text_mutex);
 
     // Loop over all text elements, and call each of their corresponding draw functions.

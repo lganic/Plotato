@@ -446,6 +446,28 @@ void Figure::draw_items(RenderContext& rc) {
 
         current_plot_items[i]->draw(rc);
     }
+
+    GraphViewport viewport = rc.current_viewport;
+
+    // At this point, we draw a padding zone around the graph to hide anything which went outside the graph.
+
+    style.background_color.to_cairo_source(rc.cr); // Set the background color.
+
+    // Left side
+    cairo_rectangle(rc.cr, 0, 0, viewport.margin_left, viewport.margin_top + viewport.graph_height + viewport.margin_bottom);
+    cairo_fill(rc.cr);
+
+    // Right side
+    cairo_rectangle(rc.cr, viewport.margin_left + viewport.graph_width, 0, viewport.margin_right, viewport.margin_top + viewport.graph_height + viewport.margin_bottom);
+    cairo_fill(rc.cr);
+
+    // Top side
+    cairo_rectangle(rc.cr, 0, 0, viewport.margin_left + viewport.graph_width + viewport.margin_right, viewport.margin_top);
+    cairo_fill(rc.cr);
+
+    // Bottom side
+    cairo_rectangle(rc.cr, 0, viewport.margin_top + viewport.graph_height, viewport.margin_left + viewport.graph_width + viewport.margin_right, viewport.margin_top);
+    cairo_fill(rc.cr);
 }
 
 RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height, bool square) {

@@ -434,8 +434,16 @@ void Figure::draw_text_items(RenderContext& rc) {
 void Figure::draw_items(RenderContext& rc) {
     std::lock_guard<std::mutex> lock(data_mutex);
 
+    GraphBounds graph_bounds = rc.current_viewport.bounds;
+
     // Loop over all graph elements, and call each of their corresponding draw functions.
     for(int i = 0; i < current_plot_items.size(); i ++){
+
+        // Get the bounds of this object.
+        GraphBounds bounds = current_plot_items[i]->bounds();
+
+        if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
+
         current_plot_items[i]->draw(rc);
     }
 }

@@ -466,7 +466,7 @@ void Figure::draw_items(RenderContext& rc) {
     cairo_fill(rc.cr);
 
     // Bottom side
-    cairo_rectangle(rc.cr, 0, viewport.margin_top + viewport.graph_height, viewport.margin_left + viewport.graph_width + viewport.margin_right, viewport.margin_top);
+    cairo_rectangle(rc.cr, 0, viewport.margin_top + viewport.graph_height, viewport.margin_bottom + viewport.graph_width + viewport.margin_right, viewport.margin_bottom);
     cairo_fill(rc.cr);
 }
 

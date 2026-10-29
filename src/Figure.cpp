@@ -418,6 +418,15 @@ void Figure::draw_text_items(RenderContext& rc) {
     }
 }
 
+void Figure::draw_items(RenderContext& rc) {
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    // Loop over all graph elements, and call each of their corresponding draw functions.
+    for(int i = 0; i < current_plot_items.size(); i ++){
+        current_plot_items[i]->draw(rc);
+    }
+}
+
 RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height, bool square) {
 
     // Set default margins from style.

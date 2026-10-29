@@ -148,16 +148,7 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
         cairo_stroke(cr); // Stroke the border.
     }
 
-    // Do the actual plotting.
-    {
-        std::lock_guard<std::mutex> lock(data_mutex);
-
-        // Loop over all graph elements, and call each of their corresponding draw functions.
-        for(int i = 0; i < current_plot_items.size(); i ++){
-            current_plot_items[i]->draw(rc);
-        }
-    }
-
+    draw_items(rc);
     draw_axis(rc);
     draw_version_text(cr, width, height);
     draw_text_items(rc);

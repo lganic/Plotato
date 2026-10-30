@@ -4,6 +4,7 @@
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/GraphBounds.hpp>
 #include <Plotato/util/StyleStructs.hpp>
+#include <cstdint>
 
 namespace plotato {
 
@@ -16,29 +17,29 @@ enum AxisSide {
 };
 
 struct AxisPixelSize {
-    int left = 0;
-    int right = 0;
-    int top = 0;
-    int bottom = 0;
-    int theta = 0;
-    int r = 0;
+    uint32_t left = 0;
+    uint32_t right = 0;
+    uint32_t top = 0;
+    uint32_t bottom = 0;
+    uint32_t theta = 0;
+    uint32_t r = 0;
 };
 
 struct AxisStyle {
 
-    int num_ticks = 0;
+    int32_t num_ticks = 0;
 
     bool draw_plot_lines = true;
     Color plot_line_color = Color(209, 209, 209);
 
     bool draw_tick = true;
-    int tick_length = 5;
+    uint32_t tick_length = 5;
     Color tick_color = Color(0, 0, 0);
     
     bool draw_text = true;
-    int text_gap = 5;
+    uint32_t text_gap = 5;
     Color text_color = Color(0, 0, 0);
-    int font_size = 12;
+    uint32_t font_size = 12;
 
     // TODO: Put heatmap color data here. Will be wasted space when using a non heatmap object, but will make implementation way easier.
 };
@@ -52,11 +53,11 @@ struct Axis
 
     virtual ~Axis() {}
 
-    virtual void draw(RenderContext& ctx, int offset_x = 0, int offset_y = 0) = 0;
+    virtual void draw(RenderContext& ctx, uint32_t offset_x = 0, uint32_t offset_y = 0) = 0;
 
     virtual AxisPixelSize size();
 
-    void update_automatic_ticks(int graph_width, int graph_height);
+    void update_automatic_ticks(uint32_t graph_width, uint32_t graph_height);
 
     AxisSide side;
 };

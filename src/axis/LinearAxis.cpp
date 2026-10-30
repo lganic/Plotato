@@ -15,11 +15,11 @@ void LinearAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
         update_automatic_ticks(ctx.current_viewport.graph_width, ctx.current_viewport.graph_height);
     }
 
-    int num_ticks = abs(style.num_ticks);
+    uint32_t num_ticks = abs(style.num_ticks);
 
     // Loop over each tick, and figure out what we need to do.
     
-    for (int i = 0; i < num_ticks; i ++){
+    for (uint32_t i = 0; i < num_ticks; i ++){
         // In order to make my life a little easier, I am going to have the switch case figure out where to draw, and what to draw. Then do the draw outside. 
         // Since the draw operations will be the same in all cases, just with different positions.
 
@@ -39,10 +39,10 @@ void LinearAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
         cairo_text_extents_t extents;
         cairo_text_extents(ctx.cr, label, &extents);
 
-        int tick_from_x, tick_from_y, tick_to_x, tick_to_y;
-        int plot_from_x, plot_from_y, plot_to_x, plot_to_y;
-        int text_x, text_y;
-        int base_x, base_y;
+        uint32_t tick_from_x, tick_from_y, tick_to_x, tick_to_y;
+        uint32_t plot_from_x, plot_from_y, plot_to_x, plot_to_y;
+        uint32_t text_x, text_y;
+        uint32_t base_x, base_y;
 
         switch (side)
         {

@@ -4,7 +4,7 @@
 
 namespace plotato {
 
-int use_val_if_enabled(int val, bool enabled) {
+int32_t use_val_if_enabled(int32_t val, bool enabled) {
     if (enabled) return val;
 
     return 0;
@@ -26,8 +26,8 @@ AxisPixelSize Axis::size() {
     output.theta = 0;
 
     // Just some approximations, so we can output things correctly.
-    int approx_text_vertical_size = get_approx_vertical_size(style.font_size);
-    int approx_text_horizontal_size = get_approx_horizontal_size(style.font_size); // Very rough approximation.
+    uint32_t approx_text_vertical_size = get_approx_vertical_size(style.font_size);
+    uint32_t approx_text_horizontal_size = get_approx_horizontal_size(style.font_size); // Very rough approximation.
 
     switch (side)
     {
@@ -70,12 +70,12 @@ AxisPixelSize Axis::size() {
     return output;
 }
 
-void Axis::update_automatic_ticks(int graph_width, int graph_height) {
+void Axis::update_automatic_ticks(uint32_t graph_width, uint32_t graph_height) {
 
     float approx_content_ratio;
 
-    int element_size;
-    int content_size;
+    uint32_t element_size;
+    uint32_t content_size;
 
     switch (side)
     {
@@ -122,7 +122,7 @@ void Axis::update_automatic_ticks(int graph_width, int graph_height) {
 
     // The proof here is kinda simple. Assuming content size = N * element size + (N - 1) * gap size
     // The solving for N, assuming that the gap size = content ratio * element size 
-    int N = std::round((content_size + approx_content_ratio * element_size) / (element_size * (approx_content_ratio + 1)));
+    uint32_t N = std::round((content_size + approx_content_ratio * element_size) / (element_size * (approx_content_ratio + 1)));
 
     // Clamp N, so we always have at least 2 ticks. This keeps the arithmetic from breaking later on.
     if (N < 2) N = 2;

@@ -211,8 +211,8 @@ void Figure::on_size_allocate(GtkWidget *widget,
 void Figure::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {
 
     // we can calculate the centering position, since we know the plot width, and the image width is 100px
-    int center_x = (width - 100) / 2;
-    int center_y = (height - 100) / 2;
+    int32_t center_x = (width - 100) / 2;
+    int32_t center_y = (height - 100) / 2;
 
     // Check if the image loaded successfully
     if (cairo_surface_status(debug_image) == CAIRO_STATUS_SUCCESS) {
@@ -262,7 +262,7 @@ void Figure::draw_axis(RenderContext& rc) {
 
     // Loop over all the axis, and render each to the graph.
     // This has to use a switch case, in order to correctly stack multi axis plots.
-    for(int i = 0; i < current_axis_items.size(); i ++){
+    for(size_t i = 0; i < current_axis_items.size(); i ++){
 
         AxisPixelSize size = current_axis_items[i]->size();
 
@@ -415,7 +415,7 @@ void Figure::draw_text_items(RenderContext& rc) {
     GraphBounds graph_bounds = rc.current_viewport.bounds;
 
     // Loop over all text elements, and call each of their corresponding draw functions.
-    for(int i = 0; i < text_items.size(); i ++){
+    for(size_t i = 0; i < text_items.size(); i ++){
 
         if (!text_items[i]->style.absolute) {
             // Don't check absolute elements, assume the user knows what they are doing.
@@ -437,7 +437,7 @@ void Figure::draw_items(RenderContext& rc) {
     GraphBounds graph_bounds = rc.current_viewport.bounds;
 
     // Loop over all graph elements, and call each of their corresponding draw functions.
-    for(int i = 0; i < current_plot_items.size(); i ++){
+    for(size_t i = 0; i < current_plot_items.size(); i ++){
 
         // Get the bounds of this object.
         GraphBounds bounds = current_plot_items[i]->bounds();

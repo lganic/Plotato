@@ -36,9 +36,6 @@ public:
         
 private:
     cairo_t* cr;
-
-    int widget_width;
-    int widget_height;
     
     GraphViewport viewport;
     

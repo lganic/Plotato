@@ -4,9 +4,7 @@
 
 namespace plotato {
 
-    Text::Text(double text_x, double text_y, std::string starting_text, FigureTextStyle text_style): x(text_x), y(text_y), text(starting_text) {
-        style = text_style;
-    }
+    Text::Text(double text_x, double text_y, std::string starting_text, FigureTextStyle text_style): x(text_x), y(text_y), text(starting_text), style(text_style) {}
 
     GraphBounds Text::bounds() {
 

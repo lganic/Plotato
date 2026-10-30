@@ -13,7 +13,7 @@ void ThetaAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
         style.num_ticks = -std::round((ctx.current_viewport.graph_width / 2 + 4 * get_approx_vertical_size(style.font_size)) / (get_approx_vertical_size(style.font_size) * (4 + 1)));
     }
 
-    int num_ticks = abs(style.num_ticks);
+    uint32_t num_ticks = abs(style.num_ticks);
 
     // Find the exact pixel center of the circle. We can use the graph renderer for this, and just map the cord 0,0
     double center_x = ctx.renderer.data_to_screen_x(0, 0);
@@ -25,7 +25,7 @@ void ThetaAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
 
     style.plot_line_color.to_cairo_source(ctx.cr);
 
-    for (int i = 0; i < num_ticks - 1; i ++){
+    for (uint32_t i = 0; i < num_ticks - 1; i ++){
 
         double theta = 2 * M_PI * i / (num_ticks - 1);
 

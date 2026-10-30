@@ -2,6 +2,7 @@
 #define PLOTATO_GRAPHBOUNDS_HPP
 
 #include <limits>
+#include <cstdint>
 
 namespace plotato {
 
@@ -21,16 +22,16 @@ struct GraphBounds {
 struct GraphViewport {
     GraphBounds bounds;
 
-    int margin_left = 10;
-    int margin_right = 10;
-    int margin_top = 10;
-    int margin_bottom = 10;
+    uint32_t margin_left = 10;
+    uint32_t margin_right = 10;
+    uint32_t margin_top = 10;
+    uint32_t margin_bottom = 10;
 
-    int graph_width;
-    int graph_height;
+    int32_t graph_width;
+    int32_t graph_height;
 
-    int map_x_to_screen(double x);
-    int map_y_to_screen(double y);
+    uint32_t map_x_to_screen(double x);
+    uint32_t map_y_to_screen(double y);
 };
 
 }

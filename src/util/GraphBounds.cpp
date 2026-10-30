@@ -5,7 +5,7 @@ namespace plotato {
 
 namespace detail {
 
-    uint32_t map_single_axis(double val, double min_val, double max_val, int size, int offset){
+    uint32_t map_single_axis(double val, double min_val, double max_val, int32_t size, int32_t offset){
 
     double t = (val - min_val) / (max_val - min_val);
 

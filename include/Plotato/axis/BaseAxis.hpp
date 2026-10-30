@@ -53,11 +53,11 @@ struct Axis
 
     virtual ~Axis() {}
 
-    virtual void draw(RenderContext& ctx, uint32_t offset_x = 0, uint32_t offset_y = 0) = 0;
+    virtual void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0) = 0;
 
     virtual AxisPixelSize size();
 
-    void update_automatic_ticks(uint32_t graph_width, uint32_t graph_height);
+    void update_automatic_ticks(int32_t graph_width, int32_t graph_height);
 
     AxisSide side;
 };

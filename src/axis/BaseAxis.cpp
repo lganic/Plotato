@@ -70,7 +70,7 @@ AxisPixelSize Axis::size() {
     return output;
 }
 
-void Axis::update_automatic_ticks(uint32_t graph_width, uint32_t graph_height) {
+void Axis::update_automatic_ticks(int32_t graph_width, int32_t graph_height) {
 
     float approx_content_ratio;
 

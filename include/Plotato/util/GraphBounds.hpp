@@ -2,6 +2,7 @@
 #define PLOTATO_GRAPHBOUNDS_HPP
 
 #include <limits>
+#include <cstdint>
 
 namespace plotato {
 

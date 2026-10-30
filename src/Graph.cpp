@@ -105,10 +105,10 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     // Create a new viewport / render context which we will pass to the renderers.
     RenderContext rc = get_render_context(cr, width, height);
 
-    uint32_t plot_x = rc.current_viewport.margin_left;
-    uint32_t plot_y = rc.current_viewport.margin_top;
-    uint32_t plot_w = rc.current_viewport.graph_width;
-    uint32_t plot_h = rc.current_viewport.graph_height;
+    int32_t plot_x = rc.current_viewport.margin_left;
+    int32_t plot_y = rc.current_viewport.margin_top;
+    int32_t plot_w = rc.current_viewport.graph_width;
+    int32_t plot_h = rc.current_viewport.graph_height;
 
     // Set background color on the plot.
     style.background_color.to_cairo_source(cr);

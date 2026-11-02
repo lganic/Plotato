@@ -33,6 +33,13 @@ set(ICON_PNG "${CMAKE_CURRENT_SOURCE_DIR}/static/Icon-small.png")
 set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(ICON_OBJECT "${GENERATED_DIR}/icon_small_png.o")
 
+# objcopy has to emit an object in the platform's native format so it can be linked.
+if(WIN32)
+  set(ICON_OBJECT_FORMAT pe-x86-64)
+else()
+  set(ICON_OBJECT_FORMAT elf64-x86-64)
+endif()
+
 # Generate a header containing the version string
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.hpp.in"
@@ -44,9 +51,9 @@ add_custom_command(
     OUTPUT "${ICON_OBJECT}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${GENERATED_DIR}"
     COMMAND ${OBJCOPY_EXECUTABLE}
-        --input binary
-        --output elf64-x86-64
-        --binary-architecture i386:x86-64
+        -I binary
+        -O ${ICON_OBJECT_FORMAT}
+        -B i386:x86-64
         Icon-small.png
         "${ICON_OBJECT}"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/static"

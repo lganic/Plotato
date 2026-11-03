@@ -114,6 +114,10 @@ void Figure::draw() {
 
 }
 
+void Figure::legend(bool show) {
+    style.draw_legend = show;
+}
+
 // Plot the given data on the graph. 
 LinePlot* Figure::plot(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
 {

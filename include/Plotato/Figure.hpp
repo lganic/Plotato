@@ -75,6 +75,8 @@ public:
 
     Text* add_text(double x, double y, std::string text, FigureTextStyle style = FigureTextStyle());
 
+    void legend(bool show = true);
+
     FigureStyle style;
 
     void export_image(std::string filename, uint32_t width, uint32_t height);

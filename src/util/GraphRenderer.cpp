@@ -76,9 +76,7 @@ void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const s
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
-void GraphRenderer::draw_polyline(const std::vector<double>& x,
-                                  const std::vector<double>& y,
-                                  const PlotStyle& style)
+void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style)
 {
     if (x.size() != y.size()) {
         std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;

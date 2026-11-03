@@ -24,6 +24,9 @@ public:
 
     void draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
     void draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
+
+    void draw_polygon_absolute(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style);
+
     void draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, Color background, Color outline, double margin = 0.1);
     void draw_circle(double x, double y, double radius, Color background, Color outline, double margin = 0.1);
     
@@ -49,11 +52,11 @@ private:
     void enable_plot_clip();
     void disable_clip();
         
-    void draw_interleaved_polygon_absolute(double absolute_x, double absolute_y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
-    void draw_polygon_absolute(double absolute_x, double absolute_y, double angle, uint32_t n, MarkerStyle& style);
+    void draw_interleaved_regular_polygon_absolute(double absolute_x, double absolute_y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
+    void draw_regular_polygon_absolute(double absolute_x, double absolute_y, double angle, uint32_t n, MarkerStyle& style);
 
-    void draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
-    void draw_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style);
+    void draw_interleaved_regular_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
+    void draw_regular_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style);
 };
 
 }

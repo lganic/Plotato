@@ -97,7 +97,7 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vecto
         screen_y[i] = data_to_screen_y(x[i], y[i]);
     }
 
-    // Pass to absolute screen coordinates.    
+    // Pass to absolute screen coordinates.
     draw_polyline_absolute(screen_x, screen_y, style);
 }
 
@@ -148,6 +148,30 @@ void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const st
     cairo_new_path(cr); // Clear out the preserved path. Since we use preserve twice to cover all bases.
 
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+}
+
+void GraphRenderer::draw_polygon(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style) {
+    if (x.size() != y.size()) {
+        std::cerr << "Could not render polygon. X and Y coordinate sizes mismatch." << std::endl;
+
+        return;
+    }
+
+    size_t n = x.size();
+
+    if (n < 3) return; // Not enough points! Abort!
+
+    // Map the x and y data to screen coordinates.
+    std::vector<double> screen_x(n);
+    std::vector<double> screen_y(n);
+
+    for (size_t i = 0; i < n; i ++) {
+        screen_x[i] = data_to_screen_x(x[i], y[i]);
+        screen_y[i] = data_to_screen_y(x[i], y[i]);
+    }
+
+    // Pass to absolute screen coordinates.
+    draw_polygon_absolute(screen_x, screen_y, style);
 }
 
 

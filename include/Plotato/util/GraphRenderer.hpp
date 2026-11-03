@@ -22,6 +22,7 @@ public:
     void draw_axes();
     void draw_grid();
 
+    void draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
     void draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
     void draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, Color background, Color outline, double margin = 0.1);
     void draw_circle(double x, double y, double radius, Color background, Color outline, double margin = 0.1);

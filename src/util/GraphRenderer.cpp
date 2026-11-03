@@ -34,11 +34,15 @@ void GraphRenderer::set_color(const Color& color){
     cairo_set_source_rgba(cr, color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0);
 }
 
-void GraphRenderer::draw_polyline(const std::vector<double>& x,
-                                  const std::vector<double>& y,
-                                  const PlotStyle& style)
-{
-    size_t n = std::min(x.size(), y.size());
+void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style) {
+
+    if (x.size() != y.size()) {
+        std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;
+
+        return;
+    }
+
+    size_t n = x.size();
 
     if (n < 2) return; // Not enough points! Abort!
 
@@ -53,31 +57,50 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x,
     for (size_t i = 0; i < n; i++) {
 
         if (!std::isfinite(x[i]) || !std::isfinite(y[i])) {
-
             // Skip over a coordinate that had invalid data. Indicate that the line is no longer started, so we don't bridge data which wasn't actually next to eachother.
             started = false;
             continue;
         }
 
-        double cx = x[i];
-        double cy = y[i];
-
-        // Map the coordinate to the screen space.
-        double sx = data_to_screen_x(cx, cy);
-        double sy = data_to_screen_y(cx, cy);
-
         if (!started) {
             // Line segment not started yet. Just move to the coordinate. We will draw the line in a sec.
-            cairo_move_to(cr, sx, sy);
+            cairo_move_to(cr, x[i], y[i]);
             started = true;
         } else {
             // Line segment started. So we are currently at the previous point on the line. Stroke to the next point.
-            cairo_line_to(cr, sx, sy);
+            cairo_line_to(cr, x[i], y[i]);
         }
     }
 
     cairo_stroke(cr); // Stroke that
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+}
+
+void GraphRenderer::draw_polyline(const std::vector<double>& x,
+                                  const std::vector<double>& y,
+                                  const PlotStyle& style)
+{
+    if (x.size() != y.size()) {
+        std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;
+
+        return;
+    }
+
+    size_t n = x.size();
+
+    if (n < 2) return; // Not enough points! Abort!
+
+    // Map the x and y data to screen coordinates.
+    std::vector<double> screen_x(n);
+    std::vector<double> screen_y(n);
+
+    for (size_t i = 0; i < n; i ++) {
+        screen_x[i] = data_to_screen_x(x[i], y[i]);
+        screen_y[i] = data_to_screen_y(x[i], y[i]);
+    }
+
+    // Pass to absolute screen coordinates.    
+    draw_polyline_absolute(screen_x, screen_y, style);
 }
 
 

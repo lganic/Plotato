@@ -21,6 +21,8 @@ const uint32_t INTER_AXIS_PADDING = 5;
 
 
 namespace plotato {
+
+const char NO_NAMED_PLOTS_DEBUG_STRING[] = "No Named Plots";
     
 namespace detail {
     cairo_status_t read_png_from_memory(
@@ -355,21 +357,40 @@ void Figure::draw_legend(RenderContext& rc) {
     double legend_box_width = max_width + 2 * style.legend_padding + max_height + 5;
     double legend_box_height = all_extents.size() * (max_height + style.legend_inter_object_padding) - style.legend_inter_object_padding + 2 * style.legend_padding;
 
+    if (all_extents.size() == 0) {
+        // No named plots. Size the box to contain the debug text item instead. 
+
+        // Get the text textents.
+        style.legend_text_style.to_cairo_source(rc.cr);
+        cairo_text_extents_t debug_extents;
+        cairo_text_extents(rc.cr, NO_NAMED_PLOTS_DEBUG_STRING, &debug_extents);
+
+        max_width = debug_extents.width;
+        max_height = debug_extents.height;
+
+        legend_box_width = max_width + 2 * style.legend_padding;
+        legend_box_height = max_height + 2 * style.legend_padding;
+
+        // Continue execution, to use the existing anchor logic instead of re-implementing. We will render later.
+    }
+
     // Calculate the legend based on the anchor position.
     auto [plot_off_x, plot_off_y] = get_offset(plot_w, plot_h, style.legend_anchor);
     auto [anchor_x, anchor_y] = get_offset(legend_box_width, legend_box_height, style.legend_anchor);
-    auto [padding_x, padding_y] = get_offset(2 * style.legend_offset, 2 * style.legend_offset, style.legend_anchor); // Hacky.
+    auto [padding_x, padding_y] = get_offset(2 * style.legend_side_offset, 2 * style.legend_side_offset, style.legend_anchor); // Hacky.
 
     // First, calculate a legend position which puts it in the exact center of the graph.
     double legend_x = plot_x + (plot_w / 2) - (legend_box_width / 2);
     double legend_y = plot_y + (plot_h / 2) - (legend_box_height / 2);
 
     // Then use the anchors to offset into the correct position.
-    legend_x -= plot_off_x - anchor_x - padding_x;
-    legend_y -= plot_off_y - anchor_y - padding_y;
+    legend_x -= plot_off_x - anchor_x - padding_x + style.legend_offset_left;
+    legend_y -= plot_off_y - anchor_y - padding_y - style.legend_offset_top;
 
     double swatch_x = legend_x + style.legend_padding;
+    double swatch_y = legend_y + style.legend_padding;
     double text_x = swatch_x + max_height + 5;
+    double text_y = swatch_y + max_height;
 
     // Draw legend filled rectangle
     style.legend_color.to_cairo_source(rc.cr);
@@ -380,9 +401,20 @@ void Figure::draw_legend(RenderContext& rc) {
     cairo_set_line_width(rc.cr, style.legend_border_width);
     cairo_stroke(rc.cr); // Use our kept path from the rectangle to stroke
 
+    if (all_extents.size() == 0) {
+
+        // Box is sized and drawn, we just need to add the debug text to the legend
+
+        style.legend_text_style.to_cairo_source(rc.cr);
+
+        cairo_move_to(rc.cr, swatch_x, text_y); // Move to bottom left of text rect
+        cairo_show_text(rc.cr, NO_NAMED_PLOTS_DEBUG_STRING);
+
+        return;
+    }
+
     // Now we can draw the text and the color swatches.
     // Do this inside of a scope, since we are accessing mutexed data.
-    style.legend_text_style.to_cairo_source(rc.cr);
     {
         std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
         size_t legend_item_index = 0;
@@ -394,13 +426,13 @@ void Figure::draw_legend(RenderContext& rc) {
             if (plot_item->name.length() == 0) continue; // Skip plots with no name.
 
             style.legend_text_style.to_cairo_source(rc.cr);
-            cairo_move_to(rc.cr, text_x, max_height + legend_y + style.legend_offset + legend_item_index * (max_height + style.legend_inter_object_padding));
+            cairo_move_to(rc.cr, text_x, text_y + legend_item_index * (max_height + style.legend_inter_object_padding));
             cairo_show_text(rc.cr, plot_item->name.c_str());
 
             plot_item->draw_legend_element(
                 rc,
-                legend_x + style.legend_offset, 
-                legend_y + style.legend_offset + legend_item_index * (max_height + style.legend_inter_object_padding), 
+                swatch_x, 
+                swatch_y + legend_item_index * (max_height + style.legend_inter_object_padding), 
                 max_height, 
                 max_height,
                 style.legend_border_color,

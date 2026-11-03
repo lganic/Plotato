@@ -45,7 +45,9 @@ struct FigureStyle {
     TextStyle legend_text_style = TextStyle(14);
     uint16_t legend_padding = 4;
     uint16_t legend_inter_object_padding = 4; // TODO : Rename this. Don't like this name.
-    uint16_t legend_offset = 4;
+    int16_t legend_offset_left = 0; // Offset the legend left and right.
+    int16_t legend_offset_top = 0; // Offset the legend up and down.
+    int16_t legend_side_offset = 4; // Offset the legend off its anchor.
     Color legend_color = Color(255, 255, 255);
     Color legend_border_color = Color(200, 200, 200);
     double legend_border_width = 1;

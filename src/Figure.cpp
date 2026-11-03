@@ -413,7 +413,6 @@ void Figure::draw_legend(RenderContext& rc) {
 
     // Now we can draw the text and the color swatches.
     // Do this inside of a scope, since we are accessing mutexed data.
-    style.legend_text_style.to_cairo_source(rc.cr);
     {
         std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
         size_t legend_item_index = 0;

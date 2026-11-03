@@ -46,14 +46,17 @@ struct FigureTextStyle : public TextStyle {
     double text_padding = 5;
 };
 
-struct MarkerStyle {
-    char type = 'O';
-    Color fill = Color(0, 0, 0);
-
-    double size = 6;
-
+struct ShapeStyle {
     Color outline = Color(0, 0, 0, 0);
     double outline_width = 2;
+
+    Color fill = Color(0, 0, 0);
+};
+
+struct MarkerStyle : public ShapeStyle{
+    char type = 'O';
+
+    double size = 6;
 };
 
 struct PlotStyle {

@@ -30,15 +30,40 @@ double GraphRenderer::data_to_screen_y(double x, double y)
     return map_y(x, y, viewport);
 }
 
+std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinates(std::vector<double> x, std::vector<double> y) {
+    if (x.size() != y.size()) {
+        std::cerr << "Could not map coordinates. X and Y coordinate sizes mismatch." << std::endl;
+
+        return std::make_pair(std::vector<double>(), std::vector<double>());
+    }
+
+    size_t n = x.size();
+
+    // Map the x and y data to screen coordinates.
+    std::vector<double> screen_x(n);
+    std::vector<double> screen_y(n);
+
+    for (size_t i = 0; i < n; i ++) {
+        screen_x[i] = data_to_screen_x(x[i], y[i]);
+        screen_y[i] = data_to_screen_y(x[i], y[i]);
+    }
+
+    return std::make_pair(screen_x, screen_y);
+}
+
 void GraphRenderer::set_color(const Color& color){
     cairo_set_source_rgba(cr, color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0);
 }
 
-void GraphRenderer::draw_polyline(const std::vector<double>& x,
-                                  const std::vector<double>& y,
-                                  const PlotStyle& style)
-{
-    size_t n = std::min(x.size(), y.size());
+void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style) {
+
+    if (x.size() != y.size()) {
+        std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;
+
+        return;
+    }
+
+    size_t n = x.size();
 
     if (n < 2) return; // Not enough points! Abort!
 
@@ -53,26 +78,18 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x,
     for (size_t i = 0; i < n; i++) {
 
         if (!std::isfinite(x[i]) || !std::isfinite(y[i])) {
-
             // Skip over a coordinate that had invalid data. Indicate that the line is no longer started, so we don't bridge data which wasn't actually next to eachother.
             started = false;
             continue;
         }
 
-        double cx = x[i];
-        double cy = y[i];
-
-        // Map the coordinate to the screen space.
-        double sx = data_to_screen_x(cx, cy);
-        double sy = data_to_screen_y(cx, cy);
-
         if (!started) {
             // Line segment not started yet. Just move to the coordinate. We will draw the line in a sec.
-            cairo_move_to(cr, sx, sy);
+            cairo_move_to(cr, x[i], y[i]);
             started = true;
         } else {
             // Line segment started. So we are currently at the previous point on the line. Stroke to the next point.
-            cairo_line_to(cr, sx, sy);
+            cairo_line_to(cr, x[i], y[i]);
         }
     }
 
@@ -80,181 +97,53 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x,
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
+void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style)
+{
+    if (x.size() != y.size()) {
+        std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;
 
-// Draw a circle at exact pixel coordinates, with exact pixel sizes.
-void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, Color background, Color outline, double margin) {
+        return;
+    }
+
+    size_t n = x.size();
+
+    if (n < 2) return; // Not enough points! Abort!
+
+    std::pair<std::vector<double>, std::vector<double>> mapped_cords = map_coordinates(x, y);
+
+    // Pass to absolute screen coordinates.
+    draw_polyline_absolute(mapped_cords.first, mapped_cords.second, style);
+}
+
+void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style) {
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
-    // First, calculate how many segments we need to render this. 
-    // We do this based on an approximate solution to this equation:
+    if (x.size() != y.size()) {
+        std::cerr << "Could not render polygon. X and Y coordinate sizes mismatch." << std::endl;
 
-    // r*(1-sqrt(2pi/(N * sin(360 / N)))) < M
+        return;
+    }
 
-    // Where M is the maximum amount of pixel margin that the polygon is allowed to be off at the vertexes.
-    // To derive that, just solve first for the radius of a polygon where the area matches the circle equivalent
-    // then re-arrange to find rp-rc < M where rp is radius of polygon, and rc is radius of circle.
+    size_t n = x.size();
 
-    // You will see my rp formula in a sec.
-
-    // Approximate solution to N is this:
-    uint32_t num_faces = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / pixel_radius, -2))));
-
-    // Then we can find the radius of the polygon like so:
-    double radius_polygon = pixel_radius * std::sqrt(2 * M_PI / (num_faces * std::sin(2 * M_PI / num_faces)));
-
-    // And now we can draw. I am tempted to re-use the interleaved polygon, but it would be messy.
-    // So I will make another method here.
+    if (n < 3) return; // Not enough points! Abort!
 
     bool started = false;
 
-    for (uint32_t i = 0; i < num_faces; i ++) {
-        double angle = static_cast<double>(i) * 2.0 * M_PI / static_cast<double>(num_faces);
-        
-        double sx = absolute_x + radius_polygon * std::cos(angle);
-        double sy = absolute_y + radius_polygon * std::sin(angle);
+    // First make the path.
+    for (size_t i = 0; i < n; i ++) {
 
         if (!started) {
             // Loop not started yet. Just move to the coordinate.
-            cairo_move_to(cr, sx, sy);
+            cairo_move_to(cr, x[i], y[i]);
         }
         else {
             // Loop started. Just keep going.
-            cairo_line_to(cr, sx, sy);
+            cairo_line_to(cr, x[i], y[i]);
         }
 
         started = true;
-    }
-
-    // Path complete. Close it.
-    cairo_close_path(cr);
-
-    // Now lets stroke it.
-    if (background.has_opacity()) {
-        // Fill the background.
-        background.to_cairo_source(cr);
-        cairo_fill_preserve(cr);
-    }
-
-    // Check if we should do a background as well.
-    if (outline.has_opacity()) {
-        // Stroke the outline.
-        outline.to_cairo_source(cr);
-        cairo_stroke_preserve(cr);
-    }
-
-    cairo_new_path(cr); // Clear out the preserved path. Since we use preserve twice to cover all bases.
-
-    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
-}
-
-
-void GraphRenderer::draw_circle(double x, double y, double radius, Color background, Color outline, double margin) {
-
-    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
-
-    // Believe it or not, this one actually needs its own function. Since we are now dealing with screen coordinates.
-    // I.e. if the graph were skewed, we would need to be rendering an ellipse.
-
-    // Lets do the same circle calculation as before to figure out the number of faces. 
-    // We will just do this once per axis, then figure out which axis is best.
-
-    // TODO Probably a cleaner way to do this. Need to do algebra:
-    double delta_x_pixels = data_to_screen_x(x + radius, y) - data_to_screen_x(x, y); // Offset x by radius, and see how far offset.
-    double delta_y_pixels = data_to_screen_y(y, y + radius) - data_to_screen_y(x, y); // Offset y by radius, and see how far offset.
-
-    uint32_t num_faces_x = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_x_pixels, -2))));
-    uint32_t num_faces_y = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_y_pixels, -2))));
-
-    uint32_t num_faces = std::max(num_faces_x, num_faces_y);
-
-    bool started = false;
-
-    for (uint32_t i = 0; i < num_faces; i ++) {
-
-        double angle = static_cast<double>(i) * 2.0 * M_PI / static_cast<double>(num_faces);
-        
-        double cx = x + radius * std::cos(angle);
-        double cy = y + radius * std::sin(angle);
-
-        double poly_x = data_to_screen_x(cx, cy);
-        double poly_y = data_to_screen_y(cx, cy);
-
-        if (!started) {
-            // Loop not started yet. Just move to the coordinate.
-            cairo_move_to(cr, poly_x, poly_y);
-        }
-        else {
-            // Loop started. Just keep going.
-            cairo_line_to(cr, poly_x, poly_y);
-        }
-
-        started = true;
-    }
-
-    // Path complete. Close it.
-    cairo_close_path(cr);
-
-    // Now lets stroke it.
-    if (background.has_opacity()) {
-        // Fill the background.
-        background.to_cairo_source(cr);
-        cairo_fill_preserve(cr);
-    }
-
-    // Check if we should do a background as well.
-    if (outline.has_opacity()) {
-        // Stroke the outline.
-        outline.to_cairo_source(cr);
-        cairo_stroke_preserve(cr);
-    }
-
-    cairo_new_path(cr); // Clear out the preserved path. Since we use preserve twice to cover all bases.
-
-    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
-}
-
-void GraphRenderer::draw_interleaved_polygon_absolute(double poly_x, double poly_y, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, MarkerStyle& style) {
-
-    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
-
-    if (angles_degrees.size() != scales.size()) return;
-
-    if (n * angles_degrees.size() <= 2) return; // Shouldn't do anything.
-
-    std::vector<double> angles_radians;
-    std::vector<double> scaled_sizes;
-    angles_radians.resize(angles_degrees.size());
-    scaled_sizes.resize(scales.size());
-    
-    // First, cast all the angles to radians, and scale the sizes to the scale given in the style struct.
-    for(size_t i = 0; i < angles_degrees.size(); i ++) {
-        angles_radians[i] = angles_degrees[i] * M_PI / 180.0;
-        scaled_sizes[i] = scales[i] * style.size;
-    }
-
-    bool started = false;
-
-    for(uint32_t i_vertex = 0; i_vertex < n; i_vertex++)
-    {
-        double angle_offset = static_cast<double>(i_vertex) * 2.0 * M_PI / static_cast<double>(n);
-
-        for (size_t polygon_index = 0; polygon_index < scaled_sizes.size(); polygon_index ++){
-            double sx = poly_x + scaled_sizes[polygon_index] * std::cos(angles_radians[polygon_index] + angle_offset);
-            double sy = poly_y + scaled_sizes[polygon_index] * std::sin(angles_radians[polygon_index] + angle_offset);
-
-            if (!started) {
-                // Move to the start of the polygon.
-                cairo_move_to(cr, sx, sy);
-            }
-            else
-            {
-                // Move the path to the next segment of the polygon.
-                cairo_line_to(cr, sx, sy);
-            }
-
-            started = true;
-        }
     }
 
     // Path complete. Close it.
@@ -279,9 +168,126 @@ void GraphRenderer::draw_interleaved_polygon_absolute(double poly_x, double poly
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
+void GraphRenderer::draw_polygon(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style) {
+    if (x.size() != y.size()) {
+        std::cerr << "Could not render polygon. X and Y coordinate sizes mismatch." << std::endl;
+
+        return;
+    }
+
+    size_t n = x.size();
+
+    if (n < 3) return; // Not enough points! Abort!
+
+    std::pair<std::vector<double>, std::vector<double>> mapped_cords = map_coordinates(x, y);
+
+    // Pass to absolute screen coordinates.
+    draw_polygon_absolute(mapped_cords.first, mapped_cords.second, style);
+}
+
+std::pair<std::vector<double>, std::vector<double>> interleave_polygons(double poly_x, double poly_y, double angle, double radius, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales) {
+    if (angles_degrees.size() != scales.size()) {
+        std::cerr << "Could not calculate interleaved polygon. angle degrees and scales mismatch." << std::endl;
+
+        return std::make_pair(std::vector<double>(), std::vector<double>());
+    }
+
+    if (n * angles_degrees.size() < 3) return std::make_pair(std::vector<double>(), std::vector<double>()); // Shouldn't do anything.
+
+    double angle_offset_radians = angle * M_PI / 180.0;
+
+    std::vector<double> angles_radians(angles_degrees.size());
+    std::vector<double> scaled_sizes(scales.size());
+
+    std::vector<double> out_x(n * angles_degrees.size());
+    std::vector<double> out_y(n * angles_degrees.size());
+    
+    // First, cast all the angles to radians, and scale the radius to the scale given in the scale vector
+    for(size_t i = 0; i < angles_degrees.size(); i ++) {
+        angles_radians[i] = angles_degrees[i] * M_PI / 180.0;
+        scaled_sizes[i] = scales[i] * radius;
+    }
+
+    uint32_t out_index = 0;
+
+    for(uint32_t i_vertex = 0; i_vertex < n; i_vertex++)
+    {
+        double angle_offset = angle_offset_radians + static_cast<double>(i_vertex) * 2.0 * M_PI / static_cast<double>(n);
+
+        for (size_t polygon_index = 0; polygon_index < scaled_sizes.size(); polygon_index ++){
+            out_x[out_index] = poly_x + scaled_sizes[polygon_index] * std::cos(angles_radians[polygon_index] + angle_offset);
+            out_y[out_index] = poly_y + scaled_sizes[polygon_index] * std::sin(angles_radians[polygon_index] + angle_offset);
+
+            out_index ++;            
+        }
+    }
+
+    return std::make_pair(out_x, out_y);
+}
+
+void GraphRenderer::draw_regular_polygons_interleaved_absolute(double poly_x, double poly_y, double angle, double radius, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, ShapeStyle& style) {
+    std::pair<std::vector<double>, std::vector<double>> interleaved = interleave_polygons(poly_x, poly_y, angle, radius, n, angles_degrees, scales);
+
+    draw_polygon_absolute(interleaved.first, interleaved.second, style);
+}
+
+void GraphRenderer::draw_regular_polygons_interleaved(double poly_x, double poly_y, double angle, double radius, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, ShapeStyle& style) {
+    std::pair<std::vector<double>, std::vector<double>> interleaved = interleave_polygons(poly_x, poly_y, angle, radius, n, angles_degrees, scales);
+
+    draw_polygon(interleaved.first, interleaved.second, style);
+}
+
 // Private helper function, since a lot of the markers are gonna need this.
-void GraphRenderer::draw_polygon_absolute(double x, double y, double angle, uint32_t n, MarkerStyle& style){
-    draw_interleaved_polygon_absolute(x, y, n, {angle}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
+void GraphRenderer::draw_regular_polygon_absolute(double x, double y, double angle, double radius, uint32_t n, ShapeStyle& style){
+    draw_regular_polygons_interleaved_absolute(x, y, angle, radius, n, {0}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
+}
+
+void GraphRenderer::draw_regular_polygon(double x, double y, double angle, double radius, uint32_t n, ShapeStyle& style) {
+    draw_regular_polygons_interleaved(x, y, angle, radius, n, {0}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
+}
+
+// Draw a circle at exact pixel coordinates, with exact pixel sizes.
+void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, ShapeStyle& style, double margin) {
+
+    // First, calculate how many segments we need to render this. 
+    // We do this based on an approximate solution to this equation:
+
+    // r*(1-sqrt(2pi/(N * sin(360 / N)))) < M
+
+    // Where M is the maximum amount of pixel margin that the polygon is allowed to be off at the vertexes.
+    // To derive that, just solve first for the radius of a polygon where the area matches the circle equivalent
+    // then re-arrange to find rp-rc < M where rp is radius of polygon, and rc is radius of circle.
+
+    // You will see my rp formula in a sec.
+
+    // Approximate solution to N is this:
+    uint32_t num_faces = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / pixel_radius, -2))));
+
+    // Then we can find the radius of the polygon like so:
+    double radius_polygon = pixel_radius * std::sqrt(2 * M_PI / (num_faces * std::sin(2 * M_PI / num_faces)));
+
+    draw_regular_polygon_absolute(absolute_x, absolute_y, 0, radius_polygon, num_faces, style);
+}
+
+void GraphRenderer::draw_circle(double x, double y, double radius, ShapeStyle& style, double margin) {
+
+    // Lets do the same circle calculation as before to figure out the number of faces. 
+    // We will just do this once per axis, then figure out which axis is best.
+
+    double delta_x_pixels = std::abs(data_to_screen_x(x + radius, y + radius) - data_to_screen_x(x, y)); // Offset x and y by radius, and see how far offset in x direction.
+    double delta_y_pixels = std::abs(data_to_screen_y(x + radius, y + radius) - data_to_screen_y(x, y)); // Offset x and y by radius, and see how far offset in y direction.
+
+    delta_x_pixels *= 0.707106; // Get side length from hypotenuse length
+    delta_y_pixels *= 0.707106; // Get side length from hypotenuse length
+
+    uint32_t num_faces_x = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_x_pixels, -2))));
+    uint32_t num_faces_y = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_y_pixels, -2))));
+
+    uint32_t num_faces = std::max(num_faces_x, num_faces_y);
+
+    double radius_polygon = radius * std::sqrt(2 * M_PI / (num_faces * std::sin(2 * M_PI / num_faces)));
+
+    draw_regular_polygon(x, y, 0, radius_polygon, num_faces, style);
 }
 
 void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, MarkerStyle& style)
@@ -290,55 +296,55 @@ void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, M
     {
     case '.':
     case 'O': // I don't like the way matplotlib implemented this. I will treat this as a fallthrough. Size should be tweaked by size member variable.
-        draw_circle_absolute(absolute_x, absolute_y, style.size, style.fill, style.outline);
+        draw_circle_absolute(absolute_x, absolute_y, style.size, style);
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':
-        draw_polygon_absolute(absolute_x, absolute_y, 90, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 90, style.size, 3, style);
         break;
     case '3':
     case '^':
-        draw_polygon_absolute(absolute_x, absolute_y, -90, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, -90, style.size, 3, style);
         break;
     case '<':
-        draw_polygon_absolute(absolute_x, absolute_y, 180, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 180, style.size, 3, style);
         break;
     case '>':
-        draw_polygon_absolute(absolute_x, absolute_y, 0, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, style.size, 3, style);
         break;
     case '4':
     case 's':
     case 'S': // Fallthrough case, in case the user specified this as uppercase for some reason.
-        draw_polygon_absolute(absolute_x, absolute_y, 45, 4, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 45, style.size, 4, style);
         break;
     case '5':
     case 'p':
-        draw_polygon_absolute(absolute_x, absolute_y, -18, 5, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, -18, style.size, 5, style);
         break;
     case '8':
-        draw_polygon_absolute(absolute_x, absolute_y, 22.5, 8, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 22.5, style.size, 8, style);
         break;
     case '*':
-        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 5, {-18, 18}, {1, 0.5}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 5, {-18, 18}, {1, 0.5}, style);
         break;
     case 'h':
-        draw_polygon_absolute(absolute_x, absolute_y, 30, 6, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 30, style.size, 6, style);
         break;
     case 'H':
-        draw_polygon_absolute(absolute_x, absolute_y, 0, 6, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, style.size, 6, style);
         break;
     case 'D':
-        draw_polygon_absolute(absolute_x, absolute_y, 0, 4, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, style.size, 4, style);
         break;
     case 'd':
-        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 2, {0, 90}, {.5, 1}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 2, {0, 90}, {.5, 1}, style);
         break;
     case '+':
     case 'P':
-        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 4, {-18, 18, 45}, {1, 1, .5}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 4, {-18, 18, 45}, {1, 1, .5}, style);
         break;
     case 'X':
-        draw_interleaved_polygon_absolute(absolute_x, absolute_y, 4, {0, 27, 63}, {.5, 1, 1}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 4, {0, 27, 63}, {.5, 1, 1}, style);
         break;
     default:
         std::cerr << "Invalid marker type passed: '" << style.type << "'" << std::endl;
@@ -354,21 +360,6 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
 
     draw_marker_absolute(mapped_x, mapped_y, style);
 
-}
-
-void GraphRenderer::draw_interleaved_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style) {
-
-    double mapped_x = data_to_screen_x(x, y);
-    double mapped_y = data_to_screen_y(x, y);
-
-    draw_interleaved_polygon_absolute(mapped_x, mapped_y, n, angles, scales, style);
-}
-void GraphRenderer::draw_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style) {
-
-    double mapped_x = data_to_screen_x(x, y);
-    double mapped_y = data_to_screen_y(x, y);
-
-    draw_polygon_absolute(mapped_x, mapped_y, angle, n, style);
 }
 
 void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {

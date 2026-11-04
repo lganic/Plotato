@@ -22,11 +22,16 @@ void RadiusAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     // Now we just need to figure out the pixel radius. Luckily this is actually the easy part, since we can just divide the graph width in half.
     double outside_radius = ctx.current_viewport.graph_width / 2;
 
+    // Create a shape style object to be passed to the renderer with info about how our axis should look
+    ShapeStyle axis_shape_style;
+    axis_shape_style.fill = Color(0, 0, 0, 0);
+    axis_shape_style.outline = style.plot_line_color;
+
     for (uint32_t i = 1; i < num_ticks; i ++){
 
         double radius = outside_radius * i / (num_ticks - 1);
 
-        ctx.renderer.draw_circle_absolute(center_x, center_y, radius, Color(0, 0, 0, 0), style.plot_line_color);
+        ctx.renderer.draw_circle_absolute(center_x, center_y, radius, axis_shape_style);
     }
 }
 

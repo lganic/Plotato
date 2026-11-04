@@ -26,8 +26,8 @@ public:
     void draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
     void draw_polygon_absolute(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style);
     void draw_polygon(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style);
-    void draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, Color background, Color outline, double margin = 0.1);
-    void draw_circle(double x, double y, double radius, Color background, Color outline, double margin = 0.1);
+    void draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, ShapeStyle& style, double margin = 0.1);
+    void draw_circle(double x, double y, double radius, ShapeStyle& style, double margin = 0.1);
     
     void draw_marker_absolute(double absolute_x, double absolute_y, MarkerStyle& style);
     void draw_marker(double x, double y, MarkerStyle& style);

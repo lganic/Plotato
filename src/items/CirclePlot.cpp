@@ -7,7 +7,7 @@
 
 namespace plotato {
 
-CirclePlot::CirclePlot(double x, double y, double radius, ShapeStyle shape_style): x(x), y(y), style(shape_style){}
+CirclePlot::CirclePlot(double x, double y, double radius, ShapeStyle shape_style): x(x), y(y), radius(radius), style(shape_style){}
 
 void CirclePlot::draw(RenderContext& ctx) {
     // We can just pass straight to the renderers circle drawer

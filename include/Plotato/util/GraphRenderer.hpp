@@ -22,8 +22,8 @@ public:
     void draw_axes();
     void draw_grid();
 
-    void draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
-    void draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style);
+    void draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style);
+    void draw_polyline(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style);
     void draw_polygon_absolute(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style);
     void draw_polygon(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style);
     void draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, ShapeStyle& style, double margin = 0.1);
@@ -48,11 +48,8 @@ private:
     MapFunction map_y;
     
     std::pair<std::vector<double>, std::vector<double>> map_coordinates(std::vector<double> x, std::vector<double> y);
+    bool perform_path(std::vector<double> x, std::vector<double> y);
 
-    void set_color(const Color& color);
-    void enable_plot_clip();
-    void disable_clip();
-        
     void draw_regular_polygons_interleaved_absolute(double absolute_x, double absolute_y, double angle, double radius, uint32_t n, std::vector<double> angles, std::vector<double> scales, ShapeStyle& style);
     void draw_regular_polygon_absolute(double absolute_x, double absolute_y, double angle, double radius, uint32_t n, ShapeStyle& style);
 

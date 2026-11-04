@@ -20,9 +20,7 @@ GraphRenderer::GraphRenderer(cairo_t *cr, const GraphViewport &viewport, MapFunc
 
 double GraphRenderer::data_to_screen_x(double x, double y)
 {
-
     return map_x(x, y, viewport);
-
 }
 
 double GraphRenderer::data_to_screen_y(double x, double y)
@@ -51,11 +49,33 @@ std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinat
     return std::make_pair(screen_x, screen_y);
 }
 
-void GraphRenderer::set_color(const Color& color){
-    cairo_set_source_rgba(cr, color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0);
+bool GraphRenderer::perform_path(std::vector<double> x, std::vector<double> y) {
+    bool started = false;
+
+    size_t n = x.size();
+
+    for (size_t i = 0; i < n; i ++) {
+
+        if (!std::isfinite(x[i]) || !std::isfinite(y[i])) {
+
+            // Path bad. Don't continue.
+            return false;
+        }
+
+        if (!started) {
+            // Segment not started yet. Just move to the coordinate. We will draw the line in a sec.
+            cairo_move_to(cr, x[i], y[i]);
+            started = true;
+        } else {
+            // Segment started. So we are currently at the previous point on the line. Stroke to the next point.
+            cairo_line_to(cr, x[i], y[i]);
+        }
+    }
+
+    return true;
 }
 
-void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style) {
+void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style) {
 
     if (x.size() != y.size()) {
         std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;
@@ -69,35 +89,22 @@ void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const s
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
-    // Set the current painting settings to those indicated by the line style.
-    set_color(style.line_color);
-    cairo_set_line_width(cr, style.line_width);
+    if (!perform_path(x, y)){
+        cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 
-    bool started = false;
-
-    for (size_t i = 0; i < n; i++) {
-
-        if (!std::isfinite(x[i]) || !std::isfinite(y[i])) {
-            // Skip over a coordinate that had invalid data. Indicate that the line is no longer started, so we don't bridge data which wasn't actually next to eachother.
-            started = false;
-            continue;
-        }
-
-        if (!started) {
-            // Line segment not started yet. Just move to the coordinate. We will draw the line in a sec.
-            cairo_move_to(cr, x[i], y[i]);
-            started = true;
-        } else {
-            // Line segment started. So we are currently at the previous point on the line. Stroke to the next point.
-            cairo_line_to(cr, x[i], y[i]);
-        }
+        std::cerr << "Could not render polyline, invalid data." << std::endl;
+        return;
     }
+
+    // Set the current painting settings to those indicated by the line style.
+    style.line_color.to_cairo_source(cr);
+    cairo_set_line_width(cr, style.line_width);
 
     cairo_stroke(cr); // Stroke that
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
-void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style)
+void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style)
 {
     if (x.size() != y.size()) {
         std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;
@@ -117,8 +124,6 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vecto
 
 void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style) {
 
-    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
-
     if (x.size() != y.size()) {
         std::cerr << "Could not render polygon. X and Y coordinate sizes mismatch." << std::endl;
 
@@ -129,21 +134,13 @@ void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const st
 
     if (n < 3) return; // Not enough points! Abort!
 
-    bool started = false;
+    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
-    // First make the path.
-    for (size_t i = 0; i < n; i ++) {
+    if (!perform_path(x, y)){
+        cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 
-        if (!started) {
-            // Loop not started yet. Just move to the coordinate.
-            cairo_move_to(cr, x[i], y[i]);
-        }
-        else {
-            // Loop started. Just keep going.
-            cairo_line_to(cr, x[i], y[i]);
-        }
-
-        started = true;
+        std::cerr << "Could not render polygon, invalid data." << std::endl;
+        return;
     }
 
     // Path complete. Close it.
@@ -248,7 +245,6 @@ void GraphRenderer::draw_regular_polygon(double x, double y, double angle, doubl
 
 // Draw a circle at exact pixel coordinates, with exact pixel sizes.
 void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, ShapeStyle& style, double margin) {
-
     // First, calculate how many segments we need to render this. 
     // We do this based on an approximate solution to this equation:
 
@@ -270,7 +266,6 @@ void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, d
 }
 
 void GraphRenderer::draw_circle(double x, double y, double radius, ShapeStyle& style, double margin) {
-
     // Lets do the same circle calculation as before to figure out the number of faces. 
     // We will just do this once per axis, then figure out which axis is best.
 
@@ -354,16 +349,13 @@ void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, M
 
 void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
 {
-
     double mapped_x = data_to_screen_x(x, y);
     double mapped_y = data_to_screen_y(x, y);
 
     draw_marker_absolute(mapped_x, mapped_y, style);
-
 }
 
 void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {
-
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
     style.to_cairo_source(cr);
@@ -423,6 +415,5 @@ void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextSt
 
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
-
 
 }

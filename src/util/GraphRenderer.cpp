@@ -254,8 +254,11 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
     // We will just do this once per axis, then figure out which axis is best.
 
     // TODO Probably a cleaner way to do this. Need to do algebra:
-    double delta_x_pixels = data_to_screen_x(x + radius, y) - data_to_screen_x(x, y); // Offset x by radius, and see how far offset.
-    double delta_y_pixels = data_to_screen_y(y, y + radius) - data_to_screen_y(x, y); // Offset y by radius, and see how far offset.
+    double delta_x_pixels = std::abs(data_to_screen_x(x + radius, y + radius) - data_to_screen_x(x, y)); // Offset x and y by radius, and see how far offset in x direction.
+    double delta_y_pixels = std::abs(data_to_screen_y(x + radius, y + radius) - data_to_screen_y(x, y)); // Offset x and y by radius, and see how far offset in y direction.
+
+    delta_x_pixels *= 0.707106; // Get side length from hypotenuse length
+    delta_y_pixels *= 0.707106; // Get side length from hypotenuse length
 
     uint32_t num_faces_x = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_x_pixels, -2))));
     uint32_t num_faces_y = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / delta_y_pixels, -2))));

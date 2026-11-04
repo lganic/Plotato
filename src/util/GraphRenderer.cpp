@@ -20,9 +20,7 @@ GraphRenderer::GraphRenderer(cairo_t *cr, const GraphViewport &viewport, MapFunc
 
 double GraphRenderer::data_to_screen_x(double x, double y)
 {
-
     return map_x(x, y, viewport);
-
 }
 
 double GraphRenderer::data_to_screen_y(double x, double y)
@@ -247,7 +245,6 @@ void GraphRenderer::draw_regular_polygon(double x, double y, double angle, doubl
 
 // Draw a circle at exact pixel coordinates, with exact pixel sizes.
 void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, ShapeStyle& style, double margin) {
-
     // First, calculate how many segments we need to render this. 
     // We do this based on an approximate solution to this equation:
 
@@ -269,7 +266,6 @@ void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, d
 }
 
 void GraphRenderer::draw_circle(double x, double y, double radius, ShapeStyle& style, double margin) {
-
     // Lets do the same circle calculation as before to figure out the number of faces. 
     // We will just do this once per axis, then figure out which axis is best.
 
@@ -353,16 +349,13 @@ void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, M
 
 void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
 {
-
     double mapped_x = data_to_screen_x(x, y);
     double mapped_y = data_to_screen_y(x, y);
 
     draw_marker_absolute(mapped_x, mapped_y, style);
-
 }
 
 void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {
-
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
     style.to_cairo_source(cr);
@@ -422,6 +415,5 @@ void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextSt
 
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
-
 
 }

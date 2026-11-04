@@ -47,10 +47,10 @@ struct FigureTextStyle : public TextStyle {
 };
 
 struct ShapeStyle {
-    Color outline = Color(0, 0, 0, 0);
+    Color outline = Color(0, 0, 0);
     double outline_width = 2;
 
-    Color fill = Color(0, 0, 0);
+    Color fill = Color(255, 255, 255);
 };
 
 struct MarkerStyle : public ShapeStyle{

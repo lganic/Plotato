@@ -178,7 +178,6 @@ void GraphRenderer::draw_polygon(const std::vector<double>& x, const std::vector
     draw_polygon_absolute(screen_x, screen_y, style);
 }
 
-
 // Draw a circle at exact pixel coordinates, with exact pixel sizes.
 void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, double pixel_radius, Color background, Color outline, double margin) {
 
@@ -315,74 +314,65 @@ void GraphRenderer::draw_circle(double x, double y, double radius, Color backgro
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
-void GraphRenderer::draw_interleaved_regular_polygon_absolute(double poly_x, double poly_y, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, MarkerStyle& style) {
+std::pair<std::vector<double>, std::vector<double>> interleave_polygons(double poly_x, double poly_y, double angle, double radius, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales) {
+    if (angles_degrees.size() != scales.size()) {
+        std::cerr << "Could not calculate interleaved polygon. angle degrees and scales mismatch." << std::endl;
 
-    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
-
-    if (angles_degrees.size() != scales.size()) return;
-
-    if (n * angles_degrees.size() <= 2) return; // Shouldn't do anything.
-
-    std::vector<double> angles_radians;
-    std::vector<double> scaled_sizes;
-    angles_radians.resize(angles_degrees.size());
-    scaled_sizes.resize(scales.size());
-    
-    // First, cast all the angles to radians, and scale the sizes to the scale given in the style struct.
-    for(size_t i = 0; i < angles_degrees.size(); i ++) {
-        angles_radians[i] = angles_degrees[i] * M_PI / 180.0;
-        scaled_sizes[i] = scales[i] * style.size;
+        return std::make_pair(std::vector<double>(), std::vector<double>());
     }
 
-    bool started = false;
+    if (n * angles_degrees.size() < 3) return std::make_pair(std::vector<double>(), std::vector<double>()); // Shouldn't do anything.
+
+    double angle_offset_radians = angle * M_PI / 180.0;
+
+    std::vector<double> angles_radians(angles_degrees.size());
+    std::vector<double> scaled_sizes(scales.size());
+
+    std::vector<double> out_x(n * angles_degrees.size());
+    std::vector<double> out_y(n * angles_degrees.size());
+    
+    // First, cast all the angles to radians, and scale the radius to the scale given in the scale vector
+    for(size_t i = 0; i < angles_degrees.size(); i ++) {
+        angles_radians[i] = angles_degrees[i] * M_PI / 180.0;
+        scaled_sizes[i] = scales[i] * radius;
+    }
+
+    uint32_t out_index = 0;
 
     for(uint32_t i_vertex = 0; i_vertex < n; i_vertex++)
     {
-        double angle_offset = static_cast<double>(i_vertex) * 2.0 * M_PI / static_cast<double>(n);
+        double angle_offset = angle_offset_radians + static_cast<double>(i_vertex) * 2.0 * M_PI / static_cast<double>(n);
 
         for (size_t polygon_index = 0; polygon_index < scaled_sizes.size(); polygon_index ++){
-            double sx = poly_x + scaled_sizes[polygon_index] * std::cos(angles_radians[polygon_index] + angle_offset);
-            double sy = poly_y + scaled_sizes[polygon_index] * std::sin(angles_radians[polygon_index] + angle_offset);
+            out_x[out_index] = poly_x + scaled_sizes[polygon_index] * std::cos(angles_radians[polygon_index] + angle_offset);
+            out_y[out_index] = poly_y + scaled_sizes[polygon_index] * std::sin(angles_radians[polygon_index] + angle_offset);
 
-            if (!started) {
-                // Move to the start of the polygon.
-                cairo_move_to(cr, sx, sy);
-            }
-            else
-            {
-                // Move the path to the next segment of the polygon.
-                cairo_line_to(cr, sx, sy);
-            }
-
-            started = true;
+            out_index ++;            
         }
     }
 
-    // Path complete. Close it.
-    cairo_close_path(cr);
+    return std::make_pair(out_x, out_y);
+}
 
-    // Now lets stroke it.
-    if (style.fill.has_opacity()) {
-        // Fill the background.
-        style.fill.to_cairo_source(cr);
-        cairo_fill_preserve(cr);
-    }
+void GraphRenderer::draw_regular_polygons_interleaved_absolute(double poly_x, double poly_y, double angle, double radius, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, ShapeStyle& style) {
+    std::pair<std::vector<double>, std::vector<double>> interleaved = interleave_polygons(poly_x, poly_y, angle, radius, n, angles_degrees, scales);
 
-    // Check if we should do a background as well.
-    if (style.outline.has_opacity()) {
-        // Stroke the outline.
-        style.outline.to_cairo_source(cr);
-        cairo_stroke_preserve(cr);
-    }
+    draw_polygon_absolute(interleaved.first, interleaved.second, style);
+}
 
-    cairo_new_path(cr); // Clear out the preserved path. Since we use preserve twice to cover all bases.
+void GraphRenderer::draw_regular_polygons_interleaved(double poly_x, double poly_y, double angle, double radius, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales, ShapeStyle& style) {
+    std::pair<std::vector<double>, std::vector<double>> interleaved = interleave_polygons(poly_x, poly_y, angle, radius, n, angles_degrees, scales);
 
-    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+    draw_polygon(interleaved.first, interleaved.second, style);
 }
 
 // Private helper function, since a lot of the markers are gonna need this.
-void GraphRenderer::draw_regular_polygon_absolute(double x, double y, double angle, uint32_t n, MarkerStyle& style){
-    draw_interleaved_regular_polygon_absolute(x, y, n, {angle}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
+void GraphRenderer::draw_regular_polygon_absolute(double x, double y, double angle, double radius, uint32_t n, ShapeStyle& style){
+    draw_regular_polygons_interleaved_absolute(x, y, angle, radius, n, {0}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
+}
+
+void GraphRenderer::draw_regular_polygon(double x, double y, double angle, double radius, uint32_t n, ShapeStyle& style) {
+    draw_regular_polygons_interleaved(x, y, angle, radius, n, {0}, {1}, style); // Just call to the interleaved version, so we only have one implementation.
 }
 
 void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, MarkerStyle& style)
@@ -395,51 +385,51 @@ void GraphRenderer::draw_marker_absolute(double absolute_x, double absolute_y, M
         break;
     case 'V': // Fallthrough case, in case the user specified this as uppercase for some reason.
     case 'v':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 90, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 90, style.size, 3, style);
         break;
     case '3':
     case '^':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, -90, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, -90, style.size, 3, style);
         break;
     case '<':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 180, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 180, style.size, 3, style);
         break;
     case '>':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, 3, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, style.size, 3, style);
         break;
     case '4':
     case 's':
     case 'S': // Fallthrough case, in case the user specified this as uppercase for some reason.
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 45, 4, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 45, style.size, 4, style);
         break;
     case '5':
     case 'p':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, -18, 5, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, -18, style.size, 5, style);
         break;
     case '8':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 22.5, 8, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 22.5, style.size, 8, style);
         break;
     case '*':
-        draw_interleaved_regular_polygon_absolute(absolute_x, absolute_y, 5, {-18, 18}, {1, 0.5}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 5, {-18, 18}, {1, 0.5}, style);
         break;
     case 'h':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 30, 6, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 30, style.size, 6, style);
         break;
     case 'H':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, 6, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, style.size, 6, style);
         break;
     case 'D':
-        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, 4, style);
+        draw_regular_polygon_absolute(absolute_x, absolute_y, 0, style.size, 4, style);
         break;
     case 'd':
-        draw_interleaved_regular_polygon_absolute(absolute_x, absolute_y, 2, {0, 90}, {.5, 1}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 2, {0, 90}, {.5, 1}, style);
         break;
     case '+':
     case 'P':
-        draw_interleaved_regular_polygon_absolute(absolute_x, absolute_y, 4, {-18, 18, 45}, {1, 1, .5}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 4, {-18, 18, 45}, {1, 1, .5}, style);
         break;
     case 'X':
-        draw_interleaved_regular_polygon_absolute(absolute_x, absolute_y, 4, {0, 27, 63}, {.5, 1, 1}, style);
+        draw_regular_polygons_interleaved_absolute(absolute_x, absolute_y, 0, style.size, 4, {0, 27, 63}, {.5, 1, 1}, style);
         break;
     default:
         std::cerr << "Invalid marker type passed: '" << style.type << "'" << std::endl;
@@ -455,22 +445,6 @@ void GraphRenderer::draw_marker(double x, double y, MarkerStyle& style)
 
     draw_marker_absolute(mapped_x, mapped_y, style);
 
-}
-
-void GraphRenderer::draw_interleaved_regular_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style) {
-
-    double mapped_x = data_to_screen_x(x, y);
-    double mapped_y = data_to_screen_y(x, y);
-
-    draw_interleaved_regular_polygon_absolute(mapped_x, mapped_y, n, angles, scales, style);
-}
-
-void GraphRenderer::draw_regular_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style) {
-
-    double mapped_x = data_to_screen_x(x, y);
-    double mapped_y = data_to_screen_y(x, y);
-
-    draw_regular_polygon_absolute(mapped_x, mapped_y, angle, n, style);
 }
 
 void GraphRenderer::draw_text(double x, double y, std::string text, FigureTextStyle style) {

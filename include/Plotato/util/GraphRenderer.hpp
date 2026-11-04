@@ -51,11 +51,11 @@ private:
     void enable_plot_clip();
     void disable_clip();
         
-    void draw_interleaved_regular_polygon_absolute(double absolute_x, double absolute_y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
-    void draw_regular_polygon_absolute(double absolute_x, double absolute_y, double angle, uint32_t n, MarkerStyle& style);
+    void draw_regular_polygons_interleaved_absolute(double absolute_x, double absolute_y, double angle, double radius, uint32_t n, std::vector<double> angles, std::vector<double> scales, ShapeStyle& style);
+    void draw_regular_polygon_absolute(double absolute_x, double absolute_y, double angle, double radius, uint32_t n, ShapeStyle& style);
 
-    void draw_interleaved_regular_polygon(double x, double y, uint32_t n, std::vector<double> angles, std::vector<double> scales, MarkerStyle& style);
-    void draw_regular_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style);
+    void draw_regular_polygons_interleaved(double x, double y, double angle, double radius, uint32_t n, std::vector<double> angles, std::vector<double> scales, ShapeStyle& style);
+    void draw_regular_polygon(double x, double y, double angle, double radius, uint32_t n, ShapeStyle& style);
 };
 
 }

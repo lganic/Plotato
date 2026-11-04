@@ -13,6 +13,7 @@
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/items/LinePlot.hpp>
 #include <Plotato/items/ScatterPlot.hpp>
+#include <Plotato/items/PolygonPlot.hpp>
 #include <Plotato/items/Text.hpp>
 #include <Plotato/axis/BaseAxis.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
@@ -69,6 +70,7 @@ public:
 
     LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
     ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style = MarkerStyle());
+    PolygonPlot* polygon(const std::vector<double> &x, const std::vector<double> &y, ShapeStyle style = ShapeStyle());
 
     Title* add_axis_title(AxisSide side, std::string title, TextStyle style);
     Title* add_plot_title(std::string title, TextStyle style = TextStyle());

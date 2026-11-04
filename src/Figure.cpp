@@ -1,6 +1,7 @@
 #include <Plotato/Figure.hpp>
 #include <Plotato/items/LinePlot.hpp>
 #include <Plotato/items/ScatterPlot.hpp>
+#include <Plotato/items/PolygonPlot.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>
 #include <Plotato/util/StyleStructs.hpp>
@@ -140,6 +141,18 @@ ScatterPlot* Figure::scatter(const std::vector<double> &x, const std::vector<dou
 
     auto new_plot = std::make_unique<ScatterPlot>(x, y, style);
     ScatterPlot* plot = new_plot.get();
+
+    current_plot_items.emplace_back(std::move(new_plot));
+
+    return plot;
+}
+
+PolygonPlot* Figure::polygon(const std::vector<double> &x, const std::vector<double> &y, ShapeStyle style)
+{
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    auto new_plot = std::make_unique<PolygonPlot>(x, y, style);
+    PolygonPlot* plot = new_plot.get();
 
     current_plot_items.emplace_back(std::move(new_plot));
 

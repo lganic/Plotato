@@ -51,6 +51,32 @@ std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinat
     return std::make_pair(screen_x, screen_y);
 }
 
+bool GraphRenderer::perform_path(std::vector<double> x, std::vector<double> y) {
+    bool started = false;
+
+    size_t n = x.size();
+
+    for (size_t i = 0; i < n; i ++) {
+
+        if (!std::isfinite(x[i]) || !std::isfinite(y[i])) {
+
+            // Path bad. Don't continue.
+            return false;
+        }
+
+        if (!started) {
+            // Segment not started yet. Just move to the coordinate. We will draw the line in a sec.
+            cairo_move_to(cr, x[i], y[i]);
+            started = true;
+        } else {
+            // Segment started. So we are currently at the previous point on the line. Stroke to the next point.
+            cairo_line_to(cr, x[i], y[i]);
+        }
+    }
+
+    return true;
+}
+
 void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style) {
 
     if (x.size() != y.size()) {
@@ -65,24 +91,11 @@ void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const s
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
-    bool started = false;
+    if (!perform_path(x, y)){
+        cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 
-    for (size_t i = 0; i < n; i++) {
-
-        if (!std::isfinite(x[i]) || !std::isfinite(y[i])) {
-            // Skip over a coordinate that had invalid data. Indicate that the line is no longer started, so we don't bridge data which wasn't actually next to eachother.
-            started = false;
-            continue;
-        }
-
-        if (!started) {
-            // Line segment not started yet. Just move to the coordinate. We will draw the line in a sec.
-            cairo_move_to(cr, x[i], y[i]);
-            started = true;
-        } else {
-            // Line segment started. So we are currently at the previous point on the line. Stroke to the next point.
-            cairo_line_to(cr, x[i], y[i]);
-        }
+        std::cerr << "Could not render polyline, invalid data." << std::endl;
+        return;
     }
 
     // Set the current painting settings to those indicated by the line style.
@@ -125,21 +138,11 @@ void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const st
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
-    bool started = false;
+    if (!perform_path(x, y)){
+        cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 
-    // First make the path.
-    for (size_t i = 0; i < n; i ++) {
-
-        if (!started) {
-            // Loop not started yet. Just move to the coordinate.
-            cairo_move_to(cr, x[i], y[i]);
-        }
-        else {
-            // Loop started. Just keep going.
-            cairo_line_to(cr, x[i], y[i]);
-        }
-
-        started = true;
+        std::cerr << "Could not render polygon, invalid data." << std::endl;
+        return;
     }
 
     // Path complete. Close it.

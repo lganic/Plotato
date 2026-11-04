@@ -48,6 +48,7 @@ private:
     MapFunction map_y;
     
     std::pair<std::vector<double>, std::vector<double>> map_coordinates(std::vector<double> x, std::vector<double> y);
+    bool perform_path(std::vector<double> x, std::vector<double> y);
 
     void draw_regular_polygons_interleaved_absolute(double absolute_x, double absolute_y, double angle, double radius, uint32_t n, std::vector<double> angles, std::vector<double> scales, ShapeStyle& style);
     void draw_regular_polygon_absolute(double absolute_x, double absolute_y, double angle, double radius, uint32_t n, ShapeStyle& style);

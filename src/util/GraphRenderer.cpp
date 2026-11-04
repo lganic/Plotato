@@ -51,11 +51,7 @@ std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinat
     return std::make_pair(screen_x, screen_y);
 }
 
-void GraphRenderer::set_color(const Color& color){
-    cairo_set_source_rgba(cr, color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0);
-}
-
-void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style) {
+void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style) {
 
     if (x.size() != y.size()) {
         std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;
@@ -68,10 +64,6 @@ void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const s
     if (n < 2) return; // Not enough points! Abort!
 
     cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
-
-    // Set the current painting settings to those indicated by the line style.
-    set_color(style.line_color);
-    cairo_set_line_width(cr, style.line_width);
 
     bool started = false;
 
@@ -93,11 +85,15 @@ void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const s
         }
     }
 
+    // Set the current painting settings to those indicated by the line style.
+    style.line_color.to_cairo_source(cr);
+    cairo_set_line_width(cr, style.line_width);
+
     cairo_stroke(cr); // Stroke that
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
-void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vector<double>& y, const PlotStyle& style)
+void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style)
 {
     if (x.size() != y.size()) {
         std::cerr << "Could not render polyline. X and Y coordinate sizes mismatch." << std::endl;

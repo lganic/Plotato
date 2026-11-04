@@ -107,6 +107,7 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     // Ensure the inarguable polar bounds are respected
     bounds.xmin = 0;
     bounds.xmax = 2 * M_PI; // Radians should be default behind the scenes.
+    bounds.ymin = 0; // For bounding purposes.
     
     // Create a new viewport / render context which we will pass to the renderers.
     RenderContext rc = get_render_context(cr, width, height, true);

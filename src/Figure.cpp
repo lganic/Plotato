@@ -159,9 +159,20 @@ PolygonPlot* Figure::polygon(const std::vector<double> &x, const std::vector<dou
     return plot;
 }
 
-Title* Figure::add_axis_title(AxisSide side, std::string title, TextStyle style) {
+CirclePlot* Figure::circle(double x, double y, double radius, ShapeStyle style)
+{
+    std::lock_guard<std::mutex> lock(data_mutex);
 
+    auto new_plot = std::make_unique<CirclePlot>(x, y, radius, style);
+    CirclePlot* plot = new_plot.get();
 
+    current_plot_items.emplace_back(std::move(new_plot));
+
+    return plot;
+}
+
+Title* Figure::add_axis_title(AxisSide side, std::string title, TextStyle style)
+{
     std::lock_guard<std::mutex> lock(axis_mutex);
 
     auto new_title = std::make_unique<Title>(side, title, style);

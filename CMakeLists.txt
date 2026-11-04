@@ -82,6 +82,7 @@ add_library(plotato
     src/items/LinePlot.cpp
     src/items/ScatterPlot.cpp
     src/items/PolygonPlot.cpp
+    src/items/CirclePlot.cpp
     src/items/Text.cpp
     src/util/Anchor.cpp
     src/util/GraphRenderer.cpp

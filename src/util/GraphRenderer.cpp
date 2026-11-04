@@ -117,8 +117,6 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vecto
 
 void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style) {
 
-    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
-
     if (x.size() != y.size()) {
         std::cerr << "Could not render polygon. X and Y coordinate sizes mismatch." << std::endl;
 
@@ -128,6 +126,8 @@ void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const st
     size_t n = x.size();
 
     if (n < 3) return; // Not enough points! Abort!
+
+    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
 
     bool started = false;
 

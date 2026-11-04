@@ -1,5 +1,5 @@
-#ifndef PLOTATO_LINEPLOT_HPP
-#define PLOTATO_LINEPLOT_HPP
+#ifndef PLOTATO_POLYGONPLOT_HPP
+#define PLOTATO_POLYGONPLOT_HPP
 
 #include <Plotato/items/PlotItem.hpp>
 #include <Plotato/util/GraphBounds.hpp>
@@ -26,4 +26,4 @@ class PolygonPlot : public PlotItem
 
 }
 
-#endif // PLOTATO_LINEPLOT_HPP
+#endif // PLOTATO_POLYGONPLOT_HPP

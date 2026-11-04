@@ -457,6 +457,7 @@ void GraphRenderer::draw_interleaved_regular_polygon(double x, double y, uint32_
 
     draw_interleaved_regular_polygon_absolute(mapped_x, mapped_y, n, angles, scales, style);
 }
+
 void GraphRenderer::draw_regular_polygon(double x, double y, double angle, uint32_t n, MarkerStyle& style) {
 
     double mapped_x = data_to_screen_x(x, y);

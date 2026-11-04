@@ -256,8 +256,6 @@ void GraphRenderer::draw_circle_absolute(double absolute_x, double absolute_y, d
     // Approximate solution to N is this:
     uint32_t num_faces = std::round(2 * M_PI / std::sqrt(6 * (1 - std::pow(1.0 + margin / pixel_radius, -2))));
 
-    std::cout << num_faces << std::endl;
-
     // Then we can find the radius of the polygon like so:
     double radius_polygon = pixel_radius * std::sqrt(2 * M_PI / (num_faces * std::sin(2 * M_PI / num_faces)));
 

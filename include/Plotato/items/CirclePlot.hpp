@@ -14,6 +14,8 @@ class CirclePlot : public PlotItem
     double x;
     double y;
     double radius;
+
+    double margin = 0.1;
     
     public:
 

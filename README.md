@@ -24,13 +24,8 @@ int main(int argc, char* argv[])
     // Declare a new graph in the new drawing area.
     plotato::Graph g(drawing_area);
 
-    // Make some data to plot.
-    std::vector<double> x_data {1,2,3,4,5};
-    std::vector<double> y_data {1,2,0,-1,0};
-
-    // Plot the data on the graph.
-    g.plot(x_data, y_data);
-
+    // Plot some data on the graph.
+    g.plot({1,2,3,4,5}, {1,2,0,-1,0});
 
     // Some more gtk stuff for our window.
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), nullptr);

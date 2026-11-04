@@ -128,6 +128,8 @@ void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const st
             // Loop started. Just keep going.
             cairo_line_to(cr, x[i], y[i]);
         }
+
+        started = true;
     }
 
     // Path complete. Close it.

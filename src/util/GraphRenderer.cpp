@@ -30,6 +30,27 @@ double GraphRenderer::data_to_screen_y(double x, double y)
     return map_y(x, y, viewport);
 }
 
+std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinates(std::vector<double> x, std::vector<double> y) {
+    if (x.size() != y.size()) {
+        std::cerr << "Could not map coordinates. X and Y coordinate sizes mismatch." << std::endl;
+
+        return std::make_pair(std::vector<double>(), std::vector<double>());
+    }
+
+    size_t n = x.size();
+
+    // Map the x and y data to screen coordinates.
+    std::vector<double> screen_x(n);
+    std::vector<double> screen_y(n);
+
+    for (size_t i = 0; i < n; i ++) {
+        screen_x[i] = data_to_screen_x(x[i], y[i]);
+        screen_y[i] = data_to_screen_y(x[i], y[i]);
+    }
+
+    return std::make_pair(screen_x, screen_y);
+}
+
 void GraphRenderer::set_color(const Color& color){
     cairo_set_source_rgba(cr, color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0);
 }
@@ -88,17 +109,10 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vecto
 
     if (n < 2) return; // Not enough points! Abort!
 
-    // Map the x and y data to screen coordinates.
-    std::vector<double> screen_x(n);
-    std::vector<double> screen_y(n);
-
-    for (size_t i = 0; i < n; i ++) {
-        screen_x[i] = data_to_screen_x(x[i], y[i]);
-        screen_y[i] = data_to_screen_y(x[i], y[i]);
-    }
+    std::pair<std::vector<double>, std::vector<double>> mapped_cords = map_coordinates(x, y);
 
     // Pass to absolute screen coordinates.
-    draw_polyline_absolute(screen_x, screen_y, style);
+    draw_polyline_absolute(mapped_cords.first, mapped_cords.second, style);
 }
 
 void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style) {
@@ -165,17 +179,10 @@ void GraphRenderer::draw_polygon(const std::vector<double>& x, const std::vector
 
     if (n < 3) return; // Not enough points! Abort!
 
-    // Map the x and y data to screen coordinates.
-    std::vector<double> screen_x(n);
-    std::vector<double> screen_y(n);
-
-    for (size_t i = 0; i < n; i ++) {
-        screen_x[i] = data_to_screen_x(x[i], y[i]);
-        screen_y[i] = data_to_screen_y(x[i], y[i]);
-    }
+    std::pair<std::vector<double>, std::vector<double>> mapped_cords = map_coordinates(x, y);
 
     // Pass to absolute screen coordinates.
-    draw_polygon_absolute(screen_x, screen_y, style);
+    draw_polygon_absolute(mapped_cords.first, mapped_cords.second, style);
 }
 
 std::pair<std::vector<double>, std::vector<double>> interleave_polygons(double poly_x, double poly_y, double angle, double radius, uint32_t n, std::vector<double> angles_degrees, std::vector<double> scales) {

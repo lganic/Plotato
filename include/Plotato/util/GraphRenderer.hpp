@@ -47,6 +47,8 @@ private:
     MapFunction map_x;
     MapFunction map_y;
     
+    std::pair<std::vector<double>, std::vector<double>> map_coordinates(std::vector<double> x, std::vector<double> y);
+
     void set_color(const Color& color);
     void enable_plot_clip();
     void disable_clip();

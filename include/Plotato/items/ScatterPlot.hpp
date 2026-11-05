@@ -10,8 +10,12 @@ namespace plotato {
 
 class ScatterPlot : public PlotItem
 {
-    std::vector<double> x;
-    std::vector<double> y;
+    private:
+
+        std::vector<double> x;
+        std::vector<double> y;
+
+        bool contains_x_data = true;
     
     public:
 
@@ -20,6 +24,7 @@ class ScatterPlot : public PlotItem
         MarkerStyle style;
 
         ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style);
+        ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();
 };

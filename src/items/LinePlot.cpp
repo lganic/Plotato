@@ -6,10 +6,8 @@
 
 namespace plotato {
 
-LinePlot::LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style): x(x_data), y(y_data), style(plot_style){}
-LinePlot::LinePlot(std::vector<double> y_data, PlotStyle plot_style): y(y_data), style(plot_style){
-    contains_x_data = false;
-}
+LinePlot::LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style): XYPlot(x_data, y_data), style(plot_style){}
+LinePlot::LinePlot(std::vector<double> y_data, PlotStyle plot_style): XYPlot(y_data), style(plot_style){}
 
 void LinePlot::draw(RenderContext& ctx) {
     if (contains_x_data) {
@@ -38,21 +36,6 @@ void LinePlot::draw(RenderContext& ctx) {
             }
         }
     }
-}
-
-GraphBounds LinePlot::bounds(){
-    auto y_result = std::minmax_element(y.begin(), y.end());
-
-    if (contains_x_data) {
-        // Find both min and max elements of the x and y array.
-        auto x_result = std::minmax_element(x.begin(), x.end());
-
-        // Return the bounds object
-        return GraphBounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
-    }
-
-    // Find calculate x min and max are just 0 and the length of the y array -1
-    return GraphBounds{0, static_cast<double>(y.size()) - 1, *y_result.first, *y_result.second};
 }
 
 void LinePlot::marker(MarkerStyle marker_style) {

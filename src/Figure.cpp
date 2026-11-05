@@ -134,12 +134,38 @@ LinePlot* Figure::plot(const std::vector<double> &x, const std::vector<double> &
     return plot;
 }
 
+// Plot the given data on the graph. 
+LinePlot* Figure::plot(const std::vector<double> &y, PlotStyle style)
+{
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    auto new_plot = std::make_unique<LinePlot>(y, style);
+    LinePlot* plot = new_plot.get();
+
+    current_plot_items.emplace_back(std::move(new_plot));
+
+    return plot;
+}
+
 // Plot the scatter plots.
 ScatterPlot* Figure::scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style)
 {
     std::lock_guard<std::mutex> lock(data_mutex);
 
     auto new_plot = std::make_unique<ScatterPlot>(x, y, style);
+    ScatterPlot* plot = new_plot.get();
+
+    current_plot_items.emplace_back(std::move(new_plot));
+
+    return plot;
+}
+
+// Plot the scatter plots.
+ScatterPlot* Figure::scatter(const std::vector<double> &y, MarkerStyle style)
+{
+    std::lock_guard<std::mutex> lock(data_mutex);
+
+    auto new_plot = std::make_unique<ScatterPlot>(y, style);
     ScatterPlot* plot = new_plot.get();
 
     current_plot_items.emplace_back(std::move(new_plot));

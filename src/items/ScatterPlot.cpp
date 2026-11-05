@@ -8,25 +8,40 @@
 namespace plotato {
 
 ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style): x(x_data), y(y_data), style(plot_style){}
+ScatterPlot::ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style): y(y_data), style(plot_style) {
+    contains_x_data = false;
+}
 
 void ScatterPlot::draw(RenderContext& ctx) {
 
-    // Loop over all the x data, and plot each individual element using the graphrenderer.  
-    for (size_t i = 0; i < x.size(); i ++) {
-        ctx.renderer.draw_marker(x[i], y[i], style);
+    if (contains_x_data) {
+        // Loop over all the x data, and plot each individual element using the graphrenderer.  
+        for (size_t i = 0; i < x.size(); i ++) {
+            ctx.renderer.draw_marker(x[i], y[i], style);
+        }
+    }
+    else {
+        // No X data. use the index instead.
+
+        for (size_t i = 0; i < y.size(); i ++) {
+            ctx.renderer.draw_marker(static_cast<double>(i), y[i], style);
+        }
     }
 }
 
 GraphBounds ScatterPlot::bounds(){
-
-    // I am going to assume that x, and y are of the same size. TODO: Check.
-
-    // Find both min and max elements of the x and y array.
-    auto x_result = std::minmax_element(x.begin(), x.end());
     auto y_result = std::minmax_element(y.begin(), y.end());
 
-    // Return the bounds object
-    return GraphBounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
+    if (contains_x_data) {
+        // Find both min and max elements of the x and y array.
+        auto x_result = std::minmax_element(x.begin(), x.end());
+
+        // Return the bounds object
+        return GraphBounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
+    }
+
+    // Find calculate x min and max are just 0 and the length of the y array -1
+    return GraphBounds{0, static_cast<double>(y.size()) - 1, *y_result.first, *y_result.second};
 }
 
 void ScatterPlot::draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) {

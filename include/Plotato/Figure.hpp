@@ -70,7 +70,9 @@ public:
     void clear_axis();
 
     LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
+    LinePlot* plot(const std::vector<double>& y, PlotStyle style = PlotStyle());
     ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style = MarkerStyle());
+    ScatterPlot* scatter(const std::vector<double> &y, MarkerStyle style = MarkerStyle());
     PolygonPlot* polygon(const std::vector<double> &x, const std::vector<double> &y, ShapeStyle style = ShapeStyle());
     CirclePlot* circle(double x, double y, double radius, ShapeStyle style = ShapeStyle());
 

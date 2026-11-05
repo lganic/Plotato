@@ -10,11 +10,15 @@ namespace plotato {
 
 class LinePlot : public PlotItem
 {
-    std::vector<double> x;
-    std::vector<double> y;
+    private:
+
+        std::vector<double> x;
+        std::vector<double> y;
+
+        bool contains_x_data = true;
     
     public:
-
+    
         bool marker_active = false;
 
         void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
@@ -22,6 +26,7 @@ class LinePlot : public PlotItem
         PlotStyle style;
 
         LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
+        LinePlot(std::vector<double> y_data, PlotStyle plot_style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();
 

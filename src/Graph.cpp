@@ -77,6 +77,8 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
         GraphBounds auto_bounds;
 
         for (size_t i = 0; i < current_plot_items.size(); i ++) {
+
+            if (!current_plot_items[i]->frame) continue;
             
             GraphBounds this_object_bounds = current_plot_items[i]->bounds();
 

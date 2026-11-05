@@ -52,7 +52,7 @@ GraphBounds LinePlot::bounds(){
     }
 
     // Find calculate x min and max are just 0 and the length of the y array -1
-    return GraphBounds{0, y.size() - 1, *y_result.first, *y_result.second};
+    return GraphBounds{0, static_cast<double>(y.size()) - 1, *y_result.first, *y_result.second};
 }
 
 void LinePlot::marker(MarkerStyle marker_style) {

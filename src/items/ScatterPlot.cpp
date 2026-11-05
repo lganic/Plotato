@@ -41,7 +41,7 @@ GraphBounds ScatterPlot::bounds(){
     }
 
     // Find calculate x min and max are just 0 and the length of the y array -1
-    return GraphBounds{0, y.size() - 1, *y_result.first, *y_result.second};
+    return GraphBounds{0, static_cast<double>(y.size()) - 1, *y_result.first, *y_result.second};
 }
 
 void ScatterPlot::draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) {

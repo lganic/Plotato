@@ -15,9 +15,9 @@ class CirclePlot : public PlotItem
     double y;
     double radius;
 
-    double margin = 0.1;
     
     public:
+        double margin = 0.1;
 
         void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
 

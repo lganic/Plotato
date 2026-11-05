@@ -23,7 +23,7 @@ void ScatterPlot::draw(RenderContext& ctx) {
     else {
         // No X data. use the index instead.
 
-        for (size_t i = 0; i < x.size(); i ++) {
+        for (size_t i = 0; i < y.size(); i ++) {
             ctx.renderer.draw_marker(static_cast<double>(i), y[i], style);
         }
     }

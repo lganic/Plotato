@@ -8,6 +8,9 @@
 namespace plotato {
 
 ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style): x(x_data), y(y_data), style(plot_style){}
+ScatterPlot::ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style): y(y_data), style(plot_style) {
+    contains_x_data = false;
+}
 
 void ScatterPlot::draw(RenderContext& ctx) {
 

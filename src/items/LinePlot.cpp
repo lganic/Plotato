@@ -7,6 +7,9 @@
 namespace plotato {
 
 LinePlot::LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style): x(x_data), y(y_data), style(plot_style){}
+LinePlot::LinePlot(std::vector<double> y_data, PlotStyle plot_style): y(y_data), style(plot_style){
+    contains_x_data = false;
+}
 
 void LinePlot::draw(RenderContext& ctx) {
     if (contains_x_data) {

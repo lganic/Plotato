@@ -49,6 +49,21 @@ std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinat
     return std::make_pair(screen_x, screen_y);
 }
 
+std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinates(std::vector<double> y) {
+    size_t n = y.size();
+
+    // Map the x and y data to screen coordinates.
+    std::vector<double> screen_x(n);
+    std::vector<double> screen_y(n);
+
+    for (size_t i = 0; i < n; i ++) {
+        screen_x[i] = data_to_screen_x(static_cast<double>(i), y[i]);
+        screen_y[i] = data_to_screen_y(static_cast<double>(i), y[i]);
+    }
+
+    return std::make_pair(screen_x, screen_y);
+}
+
 bool GraphRenderer::perform_path(std::vector<double> x, std::vector<double> y) {
     bool started = false;
 
@@ -69,6 +84,32 @@ bool GraphRenderer::perform_path(std::vector<double> x, std::vector<double> y) {
         } else {
             // Segment started. So we are currently at the previous point on the line. Stroke to the next point.
             cairo_line_to(cr, x[i], y[i]);
+        }
+    }
+
+    return true;
+}
+
+bool GraphRenderer::perform_path(std::vector<double> y) {
+    bool started = false;
+
+    size_t n = y.size();
+
+    for (size_t i = 0; i < n; i ++) {
+
+        if (!std::isfinite(y[i])) {
+
+            // Path bad. Don't continue.
+            return false;
+        }
+
+        if (!started) {
+            // Segment not started yet. Just move to the coordinate. We will draw the line in a sec.
+            cairo_move_to(cr, static_cast<double>(i), y[i]);
+            started = true;
+        } else {
+            // Segment started. So we are currently at the previous point on the line. Stroke to the next point.
+            cairo_line_to(cr, static_cast<double>(i), y[i]);
         }
     }
 
@@ -104,6 +145,29 @@ void GraphRenderer::draw_polyline_absolute(const std::vector<double>& x, const s
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
 
+void GraphRenderer::draw_polyline_absolute(const std::vector<double>& y, PlotStyle& style) {
+
+    size_t n = y.size();
+
+    if (n < 2) return; // Not enough points! Abort!
+
+    cairo_save(cr); // Save the current graphics paint settings, so that we don't mess anything up that something else has going on.
+
+    if (!perform_path(y)){
+        cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+
+        std::cerr << "Could not render polyline, invalid data." << std::endl;
+        return;
+    }
+
+    // Set the current painting settings to those indicated by the line style.
+    style.line_color.to_cairo_source(cr);
+    cairo_set_line_width(cr, style.line_width);
+
+    cairo_stroke(cr); // Stroke that
+    cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
+}
+
 void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vector<double>& y, PlotStyle& style)
 {
     if (x.size() != y.size()) {
@@ -117,6 +181,18 @@ void GraphRenderer::draw_polyline(const std::vector<double>& x, const std::vecto
     if (n < 2) return; // Not enough points! Abort!
 
     std::pair<std::vector<double>, std::vector<double>> mapped_cords = map_coordinates(x, y);
+
+    // Pass to absolute screen coordinates.
+    draw_polyline_absolute(mapped_cords.first, mapped_cords.second, style);
+}
+
+void GraphRenderer::draw_polyline(const std::vector<double>& y, PlotStyle& style)
+{
+    size_t n = y.size();
+
+    if (n < 2) return; // Not enough points! Abort!
+
+    std::pair<std::vector<double>, std::vector<double>> mapped_cords = map_coordinates(y);
 
     // Pass to absolute screen coordinates.
     draw_polyline_absolute(mapped_cords.first, mapped_cords.second, style);
@@ -164,6 +240,8 @@ void GraphRenderer::draw_polygon_absolute(const std::vector<double>& x, const st
 
     cairo_restore(cr); // Restore the graphics paint settings to what we saved them to previously.
 }
+
+void draw_polyline(const std::vector<double>& y, PlotStyle& style);
 
 void GraphRenderer::draw_polygon(const std::vector<double>& x, const std::vector<double>& y, ShapeStyle& style) {
     if (x.size() != y.size()) {

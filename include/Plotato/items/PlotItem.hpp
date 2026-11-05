@@ -12,6 +12,7 @@ class PlotItem
 public:
 
     std::string name = "";
+    bool frame = true;
 
     virtual void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) = 0;
 

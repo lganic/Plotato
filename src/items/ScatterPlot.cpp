@@ -7,10 +7,8 @@
 
 namespace plotato {
 
-ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style): x(x_data), y(y_data), style(plot_style){}
-ScatterPlot::ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style): y(y_data), style(plot_style) {
-    contains_x_data = false;
-}
+ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style): XYPlot(x_data, y_data), style(plot_style){}
+ScatterPlot::ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style): XYPlot(y_data), style(plot_style) {}
 
 void ScatterPlot::draw(RenderContext& ctx) {
 
@@ -27,21 +25,6 @@ void ScatterPlot::draw(RenderContext& ctx) {
             ctx.renderer.draw_marker(static_cast<double>(i), y[i], style);
         }
     }
-}
-
-GraphBounds ScatterPlot::bounds(){
-    auto y_result = std::minmax_element(y.begin(), y.end());
-
-    if (contains_x_data) {
-        // Find both min and max elements of the x and y array.
-        auto x_result = std::minmax_element(x.begin(), x.end());
-
-        // Return the bounds object
-        return GraphBounds{*x_result.first, *x_result.second, *y_result.first, *y_result.second};
-    }
-
-    // Find calculate x min and max are just 0 and the length of the y array -1
-    return GraphBounds{0, static_cast<double>(y.size()) - 1, *y_result.first, *y_result.second};
 }
 
 void ScatterPlot::draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) {

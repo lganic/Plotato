@@ -1,18 +1,15 @@
 #ifndef PLOTATO_POLYGONPLOT_HPP
 #define PLOTATO_POLYGONPLOT_HPP
 
-#include <Plotato/items/PlotItem.hpp>
+#include <Plotato/items/XYPlot.hpp>
 #include <Plotato/util/GraphBounds.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <vector>
 
 namespace plotato {
 
-class PolygonPlot : public PlotItem
+class PolygonPlot : public XYPlot
 {
-    std::vector<double> x;
-    std::vector<double> y;
-    
     public:
 
         void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
@@ -21,7 +18,6 @@ class PolygonPlot : public PlotItem
 
         PolygonPlot(std::vector<double> x_data, std::vector<double> y_data, ShapeStyle shape_style);
         void draw(RenderContext& ctx);
-        GraphBounds bounds();
 };
 
 }

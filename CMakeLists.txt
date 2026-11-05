@@ -79,6 +79,7 @@ add_library(plotato
     src/axis/RadiusAxis.cpp
     src/axis/ThetaAxis.cpp
     src/items/PlotItem.cpp
+    src/items/XYPlot.cpp
     src/items/LinePlot.cpp
     src/items/ScatterPlot.cpp
     src/items/PolygonPlot.cpp

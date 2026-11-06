@@ -107,6 +107,8 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
             auto_bounds.adjust_with_bounds(this_object_bounds);
         }
 
+        auto_bounds.expand_zero_axis();
+
         // We only really care about the ymax bounds. Everything else stays the same for a polar graph.
         if(!std::isinf(auto_bounds.ymax)) {
             bounds.ymax = auto_bounds.ymax;

@@ -18,6 +18,7 @@ class LinePlot : public XYPlot
 
         PlotStyle style;
 
+        LinePlot() = default;
         LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
         LinePlot(std::vector<double> y_data, PlotStyle plot_style);
         void draw(RenderContext& ctx);

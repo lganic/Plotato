@@ -16,6 +16,7 @@ class ScatterPlot : public XYPlot
 
         MarkerStyle style;
 
+        ScatterPlot() = default;
         ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style);
         ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style);
         void draw(RenderContext& ctx);

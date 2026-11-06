@@ -16,6 +16,7 @@ class PolygonPlot : public XYPlot
 
         ShapeStyle style;
 
+        PolygonPlot() = default;
         PolygonPlot(std::vector<double> x_data, std::vector<double> y_data, ShapeStyle shape_style);
         void draw(RenderContext& ctx);
 };

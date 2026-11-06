@@ -22,6 +22,7 @@ class Text : public PlotItem
 
         FigureTextStyle style;
 
+        Text() = default;
         Text(double x, double y, std::string text, FigureTextStyle style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();

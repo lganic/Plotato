@@ -16,6 +16,7 @@ public:
 
     virtual void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) = 0;
 
+    PlotItem() = default;
     virtual ~PlotItem() {}
 
     virtual void draw(RenderContext& ctx) = 0;

@@ -19,6 +19,7 @@ class XYPlot : public PlotItem
     
     public:
     
+        XYPlot() = default;
         XYPlot(std::vector<double> x_data, std::vector<double> y_data);
         XYPlot(std::vector<double> y_data);
         

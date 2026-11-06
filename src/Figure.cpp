@@ -121,80 +121,59 @@ void Figure::legend(bool show) {
     style.draw_legend = show;
 }
 
+template<typename T, typename... Args> T* Figure::add_item(Args&&... args)
+{
+    static_assert(
+        std::is_base_of_v<PlotItem, T>,
+        "T must inherit from plotato::PlotItem"
+    );
+
+    auto item = std::make_unique<T>(
+        std::forward<Args>(args)...
+    );
+
+    T* ptr = item.get();
+
+    {
+        std::lock_guard<std::mutex> lock(data_mutex);
+        current_plot_items.emplace_back(std::move(item));
+    }
+
+    return ptr;
+}
+
 // Plot the given data on the graph. 
 LinePlot* Figure::plot(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
 {
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<LinePlot>(x, y, style);
-    LinePlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
+    return add_item<LinePlot>(x, y, style);
 }
 
 // Plot the given data on the graph. 
 LinePlot* Figure::plot(const std::vector<double> &y, PlotStyle style)
 {
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<LinePlot>(y, style);
-    LinePlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
+    return add_item<LinePlot>(y, style);
 }
 
 // Plot the scatter plots.
 ScatterPlot* Figure::scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style)
 {
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<ScatterPlot>(x, y, style);
-    ScatterPlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
+    return add_item<ScatterPlot>(x, y, style);
 }
 
 // Plot the scatter plots.
 ScatterPlot* Figure::scatter(const std::vector<double> &y, MarkerStyle style)
-{
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<ScatterPlot>(y, style);
-    ScatterPlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
+{   
+    return add_item<ScatterPlot>(y, style);
 }
 
 PolygonPlot* Figure::polygon(const std::vector<double> &x, const std::vector<double> &y, ShapeStyle style)
 {
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<PolygonPlot>(x, y, style);
-    PolygonPlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
+    return add_item<PolygonPlot>(x, y, style);
 }
 
 CirclePlot* Figure::circle(double x, double y, double radius, ShapeStyle style)
 {
-    std::lock_guard<std::mutex> lock(data_mutex);
-
-    auto new_plot = std::make_unique<CirclePlot>(x, y, radius, style);
-    CirclePlot* plot = new_plot.get();
-
-    current_plot_items.emplace_back(std::move(new_plot));
-
-    return plot;
+    return add_item<CirclePlot>(x, y, radius, style);
 }
 
 Title* Figure::add_axis_title(AxisSide side, std::string title, TextStyle style)

@@ -69,6 +69,8 @@ public:
     void draw();
     void clear_axis();
 
+    template<typename T, typename... Args> T* add_item(Args&&... args);
+
     LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
     LinePlot* plot(const std::vector<double>& y, PlotStyle style = PlotStyle());
     ScatterPlot* scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style = MarkerStyle());

@@ -85,6 +85,15 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
             auto_bounds.adjust_with_bounds(this_object_bounds);
         }
 
+        for (size_t i = 0; i < text_items.size(); i ++) {
+
+            if (!text_items[i]->frame) continue;
+
+            GraphBounds this_object_bounds = text_items[i]->bounds();
+
+            auto_bounds.adjust_with_bounds(this_object_bounds);
+        }
+
         // Save values to the bounds object.
         if (x_axis_auto_framing) {
             if (!std::isinf(auto_bounds.xmin)){

@@ -23,6 +23,7 @@ class CirclePlot : public PlotItem
 
         ShapeStyle style;
 
+        CirclePlot() = default;
         CirclePlot(double x, double y, double radius, ShapeStyle shape_style);
         void draw(RenderContext& ctx);
         GraphBounds bounds();

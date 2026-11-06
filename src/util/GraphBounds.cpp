@@ -34,6 +34,20 @@ void GraphBounds::adjust_with_point(double x, double y) {
     
 }
 
+void GraphBounds::expand_zero_axis(double margin) {
+
+    if (xmin == xmax) {
+        xmin -= margin;
+        xmax += margin;
+    }
+
+    if (ymin == ymax) {
+        ymin -= margin;
+        ymax += margin;
+    }
+
+}
+
 bool GraphBounds::overlap(GraphBounds target) {
 
     // If one rectangle is on left side of other

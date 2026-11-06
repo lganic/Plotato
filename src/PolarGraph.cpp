@@ -75,7 +75,7 @@ double PolarGraph::map_y(double theta, double r, GraphViewport viewport)
 
 void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 {
-    if (current_plot_items.size() == 0) {
+    if (text_items.size() == 0 && current_plot_items.size() == 0) {
         // Set the placeholder image, so we know that the graph has been initialized properly, just not set to any data, or plotted. 
         draw_no_data(cr, width, height);
 
@@ -98,6 +98,16 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
             auto_bounds.adjust_with_bounds(this_object_bounds);
         }
 
+        for (size_t i = 0; i < text_items.size(); i ++) {
+
+            if (!text_items[i]->frame) continue;
+
+            GraphBounds this_object_bounds = text_items[i]->bounds();
+
+            auto_bounds.adjust_with_bounds(this_object_bounds);
+        }
+
+        auto_bounds.expand_zero_axis();
 
         // We only really care about the ymax bounds. Everything else stays the same for a polar graph.
         if(!std::isinf(auto_bounds.ymax)) {

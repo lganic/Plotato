@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <type_traits>
+#include <utility>
 #include <Plotato/util/GraphBounds.hpp>
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
@@ -68,6 +70,28 @@ public:
     void reset();
     void draw();
     void clear_axis();
+
+    template<typename T, typename... Args>
+    T* add_item(Args&&... args)
+    {
+        static_assert(
+            std::is_base_of<PlotItem, T>::value,
+            "T must inherit from PlotItem"
+        );
+
+        auto item = std::make_unique<T>(
+            std::forward<Args>(args)...
+        );
+
+        T* ptr = item.get();
+
+        {
+            std::lock_guard<std::mutex> lock(data_mutex);
+            current_plot_items.emplace_back(std::move(item));
+        }
+
+        return ptr;
+    }
 
     LinePlot* plot(const std::vector<double>& x, const std::vector<double>& y, PlotStyle style = PlotStyle());
     LinePlot* plot(const std::vector<double>& y, PlotStyle style = PlotStyle());

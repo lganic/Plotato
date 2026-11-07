@@ -20,7 +20,7 @@ void PolarGraph::set_bounds(GraphBounds set_bounds) {
     r_axis_auto_framing = (std::isinf(set_bounds.ymin) || std::isinf(set_bounds.ymax));
 
     // Then lets set these bounds. If the flags above are false, then these bounds won't be touched, so the user doesn't have to call this again.
-    bounds = set_bounds;
+    manual_bounds = set_bounds;
 }
 
 RadiusAxis* add_radius_axis(AxisStyle style = AxisStyle());
@@ -57,7 +57,7 @@ double PolarGraph::map_x(double theta, double r, GraphViewport viewport)
     double y = r * std::sin(theta);
 
     // Map to screen, using bounds convention of the polar graph.
-    double t = x / bounds.ymax;
+    double t = x / viewport.bounds.ymax;
 
     return viewport.margin_left + (viewport.graph_width / 2) * (1 + t);
 }
@@ -69,7 +69,7 @@ double PolarGraph::map_y(double theta, double r, GraphViewport viewport)
     double y = r * std::sin(theta);
 
     // Map to screen, using bounds convention of the polar graph.
-    double t = y / bounds.ymax;
+    double t = y / viewport.bounds.ymax;
     return viewport.margin_top + (viewport.graph_height / 2) * (1 - t);
 }
 
@@ -81,6 +81,8 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 
         return;
     }
+
+    GraphBounds this_round_bounds = manual_bounds;
 
     // Update bounds before we create the render context object.
     // Check if we need to do some auto framing.
@@ -111,18 +113,18 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 
         // We only really care about the ymax bounds. Everything else stays the same for a polar graph.
         if(!std::isinf(auto_bounds.ymax)) {
-            bounds.ymax = auto_bounds.ymax;
+            this_round_bounds.ymax = auto_bounds.ymax;
         }
 
     }
 
     // Ensure the inarguable polar bounds are respected
-    bounds.xmin = 0;
-    bounds.xmax = 2 * M_PI; // Radians should be default behind the scenes.
-    bounds.ymin = 0; // For bounding purposes.
+    this_round_bounds.xmin = 0;
+    this_round_bounds.xmax = 2 * M_PI; // Radians should be default behind the scenes.
+    this_round_bounds.ymin = 0; // For bounding purposes.
     
     // Create a new viewport / render context which we will pass to the renderers.
-    RenderContext rc = get_render_context(cr, width, height, true);
+    RenderContext rc = get_render_context(cr, this_round_bounds, width, height, true);
 
     int32_t plot_x = rc.current_viewport.margin_left;
     int32_t plot_y = rc.current_viewport.margin_top;

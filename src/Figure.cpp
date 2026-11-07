@@ -514,7 +514,7 @@ void Figure::draw_items(RenderContext& rc) {
     cairo_fill(rc.cr);
 }
 
-RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t height, bool square) {
+RenderContext Figure::get_render_context(cairo_t *cr, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square) {
 
     // Set default margins from style.
     int32_t left_margin = style.default_margin;
@@ -590,7 +590,7 @@ RenderContext Figure::get_render_context(cairo_t *cr, uint32_t width, uint32_t h
 
     GraphViewport gv;
 
-    gv.bounds = bounds;
+    gv.bounds = context_bounds;
 
     gv.graph_height = plot_h;
     gv.graph_width = plot_w;

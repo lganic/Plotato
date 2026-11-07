@@ -19,6 +19,8 @@ public:
     
     void set_bounds(GraphBounds set_bounds);
 
+    bool equal_aspect_framing = false;
+
 private:
 
     bool x_axis_auto_framing = true;

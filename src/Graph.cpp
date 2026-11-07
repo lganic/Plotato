@@ -6,9 +6,9 @@
 #include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <cstdint>
 #include <algorithm>
+#include <iostream>
 
 using namespace plotato;
 
@@ -21,7 +21,7 @@ void Graph::set_bounds(GraphBounds set_bounds) {
     y_axis_auto_framing = (std::isinf(set_bounds.ymin) || std::isinf(set_bounds.ymax));
 
     // Then lets set these bounds. If the flags above are false, then these bounds won't be touched, so the user doesn't have to call this again.
-    bounds = set_bounds;
+    manual_bounds = set_bounds;
 }
 
 LinearAxis* Graph::add_linear_axis(AxisSide side, AxisStyle style)
@@ -50,24 +50,33 @@ OffsetAxis* Graph::add_offset_axis(AxisSide side, AxisStyle style)
 
 double Graph::map_x(double x, double y, GraphViewport viewport)
 {
-    double t = (x - bounds.xmin) / (bounds.xmax - bounds.xmin);
+    double t = (x - viewport.bounds.xmin) / (viewport.bounds.xmax - viewport.bounds.xmin);
     return viewport.margin_left + t * viewport.graph_width;
 }
 
 double Graph::map_y(double x, double y, GraphViewport viewport)
 {
-    double t = (y - bounds.ymin) / (bounds.ymax - bounds.ymin);
+    double t = (y - viewport.bounds.ymin) / (viewport.bounds.ymax - viewport.bounds.ymin);
     return viewport.margin_top + viewport.graph_height * (1 - t);
 }
 
 void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 {
+
     if (text_items.size() == 0 && current_plot_items.size() == 0) {
         // Set the placeholder image, so we know that the graph has been initialized properly, just not set to any data, or plotted. 
         draw_no_data(cr, width, height);
 
         return;
     }
+
+    GraphBounds this_round_bounds = manual_bounds; // Bounds object which we will use for this update only.
+    MarginInformation margins = get_margin_information();
+
+    int32_t plot_x = margins.left_margin;
+    int32_t plot_y = margins.top_margin;
+    int32_t plot_w = width - margins.left_margin - margins.right_margin;
+    int32_t plot_h = height - margins.top_margin - margins.bottom_margin;
 
     // Update bounds before we create the render context object.
     // Check if we need to do some auto framing.
@@ -99,29 +108,62 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
         // Save values to the bounds object.
         if (x_axis_auto_framing) {
             if (!std::isinf(auto_bounds.xmin)){
-                bounds.xmin = auto_bounds.xmin;
+                this_round_bounds.xmin = auto_bounds.xmin;
             }
             if(!std::isinf(auto_bounds.xmax)) {
-                bounds.xmax = auto_bounds.xmax;
+                this_round_bounds.xmax = auto_bounds.xmax;
             }
         }
         if (y_axis_auto_framing) {
             if (!std::isinf(auto_bounds.ymin)){
-                bounds.ymin = auto_bounds.ymin;
+                this_round_bounds.ymin = auto_bounds.ymin;
             }
             if (!std::isinf(auto_bounds.ymax)) {
-                bounds.ymax = auto_bounds.ymax;
+                this_round_bounds.ymax = auto_bounds.ymax;
             }
         }
     }
 
-    // Create a new viewport / render context which we will pass to the renderers.
-    RenderContext rc = get_render_context(cr, width, height);
+    if (equal_aspect_framing) {
 
-    int32_t plot_x = rc.current_viewport.margin_left;
-    int32_t plot_y = rc.current_viewport.margin_top;
-    int32_t plot_w = rc.current_viewport.graph_width;
-    int32_t plot_h = rc.current_viewport.graph_height;
+        // First calculate the target aspect ratio of the graph itself.
+        double graph_aspect_ratio = static_cast<double>(plot_w) / static_cast<double>(plot_h);
+
+        // Next calculate the aspect ratio of the bounds currently.
+        double x_delta = this_round_bounds.xmax - this_round_bounds.xmin;
+        double y_delta = this_round_bounds.ymax - this_round_bounds.ymin;
+        double bounds_aspect_ratio = x_delta / y_delta;
+
+        if (bounds_aspect_ratio > graph_aspect_ratio) {
+            // Case 1. Need to expand the bounds Y amount.
+
+            // Calculate the old range center
+            double center_y = (this_round_bounds.ymax + this_round_bounds.ymin) / 2;
+
+            // Calculate the size of the new range using the aspect ratio of the graph, and the X distance.
+            double desired_range = x_delta / graph_aspect_ratio;
+
+            // Now update the range using the desired range, and center
+            this_round_bounds.ymin = center_y - desired_range / 2;
+            this_round_bounds.ymax = center_y + desired_range / 2;
+        }
+        else{
+            // Case 2. Need to expand the bounds X amount.
+
+            // Calculate the old range center
+            double center_x = (this_round_bounds.xmax + this_round_bounds.xmin) / 2;
+
+            // Calculate the size of the new range using the aspect ratio of the graph, and the X distance.
+            double desired_range = y_delta * graph_aspect_ratio;
+
+            // Now update the range using the desired range, and center
+            this_round_bounds.xmin = center_x - desired_range / 2;
+            this_round_bounds.xmax = center_x + desired_range / 2;
+        }
+    }
+
+    // Create a new viewport / render context which we will pass to the renderers.
+    RenderContext rc = get_render_context(cr, margins, this_round_bounds, width, height);
 
     // Set background color on the plot.
     style.background_color.to_cairo_source(cr);

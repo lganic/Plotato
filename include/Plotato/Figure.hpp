@@ -35,6 +35,13 @@ namespace detail {
     };
 }
 
+struct MarginInformation {
+    uint16_t left_margin;
+    uint16_t right_margin;
+    uint16_t top_margin;
+    uint16_t bottom_margin;
+};
+
 struct FigureStyle {
     Color background_color = Color(255, 255, 255);
 
@@ -119,7 +126,7 @@ protected:
     char version_label[64];
 
     GtkWidget* area;
-    GraphBounds bounds; // This is the bounds object which will be used / updated at runtime. The manual bounds below, and the framing flags control this value.
+    GraphBounds manual_bounds; // This is the bounds object which tracks bounds when they are set manually. If bounds are not set, this is not used.
 
     std::vector<std::unique_ptr<PlotItem>> current_plot_items;
     std::vector<std::unique_ptr<Axis>> current_axis_items;
@@ -147,7 +154,9 @@ protected:
 
     virtual void draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height);
 
-    RenderContext get_render_context(cairo_t* cr, uint32_t width, uint32_t height, bool square = false);
+    MarginInformation get_margin_information();
+
+    RenderContext get_render_context(cairo_t* cr, MarginInformation margins, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square = false);
 };
 
 }

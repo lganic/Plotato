@@ -115,6 +115,44 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
         }
     }
 
+    if (equal_aspect_framing) {
+
+        // First calculate the target aspect ratio of the graph itself.
+        double graph_aspect_ratio = width / height;
+
+        // Next calculate the aspect ratio of the bounds currently.
+        double x_delta = bounds.xmax - bounds.xmin;
+        double y_delta = bounds.ymax - bounds.ymin;
+        double bounds_aspect_ratio = x_delta / y_delta;
+
+        if (bounds_aspect_ratio > graph_aspect_ratio) {
+            // Case 1. Need to expand the bounds Y amount.
+
+            // Calculate the old range center
+            double center_y = (bounds.ymax + bounds.ymin) / 2;
+
+            // Calculate the size of the new range using the aspect ratio of the graph, and the X distance.
+            double desired_range = x_delta / graph_aspect_ratio;
+
+            // Now update the range using the desired range, and center
+            bounds.ymin = center_y - desired_range / 2;
+            bounds.ymax = center_y + desired_range / 2;
+        }
+        else{
+            // Case 2. Need to expand the bounds X amount.
+
+            // Calculate the old range center
+            double center_x = (bounds.xmax + bounds.xmin) / 2;
+
+            // Calculate the size of the new range using the aspect ratio of the graph, and the X distance.
+            double desired_range = y_delta * graph_aspect_ratio;
+
+            // Now update the range using the desired range, and center
+            bounds.xmin = center_x - desired_range / 2;
+            bounds.xmax = center_x + desired_range / 2;
+        }
+    }
+
     // Create a new viewport / render context which we will pass to the renderers.
     RenderContext rc = get_render_context(cr, width, height);
 

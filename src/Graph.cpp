@@ -71,6 +71,12 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     }
 
     GraphBounds this_round_bounds = manual_bounds; // Bounds object which we will use for this update only.
+    MarginInformation margins = get_margin_information();
+
+    int32_t plot_x = margins.left_margin;
+    int32_t plot_y = margins.top_margin;
+    int32_t plot_w = width - margins.left_margin - margins.right_margin;
+    int32_t plot_h = height - margins.top_margin - margins.bottom_margin;
 
     // Update bounds before we create the render context object.
     // Check if we need to do some auto framing.
@@ -121,7 +127,7 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     if (equal_aspect_framing) {
 
         // First calculate the target aspect ratio of the graph itself.
-        double graph_aspect_ratio = static_cast<double>(width) / static_cast<double>(height);
+        double graph_aspect_ratio = static_cast<double>(plot_w) / static_cast<double>(plot_h);
 
         // Next calculate the aspect ratio of the bounds currently.
         double x_delta = this_round_bounds.xmax - this_round_bounds.xmin;
@@ -157,12 +163,7 @@ void Graph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     }
 
     // Create a new viewport / render context which we will pass to the renderers.
-    RenderContext rc = get_render_context(cr, this_round_bounds, width, height);
-
-    int32_t plot_x = rc.current_viewport.margin_left;
-    int32_t plot_y = rc.current_viewport.margin_top;
-    int32_t plot_w = rc.current_viewport.graph_width;
-    int32_t plot_h = rc.current_viewport.graph_height;
+    RenderContext rc = get_render_context(cr, margins, this_round_bounds, width, height);
 
     // Set background color on the plot.
     style.background_color.to_cairo_source(cr);

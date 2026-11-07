@@ -514,13 +514,13 @@ void Figure::draw_items(RenderContext& rc) {
     cairo_fill(rc.cr);
 }
 
-RenderContext Figure::get_render_context(cairo_t *cr, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square) {
+MarginInformation Figure::get_margin_information() {
 
     // Set default margins from style.
-    int32_t left_margin = style.default_margin;
-    int32_t right_margin = style.default_margin;
-    int32_t top_margin = style.default_margin;
-    int32_t bottom_margin = style.default_margin;
+    uint16_t left_margin = style.default_margin;
+    uint16_t right_margin = style.default_margin;
+    uint16_t top_margin = style.default_margin;
+    uint16_t bottom_margin = style.default_margin;
 
     if (!style.dont_draw_version_text) bottom_margin += 10;
 
@@ -559,9 +559,19 @@ RenderContext Figure::get_render_context(cairo_t *cr, GraphBounds context_bounds
         }
     }
 
+    return MarginInformation{
+        left_margin, 
+        right_margin,
+        top_margin,
+        bottom_margin
+    };
+}
+
+RenderContext Figure::get_render_context(cairo_t *cr, MarginInformation margins, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square) {
+
     // Get some plot information based on the margin.
-    int32_t plot_w = width - left_margin - right_margin;
-    int32_t plot_h = height - top_margin - bottom_margin;
+    int32_t plot_w = width - margins.left_margin - margins.right_margin;
+    int32_t plot_h = height - margins.top_margin - margins.bottom_margin;
 
     if (square) {
         // Adjust margins to center the graph, with a square aspect ratio.
@@ -570,8 +580,8 @@ RenderContext Figure::get_render_context(cairo_t *cr, GraphBounds context_bounds
 
             int32_t delta = plot_h - plot_w;
 
-            top_margin += delta / 2;
-            bottom_margin += delta / 2;
+            margins.top_margin += delta / 2;
+            margins.bottom_margin += delta / 2;
         }
         else if (plot_h < plot_w) {
 
@@ -579,13 +589,13 @@ RenderContext Figure::get_render_context(cairo_t *cr, GraphBounds context_bounds
 
             int32_t delta = plot_w - plot_h;
 
-            left_margin += delta / 2;
-            right_margin += delta / 2;
+            margins.left_margin += delta / 2;
+            margins.right_margin += delta / 2;
         }
 
         // Update the plot width and height with the new margin data. (Should be the same, or within a pixel of eachother now)
-        plot_w = width - left_margin - right_margin;
-        plot_h = height - top_margin - bottom_margin;
+        plot_w = width - margins.left_margin - margins.right_margin;
+        plot_h = height - margins.top_margin - margins.bottom_margin;
     }
 
     GraphViewport gv;
@@ -595,10 +605,10 @@ RenderContext Figure::get_render_context(cairo_t *cr, GraphBounds context_bounds
     gv.graph_height = plot_h;
     gv.graph_width = plot_w;
 
-    gv.margin_left = left_margin;
-    gv.margin_right = right_margin;
-    gv.margin_top = top_margin;
-    gv.margin_bottom = bottom_margin;
+    gv.margin_left = margins.left_margin;
+    gv.margin_right = margins.right_margin;
+    gv.margin_top = margins.top_margin;
+    gv.margin_bottom = margins.bottom_margin;
 
     RenderContext rc(cr, gv, std::bind(&Figure::map_x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), std::bind(&Figure::map_y, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 

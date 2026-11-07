@@ -35,6 +35,13 @@ namespace detail {
     };
 }
 
+struct MarginInformation {
+    uint16_t left_margin;
+    uint16_t right_margin;
+    uint16_t top_margin;
+    uint16_t bottom_margin;
+};
+
 struct FigureStyle {
     Color background_color = Color(255, 255, 255);
 
@@ -147,7 +154,9 @@ protected:
 
     virtual void draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height);
 
-    RenderContext get_render_context(cairo_t* cr, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square = false);
+    MarginInformation get_margin_information();
+
+    RenderContext get_render_context(cairo_t* cr, MarginInformation margins, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square = false);
 };
 
 }

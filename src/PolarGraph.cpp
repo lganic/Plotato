@@ -83,6 +83,7 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     }
 
     GraphBounds this_round_bounds = manual_bounds;
+    MarginInformation margins = get_margin_information();
 
     // Update bounds before we create the render context object.
     // Check if we need to do some auto framing.
@@ -124,7 +125,7 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
     this_round_bounds.ymin = 0; // For bounding purposes.
     
     // Create a new viewport / render context which we will pass to the renderers.
-    RenderContext rc = get_render_context(cr, this_round_bounds, width, height, true);
+    RenderContext rc = get_render_context(cr, margins, this_round_bounds, width, height, true);
 
     int32_t plot_x = rc.current_viewport.margin_left;
     int32_t plot_y = rc.current_viewport.margin_top;

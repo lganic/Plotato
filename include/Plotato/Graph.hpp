@@ -19,12 +19,12 @@ public:
     
     void set_bounds(GraphBounds set_bounds);
 
+    bool equal_aspect_framing = false;
+
 private:
 
     bool x_axis_auto_framing = true;
     bool y_axis_auto_framing = true;
-
-    bool equal_aspect_framing = false;
 
     virtual double map_x(double x, double y, GraphViewport viewport);
     virtual double map_y(double x, double y, GraphViewport viewport);

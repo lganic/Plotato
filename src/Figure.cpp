@@ -514,6 +514,10 @@ void Figure::draw_items(RenderContext& rc) {
     cairo_fill(rc.cr);
 }
 
+GraphBounds Figure::get_manual_bounds() {
+    return manual_bounds;
+}
+
 MarginInformation Figure::get_margin_information() {
 
     // Set default margins from style.

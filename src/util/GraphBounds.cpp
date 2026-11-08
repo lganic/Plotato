@@ -48,6 +48,10 @@ void GraphBounds::expand_zero_axis(double margin) {
 
 }
 
+std::pair<double, double> GraphBounds::get_center() {
+    return std::make_pair<double, double>((xmin + xmax) / 2, (ymin + ymax) / 2);
+}
+
 bool GraphBounds::overlap(GraphBounds target) {
 
     // If one rectangle is on left side of other

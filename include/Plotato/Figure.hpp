@@ -114,6 +114,8 @@ public:
 
     Text* add_text(double x, double y, std::string text, FigureTextStyle style = FigureTextStyle());
 
+    GraphBounds get_manual_bounds(); // Returns the current status of the manual bounds.
+
     void legend(bool show = true);
 
     FigureStyle style;

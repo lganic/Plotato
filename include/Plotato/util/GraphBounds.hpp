@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <cstdint>
+#include <utility>
 
 namespace plotato {
 
@@ -17,6 +18,7 @@ struct GraphBounds {
     void adjust_with_point(double x, double y);
     bool overlap(GraphBounds target);
     void expand_zero_axis(double margin = 1);
+    std::pair<double, double> get_center();
 };
 
 // Constructed by graph, and passed to graph renderers to allign everything properly, after accounting for margins.

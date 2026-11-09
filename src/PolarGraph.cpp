@@ -33,7 +33,7 @@ RadiusAxis* PolarGraph::add_radius_axis(AxisStyle style) {
     auto new_axis = std::make_unique<RadiusAxis>(style);
     RadiusAxis* axis = new_axis.get();
 
-    current_axis_items.emplace_back(std::move(new_axis));
+    axis_items.emplace_back(std::move(new_axis));
 
     return axis;
 }
@@ -45,7 +45,7 @@ ThetaAxis* PolarGraph::add_theta_axis(AxisStyle style) {
     auto new_axis = std::make_unique<ThetaAxis>(style);
     ThetaAxis* axis = new_axis.get();
 
-    current_axis_items.emplace_back(std::move(new_axis));
+    axis_items.emplace_back(std::move(new_axis));
 
     return axis;
 }
@@ -75,7 +75,7 @@ double PolarGraph::map_y(double theta, double r, GraphViewport viewport)
 
 void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 {
-    if (text_items.size() == 0 && current_plot_items.size() == 0) {
+    if (text_items.size() == 0 && plot_items.size() == 0) {
         // Set the placeholder image, so we know that the graph has been initialized properly, just not set to any data, or plotted. 
         draw_no_data(cr, width, height);
 
@@ -92,11 +92,11 @@ void PolarGraph::draw_to_canvas(cairo_t *cr, uint32_t width, uint32_t height)
 
         GraphBounds auto_bounds;
 
-        for (size_t i = 0; i < current_plot_items.size(); i ++) {
+        for (size_t i = 0; i < plot_items.size(); i ++) {
             
-            if (!current_plot_items[i]->frame) continue;
+            if (!plot_items[i]->frame) continue;
 
-            GraphBounds this_object_bounds = current_plot_items[i]->bounds();
+            GraphBounds this_object_bounds = plot_items[i]->bounds();
 
             auto_bounds.adjust_with_bounds(this_object_bounds);
         }

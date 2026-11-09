@@ -94,7 +94,7 @@ public:
 
         {
             std::lock_guard<std::mutex> lock(data_mutex);
-            current_plot_items.emplace_back(std::move(item));
+            plot_items.emplace_back(std::move(item));
         }
 
         return ptr;
@@ -130,8 +130,8 @@ protected:
     GtkWidget* area;
     GraphBounds manual_bounds; // This is the bounds object which tracks bounds when they are set manually. If bounds are not set, this is not used.
 
-    std::vector<std::unique_ptr<PlotItem>> current_plot_items;
-    std::vector<std::unique_ptr<Axis>> current_axis_items;
+    std::vector<std::unique_ptr<PlotItem>> plot_items;
+    std::vector<std::unique_ptr<Axis>> axis_items;
     std::vector<std::unique_ptr<Text>> text_items; // We have a separate vector for this, to ensure text items get rendered on top.
 
     std::mutex data_mutex;

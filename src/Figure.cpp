@@ -97,11 +97,11 @@ void Figure::draw_version_text(cairo_t* cr, uint32_t width, uint32_t height) {
 void Figure::clear() {
     std::lock_guard<std::mutex> lock(data_mutex);
 
-    current_plot_items.clear();
+    plot_items.clear();
 }
 
 void Figure::clear_axis() {
-    current_axis_items.clear();
+    axis_items.clear();
 }
 
 void Figure::reset() {
@@ -162,7 +162,7 @@ Title* Figure::add_axis_title(AxisSide side, std::string title, TextStyle style)
     auto new_title = std::make_unique<Title>(side, title, style);
     Title* title_object = new_title.get();
 
-    current_axis_items.emplace_back(std::move(new_title));
+    axis_items.emplace_back(std::move(new_title));
 
     return title_object;
 }
@@ -276,34 +276,34 @@ void Figure::draw_axis(RenderContext& rc) {
 
     // Loop over all the axis, and render each to the graph.
     // This has to use a switch case, in order to correctly stack multi axis plots.
-    for(size_t i = 0; i < current_axis_items.size(); i ++){
+    for(size_t i = 0; i < axis_items.size(); i ++){
 
-        AxisPixelSize size = current_axis_items[i]->size();
+        AxisPixelSize size = axis_items[i]->size();
 
-        switch (current_axis_items[i]->side)
+        switch (axis_items[i]->side)
         {
         case TOP:
-            current_axis_items[i] -> draw(rc, 0, -top_axis_offset);
+            axis_items[i] -> draw(rc, 0, -top_axis_offset);
             top_axis_offset += size.top + INTER_AXIS_PADDING;
             break;
 
         case BOTTOM:
-            current_axis_items[i] -> draw(rc, 0, bottom_axis_offset);
+            axis_items[i] -> draw(rc, 0, bottom_axis_offset);
             bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
             break;
 
         case LEFT:
-            current_axis_items[i] -> draw(rc, -left_axis_offset, 0);
+            axis_items[i] -> draw(rc, -left_axis_offset, 0);
             left_axis_offset += size.left + INTER_AXIS_PADDING;
             break;
 
         case RIGHT:
-            current_axis_items[i] -> draw(rc, right_axis_offset, 0);
+            axis_items[i] -> draw(rc, right_axis_offset, 0);
             right_axis_offset += size.right + INTER_AXIS_PADDING;
             break;
 
         case NONE:
-            current_axis_items[i] -> draw(rc, 0, 0);
+            axis_items[i] -> draw(rc, 0, 0);
         }
     }
 }
@@ -334,9 +334,9 @@ void Figure::draw_legend(RenderContext& rc) {
     {
         std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
 
-        for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
+        for (size_t plot_item_index = 0; plot_item_index < plot_items.size(); plot_item_index ++) {
 
-            PlotItem* plot_item = current_plot_items[plot_item_index].get();
+            PlotItem* plot_item = plot_items[plot_item_index].get();
 
             if (plot_item->name.length() == 0) continue; // Skip plots with no name.
 
@@ -427,9 +427,9 @@ void Figure::draw_legend(RenderContext& rc) {
         std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
         size_t legend_item_index = 0;
 
-        for (size_t plot_item_index = 0; plot_item_index < current_plot_items.size(); plot_item_index ++) {
+        for (size_t plot_item_index = 0; plot_item_index < plot_items.size(); plot_item_index ++) {
 
-            PlotItem* plot_item = current_plot_items[plot_item_index].get();
+            PlotItem* plot_item = plot_items[plot_item_index].get();
 
             if (plot_item->name.length() == 0) continue; // Skip plots with no name.
 
@@ -478,14 +478,14 @@ void Figure::draw_items(RenderContext& rc) {
     GraphBounds graph_bounds = rc.current_viewport.bounds;
 
     // Loop over all graph elements, and call each of their corresponding draw functions.
-    for(size_t i = 0; i < current_plot_items.size(); i ++){
+    for(size_t i = 0; i < plot_items.size(); i ++){
 
         // Get the bounds of this object.
-        GraphBounds bounds = current_plot_items[i]->bounds();
+        GraphBounds bounds = plot_items[i]->bounds();
 
         if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
 
-        current_plot_items[i]->draw(rc);
+        plot_items[i]->draw(rc);
     }
 
     GraphViewport viewport = rc.current_viewport;
@@ -529,10 +529,10 @@ MarginInformation Figure::get_margin_information() {
     {
         std::lock_guard<std::mutex> lock(axis_mutex);
 
-        for (size_t i = 0; i < current_axis_items.size(); i ++) {
-            AxisPixelSize axis_size = current_axis_items[i]->size();
+        for (size_t i = 0; i < axis_items.size(); i ++) {
+            AxisPixelSize axis_size = axis_items[i]->size();
 
-            switch (current_axis_items[i]->side)
+            switch (axis_items[i]->side)
             {
             case TOP:
                 top_margin += axis_size.top;

@@ -460,16 +460,13 @@ void Figure::draw_text_items(RenderContext& rc) {
 
     // Loop over all text elements, and call each of their corresponding draw functions.
     for(size_t i = 0; i < text_items.size(); i ++){
+        if (text_items[i]->style.absolute) continue; // Don't check absolute elements, assume the user knows what they are doing.
 
-        if (!text_items[i]->style.absolute) {
-            // Don't check absolute elements, assume the user knows what they are doing.
+        // Get the text position.
+        GraphBounds bounds = text_items[i]->bounds();
 
-            // Get the text position.
-            GraphBounds bounds = text_items[i]->bounds();
-
-            // We only need to check xmin and ymin, since min=max for text items right now
-            if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
-        }
+        // We only need to check xmin and ymin, since min=max for text items right now
+        if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
 
         text_items[i]->draw(rc);
     }

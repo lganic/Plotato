@@ -8,6 +8,8 @@
 
 namespace plotato {
 
+int32_t use_val_if_enabled(int32_t val, bool enabled);
+
 enum AxisSide {
     TOP, 
     RIGHT,

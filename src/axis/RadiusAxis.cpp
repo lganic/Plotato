@@ -10,7 +10,7 @@ namespace plotato {
 void RadiusAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
 
     if (style.num_ticks <= 0) {
-        style.num_ticks = -std::round((ctx.current_viewport.graph_width / 2 + 4 * get_approx_vertical_size(style.font_size)) / (get_approx_vertical_size(style.font_size) * (4 + 1)));
+        style.num_ticks = -std::round((ctx.current_viewport.graph_width / 2 + 4 * get_approx_vertical_size(style.text_style.font_size)) / (get_approx_vertical_size(style.text_style.font_size) * (4 + 1)));
     }
 
     uint32_t num_ticks = abs(style.num_ticks);

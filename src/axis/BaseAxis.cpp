@@ -26,8 +26,8 @@ AxisPixelSize Axis::size() {
     output.theta = 0;
 
     // Just some approximations, so we can output things correctly.
-    uint32_t approx_text_vertical_size = get_approx_vertical_size(style.font_size);
-    uint32_t approx_text_horizontal_size = get_approx_horizontal_size(style.font_size); // Very rough approximation.
+    uint32_t approx_text_vertical_size = get_approx_vertical_size(style.text_style.font_size);
+    uint32_t approx_text_horizontal_size = get_approx_horizontal_size(style.text_style.font_size); // Very rough approximation.
 
     switch (side)
     {
@@ -83,7 +83,7 @@ void Axis::update_automatic_ticks(int32_t graph_width, int32_t graph_height) {
 
         approx_content_ratio = 1.5;
 
-        element_size = get_approx_horizontal_size(style.font_size);
+        element_size = get_approx_horizontal_size(style.text_style.font_size);
         content_size = graph_width;
 
         break;
@@ -92,7 +92,7 @@ void Axis::update_automatic_ticks(int32_t graph_width, int32_t graph_height) {
 
         approx_content_ratio = 1.5;
 
-        element_size = get_approx_horizontal_size(style.font_size);
+        element_size = get_approx_horizontal_size(style.text_style.font_size);
         content_size = graph_width;
 
         break;
@@ -101,7 +101,7 @@ void Axis::update_automatic_ticks(int32_t graph_width, int32_t graph_height) {
 
         approx_content_ratio = 3.5;
 
-        element_size = get_approx_vertical_size(style.font_size);
+        element_size = get_approx_vertical_size(style.text_style.font_size);
         content_size = graph_height;
 
         break;
@@ -111,7 +111,7 @@ void Axis::update_automatic_ticks(int32_t graph_width, int32_t graph_height) {
 
         approx_content_ratio = 3.5;
 
-        element_size = get_approx_vertical_size(style.font_size);
+        element_size = get_approx_vertical_size(style.text_style.font_size);
         content_size = graph_height;
 
         break;

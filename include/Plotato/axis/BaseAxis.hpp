@@ -38,8 +38,7 @@ struct AxisStyle {
     
     bool draw_text = true;
     uint32_t text_gap = 5;
-    Color text_color = Color(0, 0, 0);
-    uint32_t font_size = 12;
+    TextStyle text_style;
 
     // TODO: Put heatmap color data here. Will be wasted space when using a non heatmap object, but will make implementation way easier.
 };

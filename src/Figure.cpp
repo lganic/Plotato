@@ -458,6 +458,22 @@ void Figure::draw_text_items(RenderContext& rc) {
 
     GraphBounds graph_bounds = rc.current_viewport.bounds;
 
+    cairo_save(rc.cr);
+
+    if (style.clip_text) {
+        GraphViewport viewport = rc.current_viewport;
+
+        cairo_rectangle(
+            rc.cr,
+            viewport.margin_left,
+            viewport.margin_top,
+            viewport.graph_width,
+            viewport.graph_height
+        );
+
+        cairo_clip(rc.cr);
+    }
+
     // Loop over all text elements, and call each of their corresponding draw functions.
     for(size_t i = 0; i < text_items.size(); i ++){
         if (text_items[i]->style.absolute) continue; // Don't check absolute elements, assume the user knows what they are doing.
@@ -470,6 +486,8 @@ void Figure::draw_text_items(RenderContext& rc) {
 
         text_items[i]->draw(rc);
     }
+
+    cairo_restore(rc.cr);
 }
 
 void Figure::draw_items(RenderContext& rc) {

@@ -64,6 +64,8 @@ struct FigureStyle {
     double legend_border_width = 1;
     Anchor legend_anchor = Anchor::TOP_RIGHT;
 
+    bool clip_text = true;
+
     bool dont_draw_version_text = false;
 };
 

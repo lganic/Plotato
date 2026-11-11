@@ -482,10 +482,10 @@ void Figure::draw_items(RenderContext& rc) {
 
     cairo_rectangle(
         rc.cr,
-        rc.current_viewport.margin_left,
-        rc.current_viewport.margin_top,
-        rc.current_viewport.graph_width,
-        rc.current_viewport.graph_height
+        viewport.margin_left,
+        viewport.margin_top,
+        viewport.graph_width,
+        viewport.graph_height
     );
 
     cairo_clip(rc.cr);

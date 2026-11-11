@@ -458,6 +458,22 @@ void Figure::draw_text_items(RenderContext& rc) {
 
     GraphBounds graph_bounds = rc.current_viewport.bounds;
 
+    cairo_save(rc.cr);
+
+    if (style.clip_text) {
+        GraphViewport viewport = rc.current_viewport;
+
+        cairo_rectangle(
+            rc.cr,
+            viewport.margin_left,
+            viewport.margin_top,
+            viewport.graph_width,
+            viewport.graph_height
+        );
+
+        cairo_clip(rc.cr);
+    }
+
     // Loop over all text elements, and call each of their corresponding draw functions.
     for(size_t i = 0; i < text_items.size(); i ++){
         if (text_items[i]->style.absolute) continue; // Don't check absolute elements, assume the user knows what they are doing.
@@ -470,12 +486,27 @@ void Figure::draw_text_items(RenderContext& rc) {
 
         text_items[i]->draw(rc);
     }
+
+    cairo_restore(rc.cr);
 }
 
 void Figure::draw_items(RenderContext& rc) {
     std::lock_guard<std::mutex> lock(data_mutex);
 
+    cairo_save(rc.cr);
+
     GraphBounds graph_bounds = rc.current_viewport.bounds;
+    GraphViewport viewport = rc.current_viewport;
+
+    cairo_rectangle(
+        rc.cr,
+        viewport.margin_left,
+        viewport.margin_top,
+        viewport.graph_width,
+        viewport.graph_height
+    );
+
+    cairo_clip(rc.cr);
 
     // Loop over all graph elements, and call each of their corresponding draw functions.
     for(size_t i = 0; i < plot_items.size(); i ++){
@@ -488,27 +519,7 @@ void Figure::draw_items(RenderContext& rc) {
         plot_items[i]->draw(rc);
     }
 
-    GraphViewport viewport = rc.current_viewport;
-
-    // At this point, we draw a padding zone around the graph to hide anything which went outside the graph.
-
-    style.background_color.to_cairo_source(rc.cr); // Set the background color.
-
-    // Left side
-    cairo_rectangle(rc.cr, 0, 0, viewport.margin_left, viewport.margin_top + viewport.graph_height + viewport.margin_bottom);
-    cairo_fill(rc.cr);
-
-    // Right side
-    cairo_rectangle(rc.cr, viewport.margin_left + viewport.graph_width, 0, viewport.margin_right, viewport.margin_top + viewport.graph_height + viewport.margin_bottom);
-    cairo_fill(rc.cr);
-
-    // Top side
-    cairo_rectangle(rc.cr, 0, 0, viewport.margin_left + viewport.graph_width + viewport.margin_right, viewport.margin_top);
-    cairo_fill(rc.cr);
-
-    // Bottom side
-    cairo_rectangle(rc.cr, 0, viewport.margin_top + viewport.graph_height, viewport.margin_bottom + viewport.graph_width + viewport.margin_right, viewport.margin_bottom);
-    cairo_fill(rc.cr);
+    cairo_restore(rc.cr);
 }
 
 GraphBounds Figure::get_manual_bounds() {

@@ -93,7 +93,10 @@ void LinearAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
             tick_to_const = use_val_if_enabled(base_const - style.tick_length, style.draw_tick);
             plot_to_const = use_val_if_enabled(base_const + ctx.current_viewport.graph_height,
                                                style.draw_plot_lines);
-            text_const = use_val_if_enabled(tick_to_const - style.text_gap, style.draw_text);
+            text_const =
+                use_val_if_enabled(tick_to_const - style.text_gap -
+                                       get_approx_vertical_size(style.text_style.font_size),
+                                   style.draw_text);
             text_anchor = Anchor::BOTTOM_CENTER;
 
             break;

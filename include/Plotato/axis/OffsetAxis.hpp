@@ -5,17 +5,15 @@
 #include <Plotato/util/RenderContext.hpp>
 
 namespace plotato {
-    
-class OffsetAxis : public LinearAxis{
-    public:
 
-        double offset = 0;
+class OffsetAxis : public LinearAxis {
+   public:
+    double offset = 0;
 
-        OffsetAxis(AxisSide side, AxisStyle style = AxisStyle())
-        : LinearAxis(side, style) {}
-        void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
+    OffsetAxis(AxisSide side, AxisStyle style = AxisStyle()) : LinearAxis(side, style) {}
+    void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_OFFSET_AXIS_HPP
+#endif  // PLOTATO_OFFSET_AXIS_HPP

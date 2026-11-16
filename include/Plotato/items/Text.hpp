@@ -9,25 +9,24 @@
 
 namespace plotato {
 
-class Text : public PlotItem
-{
-    public:
+class Text : public PlotItem {
+   public:
+    void draw_legend_element(RenderContext& rc, double x, double y, double width, double height,
+                             Color border_color, double border_width);
 
-        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+    std::string text;
 
-        std::string text;
+    double x;
+    double y;
 
-        double x;
-        double y;
+    FigureTextStyle style;
 
-        FigureTextStyle style;
-
-        Text() = default;
-        Text(double x, double y, std::string text, FigureTextStyle style);
-        void draw(RenderContext& ctx);
-        GraphBounds bounds();
+    Text() = default;
+    Text(double x, double y, std::string text, FigureTextStyle style);
+    void draw(RenderContext& ctx);
+    GraphBounds bounds();
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_TEXT_HPP
+#endif  // PLOTATO_TEXT_HPP

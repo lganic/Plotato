@@ -8,24 +8,23 @@
 
 namespace plotato {
 
-class LinePlot : public XYPlot
-{
-    public:
-    
-        bool marker_active = false;
+class LinePlot : public XYPlot {
+   public:
+    bool marker_active = false;
 
-        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+    void draw_legend_element(RenderContext& rc, double x, double y, double width, double height,
+                             Color border_color, double border_width);
 
-        PlotStyle style;
+    PlotStyle style;
 
-        LinePlot() = default;
-        LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
-        LinePlot(std::vector<double> y_data, PlotStyle plot_style);
-        void draw(RenderContext& ctx);
+    LinePlot() = default;
+    LinePlot(std::vector<double> x_data, std::vector<double> y_data, PlotStyle plot_style);
+    LinePlot(std::vector<double> y_data, PlotStyle plot_style);
+    void draw(RenderContext& ctx);
 
-        void marker(MarkerStyle style = MarkerStyle());
+    void marker(MarkerStyle style = MarkerStyle());
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_LINEPLOT_HPP
+#endif  // PLOTATO_LINEPLOT_HPP

@@ -5,14 +5,13 @@
 #include <Plotato/util/RenderContext.hpp>
 
 namespace plotato {
-    
-class LinearAxis : public Axis{
-    public:
-        LinearAxis(AxisSide side, AxisStyle style = AxisStyle())
-        : Axis(side, style) {}
-        void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
+
+class LinearAxis : public Axis {
+   public:
+    LinearAxis(AxisSide side, AxisStyle style = AxisStyle()) : Axis(side, style) {}
+    void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_LINEAR_AXIS_HPP
+#endif  // PLOTATO_LINEAR_AXIS_HPP

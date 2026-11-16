@@ -8,20 +8,19 @@
 
 namespace plotato {
 
-class ScatterPlot : public XYPlot
-{
-    public:
+class ScatterPlot : public XYPlot {
+   public:
+    void draw_legend_element(RenderContext& rc, double x, double y, double width, double height,
+                             Color border_color, double border_width);
 
-        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+    MarkerStyle style;
 
-        MarkerStyle style;
-
-        ScatterPlot() = default;
-        ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style);
-        ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style);
-        void draw(RenderContext& ctx);
+    ScatterPlot() = default;
+    ScatterPlot(std::vector<double> x_data, std::vector<double> y_data, MarkerStyle plot_style);
+    ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style);
+    void draw(RenderContext& ctx);
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_SCATTERPLOT_HPP
+#endif  // PLOTATO_SCATTERPLOT_HPP

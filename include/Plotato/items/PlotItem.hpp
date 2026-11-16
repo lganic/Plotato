@@ -1,20 +1,19 @@
 #ifndef PLOTATO_PLOTITEM_HPP
 #define PLOTATO_PLOTITEM_HPP
 
-#include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 
 namespace plotato {
 
-class PlotItem
-{
-public:
-
+class PlotItem {
+   public:
     std::string name = "";
     bool frame = true;
 
-    virtual void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) = 0;
+    virtual void draw_legend_element(RenderContext& rc, double x, double y, double width,
+                                     double height, Color border_color, double border_width) = 0;
 
     PlotItem() = default;
     virtual ~PlotItem() {}
@@ -24,6 +23,6 @@ public:
     virtual GraphBounds bounds() = 0;
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_PLOTITEM_HPP
+#endif  // PLOTATO_PLOTITEM_HPP

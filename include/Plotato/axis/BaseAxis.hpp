@@ -1,8 +1,8 @@
 #ifndef PLOTATO_BASE_AXIS_HPP
 #define PLOTATO_BASE_AXIS_HPP
 
-#include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <cstdint>
 
@@ -10,13 +10,7 @@ namespace plotato {
 
 int32_t use_val_if_enabled(int32_t val, bool enabled);
 
-enum AxisSide {
-    TOP, 
-    RIGHT,
-    BOTTOM, 
-    LEFT,
-    NONE
-};
+enum AxisSide { TOP, RIGHT, BOTTOM, LEFT, NONE };
 
 struct AxisPixelSize {
     uint32_t left = 0;
@@ -28,7 +22,6 @@ struct AxisPixelSize {
 };
 
 struct AxisStyle {
-
     int32_t num_ticks = 0;
 
     bool draw_plot_lines = true;
@@ -37,20 +30,20 @@ struct AxisStyle {
     bool draw_tick = true;
     uint32_t tick_length = 5;
     Color tick_color = Color(0, 0, 0);
-    
+
     bool draw_text = true;
     uint32_t text_gap = 5;
     TextStyle text_style;
 
-    // TODO: Put heatmap color data here. Will be wasted space when using a non heatmap object, but will make implementation way easier.
+    // TODO: Put heatmap color data here. Will be wasted space when using a non heatmap object, but
+    // will make implementation way easier.
 };
 
-struct Axis
-{
+struct Axis {
     AxisStyle style;
 
     Axis();
-    Axis(AxisSide side, AxisStyle style = AxisStyle()): side(side), style(style) {}
+    Axis(AxisSide side, AxisStyle style = AxisStyle()) : side(side), style(style) {}
 
     virtual ~Axis() {}
 
@@ -63,6 +56,6 @@ struct Axis
     AxisSide side;
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_BASE_AXIS_HPP
+#endif  // PLOTATO_BASE_AXIS_HPP

@@ -1,17 +1,15 @@
-#include <vector>
-#include <algorithm>
 #include <Plotato/items/XYPlot.hpp>
-#include <Plotato/util/GraphRenderer.hpp>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/GraphRenderer.hpp>
+#include <algorithm>
+#include <vector>
 
 namespace plotato {
 
-XYPlot::XYPlot(std::vector<double> x_data, std::vector<double> y_data): x(x_data), y(y_data) {}
-XYPlot::XYPlot(std::vector<double> y_data): y(y_data) {
-    contains_x_data = false;
-}
+XYPlot::XYPlot(std::vector<double> x_data, std::vector<double> y_data) : x(x_data), y(y_data) {}
+XYPlot::XYPlot(std::vector<double> y_data) : y(y_data) { contains_x_data = false; }
 
-GraphBounds XYPlot::bounds(){
+GraphBounds XYPlot::bounds() {
     auto y_result = std::minmax_element(y.begin(), y.end());
 
     if (contains_x_data) {
@@ -26,4 +24,4 @@ GraphBounds XYPlot::bounds(){
     return GraphBounds{0, static_cast<double>(y.size()) - 1, *y_result.first, *y_result.second};
 }
 
-}
+}  // namespace plotato

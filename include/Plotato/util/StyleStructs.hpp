@@ -1,11 +1,12 @@
 #ifndef PLOTATO_STYLESTRUCTS_HPP
 #define PLOTATO_STYLESTRUCTS_HPP
 
-#include "Anchor.hpp"
-#include <cstdint>
 #include <gtk/gtk.h>
+
 #include <cstdint>
 #include <string>
+
+#include "Anchor.hpp"
 
 namespace plotato {
 
@@ -15,7 +16,8 @@ struct Color {
     uint8_t b = 0;
     uint8_t a = 255;
 
-    constexpr Color (uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255) : r(r), g(g), b(b), a(a) {}
+    constexpr Color(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255)
+        : r(r), g(g), b(b), a(a) {}
 
     void to_cairo_source(cairo_t* cr);
     bool has_opacity();
@@ -23,7 +25,7 @@ struct Color {
 
 struct TextStyle {
     TextStyle(uint16_t font_size = 12);
-    
+
     Color text_color;
     uint16_t font_size = 12;
 
@@ -33,14 +35,13 @@ struct TextStyle {
 };
 
 struct FigureTextStyle : public TextStyle {
-
     bool absolute = true;
 
     Anchor anchor = Anchor::MIDDLE_CENTER;
     Anchor absolute_anchor = Anchor::TOP_LEFT;
 
-    Color background_color {255, 255, 255, 255};
-    Color outline_color {0, 0, 0, 255};
+    Color background_color{255, 255, 255, 255};
+    Color outline_color{0, 0, 0, 255};
 
     double outline_width = 2;
     double text_padding = 5;
@@ -53,7 +54,7 @@ struct ShapeStyle {
     Color fill = Color(255, 255, 255);
 };
 
-struct MarkerStyle : public ShapeStyle{
+struct MarkerStyle : public ShapeStyle {
     char type = 'O';
 
     double size = 6;
@@ -72,6 +73,6 @@ uint32_t get_approx_vertical_size(uint32_t font_size);
 uint32_t get_approx_drop_size(uint32_t font_size);
 uint32_t get_approx_horizontal_size(uint32_t font_size);
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_STYLESTRUCTS_HPP
+#endif  // PLOTATO_STYLESTRUCTS_HPP

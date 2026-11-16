@@ -5,37 +5,31 @@ namespace plotato {
 
 namespace detail {
 
-    uint32_t map_single_axis(double val, double min_val, double max_val, int32_t size, int32_t offset){
-
+uint32_t map_single_axis(double val, double min_val, double max_val, int32_t size, int32_t offset) {
     double t = (val - min_val) / (max_val - min_val);
 
     return size * t + offset;
 }
 
-}
+}  // namespace detail
 
 void GraphBounds::adjust_with_bounds(GraphBounds bounds) {
-
     xmin = std::min(xmin, bounds.xmin);
     xmax = std::max(xmax, bounds.xmax);
 
     ymin = std::min(ymin, bounds.ymin);
     ymax = std::max(ymax, bounds.ymax);
-
 }
 
 void GraphBounds::adjust_with_point(double x, double y) {
-
     xmin = std::min(xmin, x);
     xmax = std::max(xmax, x);
 
     ymin = std::min(ymin, y);
     ymax = std::max(ymax, y);
-    
 }
 
 void GraphBounds::expand_zero_axis(double margin) {
-
     if (xmin == xmax) {
         xmin -= margin;
         xmax += margin;
@@ -45,7 +39,6 @@ void GraphBounds::expand_zero_axis(double margin) {
         ymin -= margin;
         ymax += margin;
     }
-
 }
 
 std::pair<double, double> GraphBounds::get_center() {
@@ -53,17 +46,13 @@ std::pair<double, double> GraphBounds::get_center() {
 }
 
 bool GraphBounds::overlap(GraphBounds target) {
-
     // If one rectangle is on left side of other
-    if (xmin > target.xmax || target.xmin > xmax)
-        return false;
+    if (xmin > target.xmax || target.xmin > xmax) return false;
 
     // If one rectangle is above other
-    if (ymin > target.ymax || target.ymin > ymax)
-        return false;
+    if (ymin > target.ymax || target.ymin > ymax) return false;
 
     return true;
-
 }
 
 uint32_t GraphViewport::map_x_to_screen(double x) {
@@ -71,7 +60,9 @@ uint32_t GraphViewport::map_x_to_screen(double x) {
 }
 
 uint32_t GraphViewport::map_y_to_screen(double y) {
-    return detail::map_single_axis(y, bounds.ymax, bounds.ymin, graph_height, margin_top); // ymin and ymax are flipped here. Its a janky solution to correctly flip the vertical axis.
+    return detail::map_single_axis(y, bounds.ymax, bounds.ymin, graph_height,
+                                   margin_top);  // ymin and ymax are flipped here. Its a janky
+                                                 // solution to correctly flip the vertical axis.
 }
 
-}
+}  // namespace plotato

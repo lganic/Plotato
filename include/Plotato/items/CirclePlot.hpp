@@ -8,27 +8,25 @@
 
 namespace plotato {
 
-class CirclePlot : public PlotItem
-{
-
+class CirclePlot : public PlotItem {
     double x;
     double y;
     double radius;
 
-    
-    public:
-        double margin = 0.1;
+   public:
+    double margin = 0.1;
 
-        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+    void draw_legend_element(RenderContext& rc, double x, double y, double width, double height,
+                             Color border_color, double border_width);
 
-        ShapeStyle style;
+    ShapeStyle style;
 
-        CirclePlot() = default;
-        CirclePlot(double x, double y, double radius, ShapeStyle shape_style);
-        void draw(RenderContext& ctx);
-        GraphBounds bounds();
+    CirclePlot() = default;
+    CirclePlot(double x, double y, double radius, ShapeStyle shape_style);
+    void draw(RenderContext& ctx);
+    GraphBounds bounds();
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_CIRCLEPLOT_HPP
+#endif  // PLOTATO_CIRCLEPLOT_HPP

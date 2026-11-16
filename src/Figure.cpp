@@ -615,6 +615,9 @@ void Figure::export_image(std::string filename, uint32_t width, uint32_t height)
     std::lock_guard<std::mutex> draw_guard(
         draw_mutex);  // Ensure that only one draw is being called at a time.
 
+    bool old_version_draw_info = style.dont_draw_version_text;
+    style.dont_draw_version_text = true; // Force for this run, so that version info is not included in export.
+
     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 
     cairo_t* cr = cairo_create(surface);
@@ -632,6 +635,8 @@ void Figure::export_image(std::string filename, uint32_t width, uint32_t height)
 
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
+
+    style.dont_draw_version_text = old_version_draw_info;
 
     if (status != CAIRO_STATUS_SUCCESS) throw std::runtime_error(cairo_status_to_string(status));
 }

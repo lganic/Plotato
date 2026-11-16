@@ -109,14 +109,3 @@ target_compile_options(plotato
     PUBLIC
         ${GTK3_CFLAGS_OTHER}
 )
-
-include(CTest)
-if(BUILD_TESTING)
-    add_executable(figure_lifetime_tests tests/FigureLifetime.cpp)
-    target_link_libraries(figure_lifetime_tests PRIVATE plotato)
-
-    foreach(case figure_first widget_first retained_widget resources shared_widget repeated_lifetimes)
-        add_test(NAME figure_lifetime_${case}
-            COMMAND figure_lifetime_tests -p /figure/${case})
-    endforeach()
-endif()

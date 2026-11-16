@@ -1,22 +1,21 @@
+#include <gtk/gtk.h>
+
 #include <Plotato/axis/OffsetAxis.hpp>
 #include <Plotato/util/RenderContext.hpp>
 #include <Plotato/util/StyleStructs.hpp>
-#include <gtk/gtk.h>
 #include <cstdint>
 
 namespace plotato {
 
 void OffsetAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
-
-    // First, create a new graph viewport, using the old data. 
+    // First, create a new graph viewport, using the old data.
     GraphViewport new_viewport = ctx.current_viewport;
 
     // Figure out which axis to offset
     if (side == TOP || side == BOTTOM) {
         new_viewport.bounds.xmin += offset;
         new_viewport.bounds.xmax += offset;
-    }
-    else { // Left or Right
+    } else {  // Left or Right
         new_viewport.bounds.ymin += offset;
         new_viewport.bounds.ymax += offset;
     }
@@ -30,4 +29,4 @@ void OffsetAxis::draw(RenderContext& ctx, int32_t offset_x, int32_t offset_y) {
     LinearAxis::draw(new_context, offset_x, offset_y);
 }
 
-}
+}  // namespace plotato

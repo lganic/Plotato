@@ -8,19 +8,18 @@
 
 namespace plotato {
 
-class PolygonPlot : public XYPlot
-{
-    public:
+class PolygonPlot : public XYPlot {
+   public:
+    void draw_legend_element(RenderContext& rc, double x, double y, double width, double height,
+                             Color border_color, double border_width);
 
-        void draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width);
+    ShapeStyle style;
 
-        ShapeStyle style;
-
-        PolygonPlot() = default;
-        PolygonPlot(std::vector<double> x_data, std::vector<double> y_data, ShapeStyle shape_style);
-        void draw(RenderContext& ctx);
+    PolygonPlot() = default;
+    PolygonPlot(std::vector<double> x_data, std::vector<double> y_data, ShapeStyle shape_style);
+    void draw(RenderContext& ctx);
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_POLYGONPLOT_HPP
+#endif  // PLOTATO_POLYGONPLOT_HPP

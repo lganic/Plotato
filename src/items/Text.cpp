@@ -1,28 +1,28 @@
 #include <Plotato/items/Text.hpp>
-#include <Plotato/util/GraphRenderer.hpp>
 #include <Plotato/util/GraphBounds.hpp>
+#include <Plotato/util/GraphRenderer.hpp>
 
 namespace plotato {
 
-    Text::Text(double text_x, double text_y, std::string starting_text, FigureTextStyle text_style): x(text_x), y(text_y), text(starting_text), style(text_style) {}
+Text::Text(double text_x, double text_y, std::string starting_text, FigureTextStyle text_style)
+    : x(text_x), y(text_y), text(starting_text), style(text_style) {}
 
-    GraphBounds Text::bounds() {
+GraphBounds Text::bounds() {
+    GraphBounds bounds;
 
-        GraphBounds bounds;
-
-        if (!style.absolute) {
-            bounds.adjust_with_point(x, y);
-        }
-
-        return bounds;
+    if (!style.absolute) {
+        bounds.adjust_with_point(x, y);
     }
 
-    void Text::draw(RenderContext& ctx) {
-        // Draw the text using the renderer
-        ctx.renderer.draw_text(x, y, text, style);
-    }
-
-    void Text::draw_legend_element(RenderContext& rc, double x, double y, double width, double height, Color border_color, double border_width) {
-    }
-
+    return bounds;
 }
+
+void Text::draw(RenderContext& ctx) {
+    // Draw the text using the renderer
+    ctx.renderer.draw_text(x, y, text, style);
+}
+
+void Text::draw_legend_element(RenderContext& rc, double x, double y, double width, double height,
+                               Color border_color, double border_width) {}
+
+}  // namespace plotato

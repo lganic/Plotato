@@ -19,6 +19,6 @@ enum class Anchor {
 
 std::pair<double, double> get_offset(double item_width, double item_height, Anchor anchor);
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_ANCHOR_HPP
+#endif  // PLOTATO_ANCHOR_HPP

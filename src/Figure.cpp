@@ -1,78 +1,68 @@
 #include <Plotato/Figure.hpp>
-#include <Plotato/items/LinePlot.hpp>
-#include <Plotato/items/ScatterPlot.hpp>
-#include <Plotato/items/PolygonPlot.hpp>
 #include <Plotato/axis/LinearAxis.hpp>
 #include <Plotato/axis/OffsetAxis.hpp>
+#include <Plotato/items/LinePlot.hpp>
+#include <Plotato/items/PolygonPlot.hpp>
+#include <Plotato/items/ScatterPlot.hpp>
 #include <Plotato/util/StyleStructs.hpp>
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <cstdint>
-#include <algorithm>
-#include "version.hpp"
-#include "EmbeddedAssets.hpp"
-
+#include <cstring>
 #include <iostream>
+
+#include "EmbeddedAssets.hpp"
+#include "version.hpp"
 
 using namespace plotato;
 
 const uint32_t TITLE_PADDING = 10;
 const uint32_t INTER_AXIS_PADDING = 5;
 
-
 namespace plotato {
 
 const char NO_NAMED_PLOTS_DEBUG_STRING[] = "No Named Plots";
-    
+
 namespace detail {
-    cairo_status_t read_png_from_memory(
-        void* closure,
-        uint8_t* data,
-        uint32_t length)
-    {
-        MemoryPng* mem = static_cast<MemoryPng*>(closure);
-    
-        if (mem->offset + length > mem->size)
-            return CAIRO_STATUS_READ_ERROR;
-    
-        std::memcpy(data, mem->data + mem->offset, length);
-        mem->offset += length;
-    
-        return CAIRO_STATUS_SUCCESS;
-    }
+cairo_status_t read_png_from_memory(void* closure, uint8_t* data, uint32_t length) {
+    MemoryPng* mem = static_cast<MemoryPng*>(closure);
+
+    if (mem->offset + length > mem->size) return CAIRO_STATUS_READ_ERROR;
+
+    std::memcpy(data, mem->data + mem->offset, length);
+    mem->offset += length;
+
+    return CAIRO_STATUS_SUCCESS;
 }
+}  // namespace detail
 
 // Create a new graph object when given the a drawing area, and the bounds of the graph.
-Figure::Figure(GtkWidget *drawing_area, FigureStyle style)
-    : area(drawing_area), style(style) // Set drawing area, and style, to skip useless default constructor.
+Figure::Figure(GtkWidget* drawing_area, FigureStyle style)
+    : area(drawing_area),
+      style(style)  // Set drawing area, and style, to skip useless default constructor.
 {
-
     // Connect signals for events which we would need to respond to.
-    draw_handler_id = g_signal_connect(area, "draw", G_CALLBACK(Figure::on_draw), this); // Is called when this is first revealed, or something else indicates that a draw is required.
-    size_allocate_handler_id = g_signal_connect(area, "size-allocate", G_CALLBACK(Figure::on_size_allocate), this); // Called when the graph element is resized.
+    draw_handler_id = g_signal_connect(area, "draw", G_CALLBACK(Figure::on_draw),
+                                       this);  // Is called when this is first revealed, or
+                                               // something else indicates that a draw is required.
+    size_allocate_handler_id =
+        g_signal_connect(area, "size-allocate", G_CALLBACK(Figure::on_size_allocate),
+                         this);  // Called when the graph element is resized.
     destroy_handler_id = g_signal_connect(area, "destroy", G_CALLBACK(Figure::on_destroy), this);
 
     // Set the debug png image data from the data loaded in the object file by the linker.
-    detail::MemoryPng png {
+    detail::MemoryPng png{
         _binary_Icon_small_png_start,
-        static_cast<std::size_t>(
-            _binary_Icon_small_png_end - _binary_Icon_small_png_start
-        ),
-        0
-    };
+        static_cast<std::size_t>(_binary_Icon_small_png_end - _binary_Icon_small_png_start), 0};
 
     // Then load the debug surface from the png data.
-    debug_image = cairo_image_surface_create_from_png_stream(
-        detail::read_png_from_memory,
-        &png
-    );
+    debug_image = cairo_image_surface_create_from_png_stream(detail::read_png_from_memory, &png);
 
-    snprintf(version_label, sizeof(version_label), "Plotato - v%s", PLOTATO_VERSION); // Create the version string.
+    snprintf(version_label, sizeof(version_label), "Plotato - v%s",
+             PLOTATO_VERSION);  // Create the version string.
 }
 
-Figure::~Figure()
-{
+Figure::~Figure() {
     detach_drawing_area();
 
     if (debug_image) {
@@ -80,8 +70,7 @@ Figure::~Figure()
     }
 }
 
-void Figure::detach_drawing_area()
-{
+void Figure::detach_drawing_area() {
     if (!area) return;
 
     // Disconnect only our hooks, leaving the caller's widget and handlers intact.
@@ -97,19 +86,18 @@ void Figure::detach_drawing_area()
     area = nullptr;
 }
 
-void Figure::on_destroy(GtkWidget* widget, gpointer user_data)
-{
+void Figure::on_destroy(GtkWidget* widget, gpointer user_data) {
     // The caller may destroy the GTK widget before the C++ figure goes out of scope.
     static_cast<Figure*>(user_data)->detach_drawing_area();
 }
 
 void Figure::draw_version_text(cairo_t* cr, uint32_t width, uint32_t height) {
-
     if (style.dont_draw_version_text) {
-        return; // Don't proceed. Style indicates to not draw this.
+        return;  // Don't proceed. Style indicates to not draw this.
     }
 
-    // Draw the version info as a small translucent bit of text in the bottom right. (For easier debugging) TODO: Add a bit to the styling which allows you to disable this.
+    // Draw the version info as a small translucent bit of text in the bottom right. (For easier
+    // debugging) TODO: Add a bit to the styling which allows you to disable this.
 
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 10);
@@ -133,9 +121,7 @@ void Figure::clear() {
     plot_items.clear();
 }
 
-void Figure::clear_axis() {
-    axis_items.clear();
-}
+void Figure::clear_axis() { axis_items.clear(); }
 
 void Figure::reset() {
     clear();
@@ -144,52 +130,44 @@ void Figure::reset() {
 
 // Queue the graph to be drawn to the surface. Use when the contents of the graph have been updated.
 void Figure::draw() {
-
     // Queue up a draw event, which will call the on_draw method.
     if (area) gtk_widget_queue_draw(area);
-
 }
 
-void Figure::legend(bool show) {
-    style.draw_legend = show;
-}
+void Figure::legend(bool show) { style.draw_legend = show; }
 
-// Plot the given data on the graph. 
-LinePlot* Figure::plot(const std::vector<double> &x, const std::vector<double> &y, PlotStyle style)
-{
+// Plot the given data on the graph.
+LinePlot* Figure::plot(const std::vector<double>& x, const std::vector<double>& y,
+                       PlotStyle style) {
     return add_item<LinePlot>(x, y, style);
 }
 
-// Plot the given data on the graph. 
-LinePlot* Figure::plot(const std::vector<double> &y, PlotStyle style)
-{
+// Plot the given data on the graph.
+LinePlot* Figure::plot(const std::vector<double>& y, PlotStyle style) {
     return add_item<LinePlot>(y, style);
 }
 
 // Plot the scatter plots.
-ScatterPlot* Figure::scatter(const std::vector<double> &x, const std::vector<double> &y, MarkerStyle style)
-{
+ScatterPlot* Figure::scatter(const std::vector<double>& x, const std::vector<double>& y,
+                             MarkerStyle style) {
     return add_item<ScatterPlot>(x, y, style);
 }
 
 // Plot the scatter plots.
-ScatterPlot* Figure::scatter(const std::vector<double> &y, MarkerStyle style)
-{   
+ScatterPlot* Figure::scatter(const std::vector<double>& y, MarkerStyle style) {
     return add_item<ScatterPlot>(y, style);
 }
 
-PolygonPlot* Figure::polygon(const std::vector<double> &x, const std::vector<double> &y, ShapeStyle style)
-{
+PolygonPlot* Figure::polygon(const std::vector<double>& x, const std::vector<double>& y,
+                             ShapeStyle style) {
     return add_item<PolygonPlot>(x, y, style);
 }
 
-CirclePlot* Figure::circle(double x, double y, double radius, ShapeStyle style)
-{
+CirclePlot* Figure::circle(double x, double y, double radius, ShapeStyle style) {
     return add_item<CirclePlot>(x, y, radius, style);
 }
 
-Title* Figure::add_axis_title(AxisSide side, std::string title, TextStyle style)
-{
+Title* Figure::add_axis_title(AxisSide side, std::string title, TextStyle style) {
     std::lock_guard<std::mutex> lock(axis_mutex);
 
     auto new_title = std::make_unique<Title>(side, title, style);
@@ -212,8 +190,7 @@ Title* Figure::add_y_title(std::string title, TextStyle style) {
     return add_axis_title(AxisSide::LEFT, title, style);
 }
 
-Text* Figure::add_text(double x, double y, std::string text, FigureTextStyle style)
-{
+Text* Figure::add_text(double x, double y, std::string text, FigureTextStyle style) {
     std::lock_guard<std::mutex> lock(text_mutex);
 
     auto new_text = std::make_unique<Text>(x, y, text, style);
@@ -225,15 +202,15 @@ Text* Figure::add_text(double x, double y, std::string text, FigureTextStyle sty
 }
 
 // Called when the figure is requested to draw.
-gboolean Figure::on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-    Figure *figure = static_cast<Figure *>(user_data);
+gboolean Figure::on_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data) {
+    Figure* figure = static_cast<Figure*>(user_data);
 
     // Get the current size of the allocated area for the drawing widget.
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
 
-    std::lock_guard<std::mutex> draw_guard(figure->draw_mutex); // Ensure that only one draw is being called at a time.
+    std::lock_guard<std::mutex> draw_guard(
+        figure->draw_mutex);  // Ensure that only one draw is being called at a time.
 
     // Pass the drawing information to the drawer.
     figure->draw_to_canvas(cr, allocation.width, allocation.height);
@@ -241,23 +218,20 @@ gboolean Figure::on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 }
 
 // Called when the figure is resized.
-void Figure::on_size_allocate(GtkWidget *widget,
-                             GdkRectangle *allocation,
-                             gpointer user_data)
-{
-    Figure *figure = static_cast<Figure *>(user_data);
+void Figure::on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user_data) {
+    Figure* figure = static_cast<Figure*>(user_data);
 
     // Sizing is mostly automatic because draw() receives the current size.
     // This hook exists so we can later rebuild cached surfaces, text layouts,
     // heatmap buffers, etc.
 
-    // So we really just need to grab the figure element from the ref, and signal a draw event. 
+    // So we really just need to grab the figure element from the ref, and signal a draw event.
     figure->draw();
 }
 
-void Figure::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {
-
-    // we can calculate the centering position, since we know the plot width, and the image width is 100px
+void Figure::draw_no_data(cairo_t* cr, uint32_t width, uint32_t height) {
+    // we can calculate the centering position, since we know the plot width, and the image width is
+    // 100px
     int32_t center_x = (width - 100) / 2;
     int32_t center_y = (height - 100) / 2;
 
@@ -268,14 +242,12 @@ void Figure::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {
 
         // Paint the source surface onto the destination context
         cairo_paint(cr);
-    } // Not really a problem if this doesn't work, since its mostly just for debugging
+    }  // Not really a problem if this doesn't work, since its mostly just for debugging
 
     // Draw some text.
     const char* msg = "Figure Initialized - No Data";
 
-    cairo_select_font_face(cr, "Sans",
-                           CAIRO_FONT_SLANT_NORMAL,
-                           CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 16);
 
     cairo_text_extents_t extents;
@@ -291,13 +263,12 @@ void Figure::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {
     draw_version_text(cr, width, height);
 }
 
-double Figure::map_x(double x, double y, GraphViewport viewport) {return 0;}
-double Figure::map_y(double x, double y, GraphViewport viewport) {return 0;}
+double Figure::map_x(double x, double y, GraphViewport viewport) { return 0; }
+double Figure::map_y(double x, double y, GraphViewport viewport) { return 0; }
 
 void Figure::draw_to_canvas(cairo_t* cr, uint32_t width, uint32_t height) {}
 
 void Figure::draw_axis(RenderContext& rc) {
-
     // Draw the axis data onto some generic figure.
 
     std::lock_guard<std::mutex> lock(axis_mutex);
@@ -309,47 +280,44 @@ void Figure::draw_axis(RenderContext& rc) {
 
     // Loop over all the axis, and render each to the graph.
     // This has to use a switch case, in order to correctly stack multi axis plots.
-    for(size_t i = 0; i < axis_items.size(); i ++){
-
+    for (size_t i = 0; i < axis_items.size(); i++) {
         AxisPixelSize size = axis_items[i]->size();
 
-        switch (axis_items[i]->side)
-        {
-        case TOP:
-            axis_items[i] -> draw(rc, 0, -top_axis_offset);
-            top_axis_offset += size.top + INTER_AXIS_PADDING;
-            break;
+        switch (axis_items[i]->side) {
+            case TOP:
+                axis_items[i]->draw(rc, 0, -top_axis_offset);
+                top_axis_offset += size.top + INTER_AXIS_PADDING;
+                break;
 
-        case BOTTOM:
-            axis_items[i] -> draw(rc, 0, bottom_axis_offset);
-            bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
-            break;
+            case BOTTOM:
+                axis_items[i]->draw(rc, 0, bottom_axis_offset);
+                bottom_axis_offset += size.bottom + INTER_AXIS_PADDING;
+                break;
 
-        case LEFT:
-            axis_items[i] -> draw(rc, -left_axis_offset, 0);
-            left_axis_offset += size.left + INTER_AXIS_PADDING;
-            break;
+            case LEFT:
+                axis_items[i]->draw(rc, -left_axis_offset, 0);
+                left_axis_offset += size.left + INTER_AXIS_PADDING;
+                break;
 
-        case RIGHT:
-            axis_items[i] -> draw(rc, right_axis_offset, 0);
-            right_axis_offset += size.right + INTER_AXIS_PADDING;
-            break;
+            case RIGHT:
+                axis_items[i]->draw(rc, right_axis_offset, 0);
+                right_axis_offset += size.right + INTER_AXIS_PADDING;
+                break;
 
-        case NONE:
-            axis_items[i] -> draw(rc, 0, 0);
+            case NONE:
+                axis_items[i]->draw(rc, 0, 0);
         }
     }
 }
 
 void Figure::draw_legend(RenderContext& rc) {
-
     if (!style.draw_legend) {
         return;
     }
 
-    // Lets calculate the total size of the thing. 
-    // To make this look good, we are going to need to know the size of all the text elements ahead of time.
-    // So lets make a vector of all the text extents
+    // Lets calculate the total size of the thing.
+    // To make this look good, we are going to need to know the size of all the text elements ahead
+    // of time. So lets make a vector of all the text extents
 
     std::vector<std::unique_ptr<cairo_text_extents_t>> all_extents;
 
@@ -367,11 +335,10 @@ void Figure::draw_legend(RenderContext& rc) {
     {
         std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
 
-        for (size_t plot_item_index = 0; plot_item_index < plot_items.size(); plot_item_index ++) {
-
+        for (size_t plot_item_index = 0; plot_item_index < plot_items.size(); plot_item_index++) {
             PlotItem* plot_item = plot_items[plot_item_index].get();
 
-            if (plot_item->name.length() == 0) continue; // Skip plots with no name.
+            if (plot_item->name.length() == 0) continue;  // Skip plots with no name.
 
             // Make a new extents object.
             auto new_extents = std::make_unique<cairo_text_extents_t>();
@@ -384,22 +351,24 @@ void Figure::draw_legend(RenderContext& rc) {
         }
     }
 
-    // Now we can calculate the text size. 
+    // Now we can calculate the text size.
     // I am going to use the maximum of the height, instead of each element so spacing is even.
     double max_height = 0;
     double max_width = 0;
 
-    for (size_t extents_index = 0; extents_index < all_extents.size(); extents_index ++) {
+    for (size_t extents_index = 0; extents_index < all_extents.size(); extents_index++) {
         max_height = std::max(max_height, all_extents[extents_index]->height);
         max_width = std::max(max_width, all_extents[extents_index]->width);
     }
 
     // Final size calculation.
     double legend_box_width = max_width + 2 * style.legend_padding + max_height + 5;
-    double legend_box_height = all_extents.size() * (max_height + style.legend_inter_object_padding) - style.legend_inter_object_padding + 2 * style.legend_padding;
+    double legend_box_height =
+        all_extents.size() * (max_height + style.legend_inter_object_padding) -
+        style.legend_inter_object_padding + 2 * style.legend_padding;
 
     if (all_extents.size() == 0) {
-        // No named plots. Size the box to contain the debug text item instead. 
+        // No named plots. Size the box to contain the debug text item instead.
 
         // Get the text textents.
         style.legend_text_style.to_cairo_source(rc.cr);
@@ -412,13 +381,16 @@ void Figure::draw_legend(RenderContext& rc) {
         legend_box_width = max_width + 2 * style.legend_padding;
         legend_box_height = max_height + 2 * style.legend_padding;
 
-        // Continue execution, to use the existing anchor logic instead of re-implementing. We will render later.
+        // Continue execution, to use the existing anchor logic instead of re-implementing. We will
+        // render later.
     }
 
     // Calculate the legend based on the anchor position.
     auto [plot_off_x, plot_off_y] = get_offset(plot_w, plot_h, style.legend_anchor);
-    auto [anchor_x, anchor_y] = get_offset(legend_box_width, legend_box_height, style.legend_anchor);
-    auto [padding_x, padding_y] = get_offset(2 * style.legend_side_offset, 2 * style.legend_side_offset, style.legend_anchor); // Hacky.
+    auto [anchor_x, anchor_y] =
+        get_offset(legend_box_width, legend_box_height, style.legend_anchor);
+    auto [padding_x, padding_y] = get_offset(
+        2 * style.legend_side_offset, 2 * style.legend_side_offset, style.legend_anchor);  // Hacky.
 
     // First, calculate a legend position which puts it in the exact center of the graph.
     double legend_x = plot_x + (plot_w / 2) - (legend_box_width / 2);
@@ -436,19 +408,18 @@ void Figure::draw_legend(RenderContext& rc) {
     // Draw legend filled rectangle
     style.legend_color.to_cairo_source(rc.cr);
     cairo_rectangle(rc.cr, legend_x, legend_y, legend_box_width, legend_box_height);
-    cairo_fill_preserve(rc.cr); // Fill, and keep path
+    cairo_fill_preserve(rc.cr);  // Fill, and keep path
 
     style.legend_border_color.to_cairo_source(rc.cr);
     cairo_set_line_width(rc.cr, style.legend_border_width);
-    cairo_stroke(rc.cr); // Use our kept path from the rectangle to stroke
+    cairo_stroke(rc.cr);  // Use our kept path from the rectangle to stroke
 
     if (all_extents.size() == 0) {
-
         // Box is sized and drawn, we just need to add the debug text to the legend
 
         style.legend_text_style.to_cairo_source(rc.cr);
 
-        cairo_move_to(rc.cr, swatch_x, text_y); // Move to bottom left of text rect
+        cairo_move_to(rc.cr, swatch_x, text_y);  // Move to bottom left of text rect
         cairo_show_text(rc.cr, NO_NAMED_PLOTS_DEBUG_STRING);
 
         return;
@@ -460,28 +431,23 @@ void Figure::draw_legend(RenderContext& rc) {
         std::lock_guard<std::mutex> plot_data_mutex(data_mutex);
         size_t legend_item_index = 0;
 
-        for (size_t plot_item_index = 0; plot_item_index < plot_items.size(); plot_item_index ++) {
-
+        for (size_t plot_item_index = 0; plot_item_index < plot_items.size(); plot_item_index++) {
             PlotItem* plot_item = plot_items[plot_item_index].get();
 
-            if (plot_item->name.length() == 0) continue; // Skip plots with no name.
+            if (plot_item->name.length() == 0) continue;  // Skip plots with no name.
 
             style.legend_text_style.to_cairo_source(rc.cr);
-            cairo_move_to(rc.cr, text_x, text_y + legend_item_index * (max_height + style.legend_inter_object_padding));
+            cairo_move_to(
+                rc.cr, text_x,
+                text_y + legend_item_index * (max_height + style.legend_inter_object_padding));
             cairo_show_text(rc.cr, plot_item->name.c_str());
 
             plot_item->draw_legend_element(
-                rc,
-                swatch_x, 
-                swatch_y + legend_item_index * (max_height + style.legend_inter_object_padding), 
-                max_height, 
-                max_height,
-                style.legend_border_color,
-                style.legend_border_width
-            );
+                rc, swatch_x,
+                swatch_y + legend_item_index * (max_height + style.legend_inter_object_padding),
+                max_height, max_height, style.legend_border_color, style.legend_border_width);
 
-            legend_item_index ++;
-
+            legend_item_index++;
         }
     }
 }
@@ -496,26 +462,22 @@ void Figure::draw_text_items(RenderContext& rc) {
     if (style.clip_text) {
         GraphViewport viewport = rc.current_viewport;
 
-        cairo_rectangle(
-            rc.cr,
-            viewport.margin_left,
-            viewport.margin_top,
-            viewport.graph_width,
-            viewport.graph_height
-        );
+        cairo_rectangle(rc.cr, viewport.margin_left, viewport.margin_top, viewport.graph_width,
+                        viewport.graph_height);
 
         cairo_clip(rc.cr);
     }
 
     // Loop over all text elements, and call each of their corresponding draw functions.
-    for(size_t i = 0; i < text_items.size(); i ++){
-        if (text_items[i]->style.absolute) continue; // Don't check absolute elements, assume the user knows what they are doing.
+    for (size_t i = 0; i < text_items.size(); i++) {
+        if (text_items[i]->style.absolute)
+            continue;  // Don't check absolute elements, assume the user knows what they are doing.
 
         // Get the text position.
         GraphBounds bounds = text_items[i]->bounds();
 
         // We only need to check xmin and ymin, since min=max for text items right now
-        if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
+        if (!bounds.overlap(graph_bounds)) continue;  // Skip. Not in graph.
 
         text_items[i]->draw(rc);
     }
@@ -531,23 +493,17 @@ void Figure::draw_items(RenderContext& rc) {
     GraphBounds graph_bounds = rc.current_viewport.bounds;
     GraphViewport viewport = rc.current_viewport;
 
-    cairo_rectangle(
-        rc.cr,
-        viewport.margin_left,
-        viewport.margin_top,
-        viewport.graph_width,
-        viewport.graph_height
-    );
+    cairo_rectangle(rc.cr, viewport.margin_left, viewport.margin_top, viewport.graph_width,
+                    viewport.graph_height);
 
     cairo_clip(rc.cr);
 
     // Loop over all graph elements, and call each of their corresponding draw functions.
-    for(size_t i = 0; i < plot_items.size(); i ++){
-
+    for (size_t i = 0; i < plot_items.size(); i++) {
         // Get the bounds of this object.
         GraphBounds bounds = plot_items[i]->bounds();
 
-        if (!bounds.overlap(graph_bounds)) continue; // Skip. Not in graph.
+        if (!bounds.overlap(graph_bounds)) continue;  // Skip. Not in graph.
 
         plot_items[i]->draw(rc);
     }
@@ -555,12 +511,9 @@ void Figure::draw_items(RenderContext& rc) {
     cairo_restore(rc.cr);
 }
 
-GraphBounds Figure::get_manual_bounds() {
-    return manual_bounds;
-}
+GraphBounds Figure::get_manual_bounds() { return manual_bounds; }
 
 MarginInformation Figure::get_margin_information() {
-
     // Set default margins from style.
     uint16_t left_margin = style.default_margin;
     uint16_t right_margin = style.default_margin;
@@ -573,47 +526,42 @@ MarginInformation Figure::get_margin_information() {
     {
         std::lock_guard<std::mutex> lock(axis_mutex);
 
-        for (size_t i = 0; i < axis_items.size(); i ++) {
+        for (size_t i = 0; i < axis_items.size(); i++) {
             AxisPixelSize axis_size = axis_items[i]->size();
 
-            switch (axis_items[i]->side)
-            {
-            case TOP:
-                top_margin += axis_size.top;
-                top_margin += INTER_AXIS_PADDING;
-                break;
+            switch (axis_items[i]->side) {
+                case TOP:
+                    top_margin += axis_size.top;
+                    top_margin += INTER_AXIS_PADDING;
+                    break;
 
-            case BOTTOM:
-                bottom_margin += axis_size.bottom;
-                bottom_margin += INTER_AXIS_PADDING;
-                break;
+                case BOTTOM:
+                    bottom_margin += axis_size.bottom;
+                    bottom_margin += INTER_AXIS_PADDING;
+                    break;
 
-            case LEFT:
-                left_margin += axis_size.left;
-                left_margin += INTER_AXIS_PADDING;
-                break;
-            
-            case RIGHT:
-                right_margin += axis_size.right;
-                right_margin += INTER_AXIS_PADDING;
-                break;
-            
-            default:
-                break;
+                case LEFT:
+                    left_margin += axis_size.left;
+                    left_margin += INTER_AXIS_PADDING;
+                    break;
+
+                case RIGHT:
+                    right_margin += axis_size.right;
+                    right_margin += INTER_AXIS_PADDING;
+                    break;
+
+                default:
+                    break;
             }
         }
     }
 
-    return MarginInformation{
-        left_margin, 
-        right_margin,
-        top_margin,
-        bottom_margin
-    };
+    return MarginInformation{left_margin, right_margin, top_margin, bottom_margin};
 }
 
-RenderContext Figure::get_render_context(cairo_t *cr, MarginInformation margins, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square) {
-
+RenderContext Figure::get_render_context(cairo_t* cr, MarginInformation margins,
+                                         GraphBounds context_bounds, uint32_t width,
+                                         uint32_t height, bool square) {
     // Get some plot information based on the margin.
     int32_t plot_w = width - margins.left_margin - margins.right_margin;
     int32_t plot_h = height - margins.top_margin - margins.bottom_margin;
@@ -627,9 +575,7 @@ RenderContext Figure::get_render_context(cairo_t *cr, MarginInformation margins,
 
             margins.top_margin += delta / 2;
             margins.bottom_margin += delta / 2;
-        }
-        else if (plot_h < plot_w) {
-
+        } else if (plot_h < plot_w) {
             // Plot is more wide than it is tall. We should adjust the left and right margin.
 
             int32_t delta = plot_w - plot_h;
@@ -638,7 +584,8 @@ RenderContext Figure::get_render_context(cairo_t *cr, MarginInformation margins,
             margins.right_margin += delta / 2;
         }
 
-        // Update the plot width and height with the new margin data. (Should be the same, or within a pixel of eachother now)
+        // Update the plot width and height with the new margin data. (Should be the same, or within
+        // a pixel of eachother now)
         plot_w = width - margins.left_margin - margins.right_margin;
         plot_h = height - margins.top_margin - margins.bottom_margin;
     }
@@ -655,15 +602,18 @@ RenderContext Figure::get_render_context(cairo_t *cr, MarginInformation margins,
     gv.margin_top = margins.top_margin;
     gv.margin_bottom = margins.bottom_margin;
 
-    RenderContext rc(cr, gv, std::bind(&Figure::map_x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), std::bind(&Figure::map_y, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    RenderContext rc(cr, gv,
+                     std::bind(&Figure::map_x, this, std::placeholders::_1, std::placeholders::_2,
+                               std::placeholders::_3),
+                     std::bind(&Figure::map_y, this, std::placeholders::_1, std::placeholders::_2,
+                               std::placeholders::_3));
 
     return rc;
-
 }
 
 void Figure::export_image(std::string filename, uint32_t width, uint32_t height) {
-
-    std::lock_guard<std::mutex> draw_guard(draw_mutex); // Ensure that only one draw is being called at a time.
+    std::lock_guard<std::mutex> draw_guard(
+        draw_mutex);  // Ensure that only one draw is being called at a time.
 
     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 
@@ -683,10 +633,7 @@ void Figure::export_image(std::string filename, uint32_t width, uint32_t height)
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 
-    if (status != CAIRO_STATUS_SUCCESS)
-        throw std::runtime_error(cairo_status_to_string(status));
+    if (status != CAIRO_STATUS_SUCCESS) throw std::runtime_error(cairo_status_to_string(status));
 }
 
-
-
-}
+}  // namespace plotato

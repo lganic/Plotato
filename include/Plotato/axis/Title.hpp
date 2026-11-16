@@ -6,20 +6,19 @@
 #include <string>
 
 namespace plotato {
-    
-class Title : public Axis{
-    public:
 
-        std::string title;
-        TextStyle text_style;
-    
-        Title(AxisSide side, std::string title, TextStyle text_style = TextStyle()):
-        Axis(side), title(title), text_style(text_style) {}
+class Title : public Axis {
+   public:
+    std::string title;
+    TextStyle text_style;
 
-        void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
-        AxisPixelSize size();
+    Title(AxisSide side, std::string title, TextStyle text_style = TextStyle())
+        : Axis(side), title(title), text_style(text_style) {}
+
+    void draw(RenderContext& ctx, int32_t offset_x = 0, int32_t offset_y = 0);
+    AxisPixelSize size();
 };
 
-}
+}  // namespace plotato
 
-#endif // PLOTATO_TITLE_HPP
+#endif  // PLOTATO_TITLE_HPP

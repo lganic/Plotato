@@ -73,7 +73,8 @@ struct FigureStyle {
 class Figure {
 public:
     Figure(GtkWidget* drawing_area, FigureStyle style = FigureStyle());
-    virtual ~Figure() = default;
+    // Detaches GTK callbacks and releases owned resources; the caller owns the widget.
+    virtual ~Figure();
 
     void clear();
     void reset();
@@ -161,6 +162,14 @@ protected:
     MarginInformation get_margin_information();
 
     RenderContext get_render_context(cairo_t* cr, MarginInformation margins, GraphBounds context_bounds, uint32_t width, uint32_t height, bool square = false);
+
+private:
+    gulong draw_handler_id = 0;
+    gulong size_allocate_handler_id = 0;
+    gulong destroy_handler_id = 0;
+
+    void detach_drawing_area();
+    static void on_destroy(GtkWidget* widget, gpointer user_data);
 };
 
 }

@@ -5,6 +5,23 @@
 
 Plotato is a plotting library designed from the ground up to operate in a GTK3 environment, for a diverse set of plotting applications, including live plotting of values. It is written in C++, for ease of use and performance. 
 
+`Figure`, `Graph`, and `PolarGraph` borrow their drawing widget; the caller owns it.
+Destroying a figure disconnects its GTK signal handlers and releases its Cairo image,
+plots, axes, and text. It leaves the widget available for reuse. If the widget is
+destroyed first, the figure detaches automatically and `draw()` becomes a no-op;
+offscreen image export remains available. Construct and destroy figures on the GTK
+main thread, and stop any application timers or worker threads using a figure before
+deleting it.
+
+To build and run the lifecycle regression tests (requires GTK3 development files and
+a display, or Xvfb):
+
+```sh
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build
+xvfb-run -a ctest --test-dir build --output-on-failure
+```
+
 Below, you can see a minimal example of how Plotato can be imported, initialized and used to plot some sample data.
 
 ```cpp

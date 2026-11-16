@@ -49,8 +49,9 @@ Figure::Figure(GtkWidget *drawing_area, FigureStyle style)
 {
 
     // Connect signals for events which we would need to respond to.
-    g_signal_connect(area, "draw", G_CALLBACK(Figure::on_draw), this); // Is called when this is first revealed, or something else indicates that a draw is required.
-    g_signal_connect(area, "size-allocate", G_CALLBACK(Figure::on_size_allocate), this); // Called when the graph element is resized.
+    draw_handler_id = g_signal_connect(area, "draw", G_CALLBACK(Figure::on_draw), this); // Is called when this is first revealed, or something else indicates that a draw is required.
+    size_allocate_handler_id = g_signal_connect(area, "size-allocate", G_CALLBACK(Figure::on_size_allocate), this); // Called when the graph element is resized.
+    destroy_handler_id = g_signal_connect(area, "destroy", G_CALLBACK(Figure::on_destroy), this);
 
     // Set the debug png image data from the data loaded in the object file by the linker.
     detail::MemoryPng png {
@@ -68,6 +69,38 @@ Figure::Figure(GtkWidget *drawing_area, FigureStyle style)
     );
 
     snprintf(version_label, sizeof(version_label), "Plotato - v%s", PLOTATO_VERSION); // Create the version string.
+}
+
+Figure::~Figure()
+{
+    detach_drawing_area();
+
+    if (debug_image) {
+        cairo_surface_destroy(debug_image);
+    }
+}
+
+void Figure::detach_drawing_area()
+{
+    if (!area) return;
+
+    // Disconnect only our hooks, leaving the caller's widget and handlers intact.
+    for (gulong handler_id : {draw_handler_id, size_allocate_handler_id, destroy_handler_id}) {
+        if (handler_id && g_signal_handler_is_connected(area, handler_id)) {
+            g_signal_handler_disconnect(area, handler_id);
+        }
+    }
+
+    draw_handler_id = 0;
+    size_allocate_handler_id = 0;
+    destroy_handler_id = 0;
+    area = nullptr;
+}
+
+void Figure::on_destroy(GtkWidget* widget, gpointer user_data)
+{
+    // The caller may destroy the GTK widget before the C++ figure goes out of scope.
+    static_cast<Figure*>(user_data)->detach_drawing_area();
 }
 
 void Figure::draw_version_text(cairo_t* cr, uint32_t width, uint32_t height) {
@@ -113,7 +146,7 @@ void Figure::reset() {
 void Figure::draw() {
 
     // Queue up a draw event, which will call the on_draw method.
-    gtk_widget_queue_draw(area);
+    if (area) gtk_widget_queue_draw(area);
 
 }
 
@@ -219,7 +252,7 @@ void Figure::on_size_allocate(GtkWidget *widget,
     // heatmap buffers, etc.
 
     // So we really just need to grab the figure element from the ref, and signal a draw event. 
-    gtk_widget_queue_draw(figure->area);
+    figure->draw();
 }
 
 void Figure::draw_no_data(cairo_t *cr, uint32_t width, uint32_t height) {

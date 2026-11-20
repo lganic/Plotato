@@ -7,10 +7,10 @@
 
 namespace plotato {
 
-ScatterPlot::ScatterPlot(std::vector<double> x_data, std::vector<double> y_data,
+ScatterPlot::ScatterPlot(const std::vector<double>& x_data, const std::vector<double>& y_data,
                          MarkerStyle plot_style)
     : XYPlot(x_data, y_data), style(plot_style) {}
-ScatterPlot::ScatterPlot(std::vector<double> y_data, MarkerStyle plot_style)
+ScatterPlot::ScatterPlot(const std::vector<double>& y_data, MarkerStyle plot_style)
     : XYPlot(y_data), style(plot_style) {}
 
 void ScatterPlot::draw(RenderContext& ctx) {

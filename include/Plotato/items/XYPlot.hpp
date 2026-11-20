@@ -17,8 +17,8 @@ class XYPlot : public PlotItem {
 
    public:
     XYPlot() = default;
-    XYPlot(std::vector<double> x_data, std::vector<double> y_data);
-    XYPlot(std::vector<double> y_data);
+    XYPlot(const std::vector<double>& x_data, const std::vector<double>& y_data);
+    XYPlot(const std::vector<double>& y_data);
 
     GraphBounds bounds();  // This should not be overridden by the child. We can handle it.
 

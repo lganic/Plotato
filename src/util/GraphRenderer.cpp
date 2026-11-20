@@ -27,7 +27,7 @@ double GraphRenderer::data_to_screen_x(double x, double y) { return map_x(x, y, 
 double GraphRenderer::data_to_screen_y(double x, double y) { return map_y(x, y, viewport); }
 
 std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinates(
-    std::vector<double> x, std::vector<double> y) {
+    const std::vector<double>& x, const std::vector<double>& y) {
     if (x.size() != y.size()) {
         std::cerr << "Could not map coordinates. X and Y coordinate sizes mismatch." << std::endl;
 
@@ -49,7 +49,7 @@ std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinat
 }
 
 std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinates(
-    std::vector<double> y) {
+    const std::vector<double>& y) {
     size_t n = y.size();
 
     // Map the x and y data to screen coordinates.
@@ -64,7 +64,7 @@ std::pair<std::vector<double>, std::vector<double>> GraphRenderer::map_coordinat
     return std::make_pair(screen_x, screen_y);
 }
 
-bool GraphRenderer::perform_path(std::vector<double> x, std::vector<double> y) {
+bool GraphRenderer::perform_path(const std::vector<double>& x, const std::vector<double>& y) {
     bool started = false;
 
     size_t n = x.size();
@@ -89,7 +89,7 @@ bool GraphRenderer::perform_path(std::vector<double> x, std::vector<double> y) {
     return true;
 }
 
-bool GraphRenderer::perform_path(std::vector<double> y) {
+bool GraphRenderer::perform_path(const std::vector<double>& y) {
     bool started = false;
 
     size_t n = y.size();
@@ -314,7 +314,7 @@ std::pair<std::vector<double>, std::vector<double>> interleave_polygons(
 
 void GraphRenderer::draw_regular_polygons_interleaved_absolute(
     double poly_x, double poly_y, double angle, double radius, uint32_t n,
-    std::vector<double> angles_degrees, std::vector<double> scales, ShapeStyle& style) {
+    const std::vector<double>& angles_degrees, const std::vector<double>& scales, ShapeStyle& style) {
     std::pair<std::vector<double>, std::vector<double>> interleaved =
         interleave_polygons(poly_x, poly_y, angle, radius, n, angles_degrees, scales);
 
@@ -323,8 +323,8 @@ void GraphRenderer::draw_regular_polygons_interleaved_absolute(
 
 void GraphRenderer::draw_regular_polygons_interleaved(double poly_x, double poly_y, double angle,
                                                       double radius, uint32_t n,
-                                                      std::vector<double> angles_degrees,
-                                                      std::vector<double> scales,
+                                                      const std::vector<double>& angles_degrees,
+                                                      const std::vector<double>& scales,
                                                       ShapeStyle& style) {
     std::pair<std::vector<double>, std::vector<double>> interleaved =
         interleave_polygons(poly_x, poly_y, angle, radius, n, angles_degrees, scales);

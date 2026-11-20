@@ -7,7 +7,7 @@
 
 namespace plotato {
 
-PolygonPlot::PolygonPlot(std::vector<double> x_data, std::vector<double> y_data,
+PolygonPlot::PolygonPlot(const std::vector<double>& x_data, const std::vector<double>& y_data,
                          ShapeStyle shape_style)
     : XYPlot(x_data, y_data), style(shape_style) {}
 

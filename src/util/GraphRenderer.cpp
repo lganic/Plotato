@@ -314,7 +314,8 @@ std::pair<std::vector<double>, std::vector<double>> interleave_polygons(
 
 void GraphRenderer::draw_regular_polygons_interleaved_absolute(
     double poly_x, double poly_y, double angle, double radius, uint32_t n,
-    const std::vector<double>& angles_degrees, const std::vector<double>& scales, ShapeStyle& style) {
+    const std::vector<double>& angles_degrees, const std::vector<double>& scales,
+    ShapeStyle& style) {
     std::pair<std::vector<double>, std::vector<double>> interleaved =
         interleave_polygons(poly_x, poly_y, angle, radius, n, angles_degrees, scales);
 

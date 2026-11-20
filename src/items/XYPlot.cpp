@@ -6,7 +6,8 @@
 
 namespace plotato {
 
-XYPlot::XYPlot(const std::vector<double>& x_data, const std::vector<double>& y_data) : x(x_data), y(y_data) {}
+XYPlot::XYPlot(const std::vector<double>& x_data, const std::vector<double>& y_data)
+    : x(x_data), y(y_data) {}
 XYPlot::XYPlot(const std::vector<double>& y_data) : y(y_data) { contains_x_data = false; }
 
 GraphBounds XYPlot::bounds() {
